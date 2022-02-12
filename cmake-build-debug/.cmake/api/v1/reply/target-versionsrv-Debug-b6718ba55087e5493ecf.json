@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "map_version"
+			"path" : "versionsrv"
 		}
 	],
 	"backtrace" : 1,
@@ -28,55 +28,55 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 1710,
+				"line" : 1692,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 1716,
+				"line" : 1695,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 2093,
+				"line" : 2095,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
-				"file" : 0,
-				"line" : 2134,
-				"parent" : 0
-			},
-			{
-				"command" : 3,
-				"file" : 0,
-				"line" : 2138,
-				"parent" : 0
-			},
-			{
-				"command" : 3,
-				"file" : 0,
-				"line" : 2142,
-				"parent" : 0
-			},
-			{
-				"command" : 3,
-				"file" : 0,
-				"line" : 2098,
-				"parent" : 0
-			},
-			{
-				"command" : 4,
 				"file" : 0,
 				"line" : 2136,
 				"parent" : 0
 			},
 			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 2140,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 2144,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 2100,
+				"parent" : 0
+			},
+			{
 				"command" : 4,
 				"file" : 0,
-				"line" : 2137,
+				"line" : 2138,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 2139,
 				"parent" : 0
 			}
 		]
@@ -151,20 +151,21 @@
 			"language" : "CXX",
 			"sourceIndexes" : 
 			[
-				1
+				1,
+				3
 			]
 		}
 	],
 	"dependencies" : 
 	[
 		{
-			"id" : "json::@6890427a1f51a3e7e1df"
+			"id" : "engine-shared::@6890427a1f51a3e7e1df"
 		},
 		{
-			"id" : "engine-shared::@6890427a1f51a3e7e1df"
+			"id" : "json::@6890427a1f51a3e7e1df"
 		}
 	],
-	"id" : "map_version::@6890427a1f51a3e7e1df",
+	"id" : "versionsrv::@6890427a1f51a3e7e1df",
 	"link" : 
 	{
 		"commandFragments" : 
@@ -200,8 +201,8 @@
 		],
 		"language" : "CXX"
 	},
-	"name" : "map_version",
-	"nameOnDisk" : "map_version",
+	"name" : "versionsrv",
+	"nameOnDisk" : "versionsrv",
 	"paths" : 
 	{
 		"build" : ".",
@@ -210,12 +211,25 @@
 	"sourceGroups" : 
 	[
 		{
-			"name" : "Object Libraries",
+			"name" : "src\\versionsrv",
 			"sourceIndexes" : 
 			[
 				0,
-				2,
-				3,
+				1,
+				2
+			]
+		},
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				3
+			]
+		},
+		{
+			"name" : "Object Libraries",
+			"sourceIndexes" : 
+			[
 				4,
 				5,
 				6,
@@ -249,14 +263,18 @@
 				34,
 				35,
 				36,
-				37
+				37,
+				38,
+				39,
+				40
 			]
 		},
 		{
-			"name" : "src\\tools",
+			"name" : "CMake Rules",
 			"sourceIndexes" : 
 			[
-				1
+				41,
+				42
 			]
 		}
 	],
@@ -264,231 +282,260 @@
 	[
 		{
 			"backtrace" : 1,
-			"isGenerated" : true,
-			"path" : "cmake-build-debug/CMakeFiles/json.dir/src/engine/external/json-parser/json.c.o",
+			"path" : "src/versionsrv/mapversions.h",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/tools/map_version.cpp",
+			"path" : "src/versionsrv/versionsrv.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "src/versionsrv/versionsrv.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug/src/generated/nethash.cpp",
 			"sourceGroupIndex" : 1
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/compression.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/config.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/console.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/datafile.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/demo.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/econ.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/engine.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/filecollection.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/huffman.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/jobs.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/jsonwriter.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/kernel.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/linereader.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/map.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/mapchecker.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/masterserver.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/memheap.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/netban.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/network.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/network_client.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/network_conn.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/network_console.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/network_console_conn.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/network_server.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/network_token.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/packer.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/ringbuffer.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/snapshot.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/engine/shared/storage.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/generated/nethash.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/generated/protocol.cpp.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/base/hash.c.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/base/hash_bundled.c.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/base/hash_libtomcrypt.c.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/base/hash_openssl.c.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
 		},
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
 			"path" : "cmake-build-debug/CMakeFiles/engine-shared.dir/src/base/system.c.o",
-			"sourceGroupIndex" : 0
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug/CMakeFiles/json.dir/src/engine/external/json-parser/json.c.o",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug/src/generated/nethash.cpp.rule",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug/src/generated/protocol.h.rule",
+			"sourceGroupIndex" : 3
 		}
 	],
 	"type" : "EXECUTABLE"

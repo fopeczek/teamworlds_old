@@ -22,6 +22,7 @@
 #include "gamemodes/tdm.h"
 #include "gamecontext.h"
 #include "player.h"
+#include "game/server/gamemodes/ctf-class.h"
 
 enum
 {
@@ -2161,8 +2162,10 @@ void CGameContext::OnInit()
 	m_Collision.Init(&m_Layers);
 
 	// select gametype
-	if(str_comp_nocase(Config()->m_SvGametype, "mod") == 0)
-		m_pController = new CGameControllerMOD(this);
+    if(str_comp_nocase(Config()->m_SvGametype, "mod") == 0)
+        m_pController = new CGameControllerMOD(this);
+    else if(str_comp_nocase(Config()->m_SvGametype, "ctf-class") == 0)
+        m_pController = new CGameControllerCTFC(this);
 	else if(str_comp_nocase(Config()->m_SvGametype, "ctf") == 0)
 		m_pController = new CGameControllerCTF(this);
 	else if(str_comp_nocase(Config()->m_SvGametype, "lms") == 0)

@@ -972,14 +972,14 @@ set(EXPECTED_DATA
   mapres/winter_mountains.png
   mapres/winter_mountains2.png
   mapres/winter_mountains3.png
-  maps/ctf1.map
-  maps/ctf2.map
-  maps/ctf3.map
-  maps/ctf4.map
-  maps/ctf5.map
-  maps/ctf6.map
-  maps/ctf7.map
-  maps/ctf8.map
+  maps/ctf/ctf1.map
+  maps/ctf/ctf2.map
+  maps/ctf/ctf3.map
+  maps/ctf/ctf4.map
+  maps/ctf/ctf5.map
+  maps/ctf/ctf6.map
+  maps/ctf/ctf7.map
+  maps/ctf/ctf8.map
   maps/dm1.map
   maps/dm2.map
   maps/dm3.map
@@ -1621,6 +1621,8 @@ set_src(GAME_SERVER GLOB_RECURSE src/game/server
   gamecontext.h
   gamecontroller.cpp
   gamecontroller.h
+  gamemodes/ctf-class.cpp
+  gamemodes/ctf-class.h
   gamemodes/ctf.cpp
   gamemodes/ctf.h
   gamemodes/dm.cpp

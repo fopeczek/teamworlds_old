@@ -4,8 +4,7 @@
 	{
 		"commands" : 
 		[
-			"add_custom_target",
-			"add_custom_command"
+			"add_custom_target"
 		],
 		"files" : 
 		[
@@ -19,13 +18,7 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 2037,
-				"parent" : 0
-			},
-			{
-				"command" : 1,
-				"file" : 0,
-				"line" : 2027,
+				"line" : 2049,
 				"parent" : 0
 			}
 		]
@@ -33,16 +26,11 @@
 	"dependencies" : 
 	[
 		{
-			"backtrace" : 2,
-			"id" : "teeworlds::@6890427a1f51a3e7e1df"
-		},
-		{
-			"backtrace" : 2,
-			"id" : "teeworlds_srv::@6890427a1f51a3e7e1df"
+			"id" : "package_tar_xz::@6890427a1f51a3e7e1df"
 		}
 	],
-	"id" : "package_zip::@6890427a1f51a3e7e1df",
-	"name" : "package_zip",
+	"id" : "package_default::@6890427a1f51a3e7e1df",
+	"name" : "package_default",
 	"paths" : 
 	{
 		"build" : ".",
@@ -61,8 +49,7 @@
 			"name" : "CMake Rules",
 			"sourceIndexes" : 
 			[
-				1,
-				2
+				1
 			]
 		}
 	],
@@ -71,19 +58,13 @@
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
-			"path" : "cmake-build-debug/CMakeFiles/package_zip",
+			"path" : "cmake-build-debug/CMakeFiles/package_default",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 0,
 			"isGenerated" : true,
-			"path" : "cmake-build-debug/CMakeFiles/package_zip.rule",
-			"sourceGroupIndex" : 1
-		},
-		{
-			"backtrace" : 0,
-			"isGenerated" : true,
-			"path" : "cmake-build-debug/teeworlds-0.7.5-linux_x86_64.zip.rule",
+			"path" : "cmake-build-debug/CMakeFiles/package_default.rule",
 			"sourceGroupIndex" : 1
 		}
 	],
