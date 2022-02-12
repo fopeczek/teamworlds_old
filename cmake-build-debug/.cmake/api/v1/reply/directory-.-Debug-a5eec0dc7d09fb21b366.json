@@ -1,0 +1,146 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 1910,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 1911,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 1912,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 1921,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 1922,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 1923,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "data",
+			"destination" : "share/teeworlds",
+			"paths" : 
+			[
+				"cmake-build-debug/data"
+			],
+			"type" : "directory"
+		},
+		{
+			"backtrace" : 2,
+			"component" : "client",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"teeworlds"
+			],
+			"targetId" : "teeworlds::@6890427a1f51a3e7e1df",
+			"targetIndex" : 16,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 3,
+			"component" : "server",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"teeworlds_srv"
+			],
+			"targetId" : "teeworlds_srv::@6890427a1f51a3e7e1df",
+			"targetIndex" : 17,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 4,
+			"component" : "portable",
+			"destination" : "teeworlds-0.7.5-linux_x86_64",
+			"isExcludeFromAll" : true,
+			"paths" : 
+			[
+				"teeworlds"
+			],
+			"targetId" : "teeworlds::@6890427a1f51a3e7e1df",
+			"targetIndex" : 16,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 4,
+			"component" : "portable",
+			"destination" : "teeworlds-0.7.5-linux_x86_64",
+			"isExcludeFromAll" : true,
+			"paths" : 
+			[
+				"teeworlds_srv"
+			],
+			"targetId" : "teeworlds_srv::@6890427a1f51a3e7e1df",
+			"targetIndex" : 17,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "portable",
+			"destination" : "teeworlds-0.7.5-linux_x86_64",
+			"isExcludeFromAll" : true,
+			"paths" : 
+			[
+				"cmake-build-debug/data"
+			],
+			"type" : "directory"
+		},
+		{
+			"backtrace" : 6,
+			"component" : "portable",
+			"destination" : "teeworlds-0.7.5-linux_x86_64",
+			"isExcludeFromAll" : true,
+			"paths" : 
+			[
+				"license.txt",
+				"storage.cfg"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	}
+}
