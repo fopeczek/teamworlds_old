@@ -19,13 +19,13 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 2036,
+				"line" : 2037,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 2026,
+				"line" : 2027,
 				"parent" : 0
 			}
 		]
@@ -34,11 +34,11 @@
 	[
 		{
 			"backtrace" : 2,
-			"id" : "teeworlds_srv::@6890427a1f51a3e7e1df"
+			"id" : "teeworlds::@6890427a1f51a3e7e1df"
 		},
 		{
 			"backtrace" : 2,
-			"id" : "teeworlds::@6890427a1f51a3e7e1df"
+			"id" : "teeworlds_srv::@6890427a1f51a3e7e1df"
 		}
 	],
 	"id" : "package_tar_xz::@6890427a1f51a3e7e1df",

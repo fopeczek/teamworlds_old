@@ -26,8 +26,10 @@ public:
 protected:
     bool HitCharacter();
     void CheckForBullets();
+    void CheckForBulletCollision();
 private:
-    const int m_deconstruct_range = 40;
+    const float m_deconstruct_range = 50.f;
+    const float m_collision_range = 30.f;
 
     CPlayer *pPlayer;
 	vec2 m_From;

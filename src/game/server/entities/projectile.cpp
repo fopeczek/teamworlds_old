@@ -5,6 +5,7 @@
 
 #include "character.h"
 #include "projectile.h"
+#include "../entity.h"
 
 CProjectile::CProjectile(CGameWorld *pGameWorld, int Type, int Owner, vec2 Pos, vec2 Dir, int Span,
 		int Damage, bool Explosive, float Force, int SoundImpact, int Weapon)
@@ -78,7 +79,7 @@ void CProjectile::Tick()
 
 	m_LifeSpan--;
 
-	if(TargetChr || Collide || m_LifeSpan < 0 || GameLayerClipped(CurPos))
+	if(TargetChr || Collide || m_LifeSpan < 0 || GameLayerClipped(CurPos) || Wall_Coll)
 	{
 		if(m_LifeSpan >= 0 || m_Weapon == WEAPON_GRENADE)
 			GameServer()->CreateSound(CurPos, m_SoundImpact);

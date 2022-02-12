@@ -1635,6 +1635,7 @@ set_src(GAME_SERVER GLOB_RECURSE src/game/server
   gamemodes/tdm.h
   gameworld.cpp
   gameworld.h
+  gameworld_fwd.h
   player.cpp
   player.h
 )

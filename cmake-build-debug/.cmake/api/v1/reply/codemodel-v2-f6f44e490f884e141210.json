@@ -7,7 +7,7 @@
 				{
 					"build" : ".",
 					"hasInstallRule" : true,
-					"jsonFile" : "directory-.-Debug-a5eec0dc7d09fb21b366.json",
+					"jsonFile" : "directory-.-Debug-33c5ebe6c9e410745e0b.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "2.8.12"
@@ -78,140 +78,140 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "crapnet::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-crapnet-Debug-25c5c90078849208d78a.json",
+					"jsonFile" : "target-crapnet-Debug-a9075dbb8c8f641e3e2e.json",
 					"name" : "crapnet",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "engine-shared::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-engine-shared-Debug-ecc092fc71e9b56e341e.json",
+					"jsonFile" : "target-engine-shared-Debug-f29e2bd31c0209ca8603.json",
 					"name" : "engine-shared",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "everything::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-everything-Debug-3b33aa646580f2a0f78b.json",
+					"jsonFile" : "target-everything-Debug-7ceb7584783b7d33c481.json",
 					"name" : "everything",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "fake_server::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-fake_server-Debug-bc7028524ef700ec7ee1.json",
+					"jsonFile" : "target-fake_server-Debug-1b840bfab325f328bc9b.json",
 					"name" : "fake_server",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "game-shared::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-game-shared-Debug-1b8a067e58ae56d4e375.json",
+					"jsonFile" : "target-game-shared-Debug-903bcb9b9eeeba2bac2e.json",
 					"name" : "game-shared",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "json::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-json-Debug-a7ba74eb7b33561f65bc.json",
+					"jsonFile" : "target-json-Debug-285ee8114e4946ba8a85.json",
 					"name" : "json",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "map_resave::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-map_resave-Debug-2e251aae4b2b063a9005.json",
+					"jsonFile" : "target-map_resave-Debug-3c0b29a539ad5c0953b3.json",
 					"name" : "map_resave",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "map_version::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-map_version-Debug-e21695dc49acab129ab7.json",
+					"jsonFile" : "target-map_version-Debug-b356df8390741a36c811.json",
 					"name" : "map_version",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "mastersrv::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-mastersrv-Debug-f360fbaf35ddec362f21.json",
+					"jsonFile" : "target-mastersrv-Debug-8356edd986205e8c5315.json",
 					"name" : "mastersrv",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "md5::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-md5-Debug-7bae650372c05d3df143.json",
+					"jsonFile" : "target-md5-Debug-baf332b3fe0435063c07.json",
 					"name" : "md5",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "package_all::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-package_all-Debug-81c5d6bf3f0f97ece2ca.json",
+					"jsonFile" : "target-package_all-Debug-4227d86dea4ba230be16.json",
 					"name" : "package_all",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "package_default::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-package_default-Debug-b0e017fb5f4249bf7376.json",
+					"jsonFile" : "target-package_default-Debug-f54e3f2da2c9f2658477.json",
 					"name" : "package_default",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "package_tar_gz::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-package_tar_gz-Debug-a2725ebe8ce0af517bcd.json",
+					"jsonFile" : "target-package_tar_gz-Debug-f81fe5e371be7fd25946.json",
 					"name" : "package_tar_gz",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "package_tar_xz::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-package_tar_xz-Debug-c232efc4995b4498fa1d.json",
+					"jsonFile" : "target-package_tar_xz-Debug-dc8513d70c8afe1ad0ca.json",
 					"name" : "package_tar_xz",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "package_zip::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-package_zip-Debug-f8e72dd7483290dc0cd7.json",
+					"jsonFile" : "target-package_zip-Debug-be0430923b9b5ab78c2c.json",
 					"name" : "package_zip",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "packetgen::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-packetgen-Debug-e7dbf92278871251365b.json",
+					"jsonFile" : "target-packetgen-Debug-05eb20a5523a62f09b36.json",
 					"name" : "packetgen",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "teeworlds::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-teeworlds-Debug-1a0ea0e6d81c7b0982fc.json",
+					"jsonFile" : "target-teeworlds-Debug-f36d2d9eb5581d165d36.json",
 					"name" : "teeworlds",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "teeworlds_srv::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-teeworlds_srv-Debug-fbd381a7841fae3c28c6.json",
+					"jsonFile" : "target-teeworlds_srv-Debug-fc2acbbd257e0a295caf.json",
 					"name" : "teeworlds_srv",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "tools::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-tools-Debug-1322f3def4d8d8c199ef.json",
+					"jsonFile" : "target-tools-Debug-67f3f1a21fff85876c49.json",
 					"name" : "tools",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "versionsrv::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-versionsrv-Debug-f2d3ae06f50f9dfcc6d4.json",
+					"jsonFile" : "target-versionsrv-Debug-084136d14306374ff1bf.json",
 					"name" : "versionsrv",
 					"projectIndex" : 0
 				}

@@ -18,7 +18,7 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 1723,
+				"line" : 1724,
 				"parent" : 0
 			}
 		]
@@ -29,13 +29,13 @@
 			"id" : "map_version::@6890427a1f51a3e7e1df"
 		},
 		{
-			"id" : "crapnet::@6890427a1f51a3e7e1df"
-		},
-		{
 			"id" : "map_resave::@6890427a1f51a3e7e1df"
 		},
 		{
 			"id" : "fake_server::@6890427a1f51a3e7e1df"
+		},
+		{
+			"id" : "crapnet::@6890427a1f51a3e7e1df"
 		},
 		{
 			"id" : "packetgen::@6890427a1f51a3e7e1df"

@@ -35,13 +35,13 @@
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 1911,
+				"line" : 1912,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 1921,
+				"line" : 1922,
 				"parent" : 0
 			},
 			{
@@ -53,25 +53,25 @@
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 2092,
+				"line" : 2093,
 				"parent" : 0
 			},
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 2133,
+				"line" : 2134,
 				"parent" : 0
 			},
 			{
 				"command" : 4,
 				"file" : 0,
-				"line" : 2137,
+				"line" : 2138,
 				"parent" : 0
 			},
 			{
 				"command" : 4,
 				"file" : 0,
-				"line" : 2141,
+				"line" : 2142,
 				"parent" : 0
 			},
 			{
@@ -83,7 +83,7 @@
 			{
 				"command" : 4,
 				"file" : 0,
-				"line" : 2097,
+				"line" : 2098,
 				"parent" : 0
 			},
 			{
@@ -95,13 +95,13 @@
 			{
 				"command" : 5,
 				"file" : 0,
-				"line" : 2135,
+				"line" : 2136,
 				"parent" : 0
 			},
 			{
 				"command" : 5,
 				"file" : 0,
-				"line" : 2136,
+				"line" : 2137,
 				"parent" : 0
 			}
 		]
@@ -261,13 +261,13 @@
 	"dependencies" : 
 	[
 		{
-			"id" : "engine-shared::@6890427a1f51a3e7e1df"
-		},
-		{
 			"id" : "json::@6890427a1f51a3e7e1df"
 		},
 		{
 			"id" : "game-shared::@6890427a1f51a3e7e1df"
+		},
+		{
+			"id" : "engine-shared::@6890427a1f51a3e7e1df"
 		}
 	],
 	"id" : "teeworlds::@6890427a1f51a3e7e1df",

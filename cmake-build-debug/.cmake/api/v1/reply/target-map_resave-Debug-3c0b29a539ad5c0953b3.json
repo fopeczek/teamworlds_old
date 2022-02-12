@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "map_version"
+			"path" : "map_resave"
 		}
 	],
 	"backtrace" : 1,
@@ -28,55 +28,55 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 1709,
+				"line" : 1710,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 1715,
+				"line" : 1716,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 2092,
+				"line" : 2093,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 2133,
+				"line" : 2134,
 				"parent" : 0
 			},
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 2137,
+				"line" : 2138,
 				"parent" : 0
 			},
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 2141,
+				"line" : 2142,
 				"parent" : 0
 			},
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 2097,
-				"parent" : 0
-			},
-			{
-				"command" : 4,
-				"file" : 0,
-				"line" : 2135,
+				"line" : 2098,
 				"parent" : 0
 			},
 			{
 				"command" : 4,
 				"file" : 0,
 				"line" : 2136,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 2137,
 				"parent" : 0
 			}
 		]
@@ -158,13 +158,13 @@
 	"dependencies" : 
 	[
 		{
-			"id" : "engine-shared::@6890427a1f51a3e7e1df"
+			"id" : "json::@6890427a1f51a3e7e1df"
 		},
 		{
-			"id" : "json::@6890427a1f51a3e7e1df"
+			"id" : "engine-shared::@6890427a1f51a3e7e1df"
 		}
 	],
-	"id" : "map_version::@6890427a1f51a3e7e1df",
+	"id" : "map_resave::@6890427a1f51a3e7e1df",
 	"link" : 
 	{
 		"commandFragments" : 
@@ -200,8 +200,8 @@
 		],
 		"language" : "CXX"
 	},
-	"name" : "map_version",
-	"nameOnDisk" : "map_version",
+	"name" : "map_resave",
+	"nameOnDisk" : "map_resave",
 	"paths" : 
 	{
 		"build" : ".",
@@ -271,7 +271,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/tools/map_version.cpp",
+			"path" : "src/tools/map_resave.cpp",
 			"sourceGroupIndex" : 1
 		},
 		{

@@ -9,8 +9,8 @@
 
 CWall::CWall(CGameWorld *pGameWorld, int Owner) :  CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER, vec2(0, 0))
 {
-	m_Owner = Owner;
-	m_EvalTick = 0;
+    m_Owner = Owner;
+    m_EvalTick = 0;
     pPlayer = GameServer()->GetPlayerChar(m_Owner)->GetPlayer();
     Created= false;
     m_Done= false;
@@ -22,18 +22,18 @@ CWall::CWall(CGameWorld *pGameWorld, int Owner) :  CEntity(pGameWorld, CGameWorl
 
 bool CWall::HitCharacter()
 {
-	vec2 At;
-	CCharacter *pOwnerChar = GameServer()->GetPlayerChar(m_Owner);
+    vec2 At;
+    CCharacter *pOwnerChar = GameServer()->GetPlayerChar(m_Owner);
 
-	CCharacter *pHit = GameWorld()->IntersectCharacter(m_Pos, m_From, 0.f, At, pOwnerChar);
+    CCharacter *pHit = GameWorld()->IntersectCharacter(m_Pos, m_From, 0.f, At, pOwnerChar);
     if(!pHit)
         return false;
     if(pHit->GetPlayer()->GetTeam() == pPlayer->GetTeam())
         return false;
 
-	pHit->TakeDamage(vec2(0.f, 0.f), normalize(m_Pos-m_From), g_pData->m_Weapons.m_aId[WEAPON_LASER].m_Damage*2, m_Owner, WEAPON_LASER);
+    pHit->TakeDamage(vec2(0.f, 0.f), normalize(m_Pos-m_From), g_pData->m_Weapons.m_aId[WEAPON_LASER].m_Damage*2, m_Owner, WEAPON_LASER);
     TakeDamage(1, pHit->GetPlayer()->GetCID());
-	return true;
+    return true;
 }
 void CWall::EndWallEdit(){
     m_From = pPlayer->GetCharacter()->GetPos();
@@ -99,15 +99,50 @@ void CWall::Die(int Killer, int Weapon) {
     Reset();
 }
 
-void CWall::CheckForBullets() {
-    vec2 At;
-    CProjectile *pAttackBullet = GameWorld()->IntersectBullet(m_Pos, m_From, 100.f, At, 0);
+void CWall::CheckForBulletCollision(){
+    CProjectile *pAttackBullet = (CProjectile *) GameWorld()->FindFirst(GameWorld()->ENTTYPE_PROJECTILE);
     if (pAttackBullet){
-        pAttackBullet->ZeroLifeSpan();
-        if (pAttackBullet->GetOwner() != m_Owner){
+        for (; pAttackBullet; pAttackBullet = (CProjectile *)pAttackBullet->TypeNext()){
+            vec2 At;
+            if (GameWorld()->IntersectBullet(m_Pos, m_From, m_collision_range, At, pAttackBullet)){
+
+                if (GameServer()->m_apPlayers[pAttackBullet->GetOwner()]->GetTeam() != GameServer()->m_apPlayers[m_Owner]->GetTeam()){
+
+                    float Ct = (Server()->Tick()-pAttackBullet->GetStartTick())/(float)Server()->TickSpeed();
+
+                    if (distance(pAttackBullet->GetPos(Ct), m_Pos) <= m_deconstruct_range){
+                        int Dmg;
+                        if (pAttackBullet->GetExposive()){
+                            Dmg = 3;
+                        }else{
+                            Dmg = 1;
+                        }
+                        TakeDamage(Dmg, pAttackBullet->GetOwner(), pAttackBullet->GetWeapon());
+                        GameServer()->CreateDamage(m_Pos, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false);
+                    }
+
+                    if (distance(pAttackBullet->GetPos(Ct), m_From) <= m_deconstruct_range){
+                        int Dmg;
+                        if (pAttackBullet->GetExposive()){
+                            Dmg = 3;
+                        }else{
+                            Dmg = 1;
+                        }
+                        TakeDamage(Dmg, pAttackBullet->GetOwner(), pAttackBullet->GetWeapon());
+                        GameServer()->CreateDamage(m_From, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false);
+                    }
+                    pAttackBullet->Wall_Coll= true;
+                    pAttackBullet->Tick();
+                }
+                if (pAttackBullet==(CProjectile *)pAttackBullet->TypeNext()){
+                    break;
+                }
+            }
         }
     }
+}
 
+void CWall::CheckForBullets() {
     CProjectile *pPosBullet = (CProjectile *) GameWorld()->ClosestEntity(m_Pos, m_deconstruct_range, GameWorld()->ENTTYPE_PROJECTILE, this);
     if (pPosBullet){
         if(pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon()==WEAPON_GUN){
@@ -130,7 +165,7 @@ void CWall::CheckForBullets() {
 void CWall::Reset()
 {
     pPlayer->m_Engineer_ActiveWalls--;
-	GameWorld()->DestroyEntity(this);
+    GameWorld()->DestroyEntity(this);
 }
 
 void CWall::Tick() {
@@ -154,6 +189,7 @@ void CWall::Tick() {
 
                 HitCharacter();
                 CheckForBullets();
+                CheckForBulletCollision();
             }
         } else{
             Reset();
@@ -163,21 +199,21 @@ void CWall::Tick() {
 
 void CWall::TickPaused()
 {
-	++m_EvalTick;
+    ++m_EvalTick;
 }
 
 void CWall::Snap(int SnappingClient)
 {
-	if(NetworkClipped(SnappingClient) && NetworkClipped(SnappingClient, m_From))
-		return;
+    if(NetworkClipped(SnappingClient) && NetworkClipped(SnappingClient, m_From))
+        return;
 
-	CNetObj_Laser *pObj = static_cast<CNetObj_Laser *>(Server()->SnapNewItem(NETOBJTYPE_LASER, GetID(), sizeof(CNetObj_Laser)));
-	if(!pObj)
-		return;
+    CNetObj_Laser *pObj = static_cast<CNetObj_Laser *>(Server()->SnapNewItem(NETOBJTYPE_LASER, GetID(), sizeof(CNetObj_Laser)));
+    if(!pObj)
+        return;
 
-	pObj->m_X = (int)m_Pos.x;
-	pObj->m_Y = (int)m_Pos.y;
-	pObj->m_FromX = (int)m_From.x;
-	pObj->m_FromY = (int)m_From.y;
-	pObj->m_StartTick = m_EvalTick;
+    pObj->m_X = (int)m_Pos.x;
+    pObj->m_Y = (int)m_Pos.y;
+    pObj->m_FromX = (int)m_From.x;
+    pObj->m_FromY = (int)m_From.y;
+    pObj->m_StartTick = m_EvalTick;
 }

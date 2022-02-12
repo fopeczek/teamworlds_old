@@ -6,7 +6,8 @@
 #include <base/vmath.h>
 
 #include "alloc.h"
-#include "gameworld.h"
+//#include "gameworld.h"
+#include "gameworld_fwd.h"
 
 /*
 	Class: Entity
@@ -21,7 +22,7 @@ private:
 	friend class CGameWorld; // for entity list handling
 
 	/* Identity */
-	class CGameWorld *m_pGameWorld;
+	CGameWorld *m_pGameWorld;
 
 	CEntity *m_pPrevTypeEntity;
 	CEntity *m_pNextTypeEntity;
@@ -59,9 +60,9 @@ public:
 
 	/* Objects */
 	class CGameWorld *GameWorld()		{ return m_pGameWorld; }
-	class CConfig *Config()				{ return m_pGameWorld->Config(); }
-	class CGameContext *GameServer()	{ return m_pGameWorld->GameServer(); }
-	class IServer *Server()				{ return m_pGameWorld->Server(); }
+	class CConfig *Config();			//	{ return m_pGameWorld->Config(); }
+	class CGameContext *GameServer();//	{ return m_pGameWorld->GameServer(); }
+	class IServer *Server();//				{ return m_pGameWorld->Server(); }
 
 	/* Getters */
 	CEntity *TypeNext()					{ return m_pNextTypeEntity; }

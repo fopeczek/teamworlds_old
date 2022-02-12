@@ -3,6 +3,7 @@
 
 #include "entity.h"
 #include "gamecontext.h"
+
 #include "player.h"
 
 CEntity::CEntity(CGameWorld *pGameWorld, int ObjType, vec2 Pos, int ProximityRadius)
@@ -54,4 +55,16 @@ bool CEntity::GameLayerClipped(vec2 CheckPos)
 	int ry = round_to_int(CheckPos.y) / 32;
 	return (rx < -200 || rx >= GameServer()->Collision()->GetWidth()+200)
 			|| (ry < -200 || ry >= GameServer()->Collision()->GetHeight()+200);
+}
+
+CConfig *CEntity::Config() {
+    return m_pGameWorld->Config();
+}
+
+class CGameContext *CEntity::GameServer() {
+    return m_pGameWorld->GameServer();
+}
+
+class IServer *CEntity::Server() {
+    return m_pGameWorld->Server();
 }

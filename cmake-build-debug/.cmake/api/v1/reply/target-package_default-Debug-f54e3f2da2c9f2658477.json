@@ -18,7 +18,7 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 2048,
+				"line" : 2047,
 				"parent" : 0
 			}
 		]
@@ -26,17 +26,11 @@
 	"dependencies" : 
 	[
 		{
-			"id" : "package_zip::@6890427a1f51a3e7e1df"
-		},
-		{
-			"id" : "package_tar_gz::@6890427a1f51a3e7e1df"
-		},
-		{
 			"id" : "package_tar_xz::@6890427a1f51a3e7e1df"
 		}
 	],
-	"id" : "package_all::@6890427a1f51a3e7e1df",
-	"name" : "package_all",
+	"id" : "package_default::@6890427a1f51a3e7e1df",
+	"name" : "package_default",
 	"paths" : 
 	{
 		"build" : ".",
@@ -64,13 +58,13 @@
 		{
 			"backtrace" : 1,
 			"isGenerated" : true,
-			"path" : "cmake-build-debug/CMakeFiles/package_all",
+			"path" : "cmake-build-debug/CMakeFiles/package_default",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 0,
 			"isGenerated" : true,
-			"path" : "cmake-build-debug/CMakeFiles/package_all.rule",
+			"path" : "cmake-build-debug/CMakeFiles/package_default.rule",
 			"sourceGroupIndex" : 1
 		}
 	],
