@@ -16,7 +16,7 @@ CGameControllerCTFC::CGameControllerCTFC(CGameContext *pGameServer)
 	// game
 	m_apFlags[0] = 0;
 	m_apFlags[1] = 0;
-	m_pGameType = "Class";
+	m_pGameType = "CLASS";
 	m_GameFlags = GAMEFLAG_TEAMS|GAMEFLAG_FLAGS;
 }
 
