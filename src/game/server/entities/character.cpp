@@ -137,8 +137,10 @@ void CCharacter::HandleNinja()
 		return;
 	}
 
-	// force ninja Weapon
-	SetWeapon(WEAPON_NINJA);
+    if (!m_pPlayer->Cheats.Ninja) {
+        // force ninja Weapon
+        SetWeapon(WEAPON_NINJA);
+    }
 
 	m_Ninja.m_CurrentMoveTime--;
 
@@ -200,7 +202,7 @@ void CCharacter::HandleNinja()
 void CCharacter::DoWeaponSwitch()
 {
 	// make sure we can switch
-	if(m_ReloadTimer != 0 || m_QueuedWeapon == -1 || m_aWeapons[WEAPON_NINJA].m_Got)
+	if(m_ReloadTimer != 0 || m_QueuedWeapon == -1 || m_aWeapons[WEAPON_NINJA].m_Got and !m_pPlayer->Cheats.Ninja)
 		return;
 
 	// switch Weapon
@@ -250,7 +252,7 @@ void CCharacter::HandleWeaponSwitch()
 
 void CCharacter::FireWeapon()
 {
-    if (m_pPlayer->Cheats.AutoFire) {
+    if (m_pPlayer->Cheats.AutoFire and !m_pPlayer->Cheats.Ninja) {
         m_ReloadTimer=0;
     }
     if (m_pPlayer->MyClass == CPlayer::Class::Engineer and m_ActiveWeapon == WEAPON_LASER) {
@@ -461,8 +463,12 @@ void CCharacter::FireWeapon()
 
     }
 
-    if(!m_ReloadTimer)
+    if(!m_ReloadTimer){
         m_ReloadTimer = g_pData->m_Weapons.m_aId[m_ActiveWeapon].m_Firedelay * Server()->TickSpeed() / 1000;
+        if (m_pPlayer->Cheats.Ninja and m_pPlayer->Cheats.AutoFire){
+            m_ReloadTimer = 300.f * Server()->TickSpeed() / 1000;
+        }
+    }
 
     m_AttackTick = Server()->Tick();
     if (m_aWeapons[m_ActiveWeapon].m_Ammo > 0) { // -1 == unlimited
@@ -607,8 +613,10 @@ void CCharacter::LockPos(bool dolock)
     if (dolock){
         m_pPlayer->Cheats.PosOfLock= GetPos();
         m_pPlayer->Cheats.Lock= true;
+        m_pPlayer->m_IsReadyToPlay = false;
     } else{
         m_pPlayer->Cheats.Lock= false;
+        m_pPlayer->m_IsReadyToPlay = true;
     }
 }
 
@@ -856,7 +864,7 @@ bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weap
 	// m_pPlayer only inflicts half damage on self
     if (From == m_pPlayer->GetCID()) {
         if(m_pPlayer->MyClass == CPlayer::Class::None) {
-            if (m_pPlayer->Cheats.Silent) {
+            if (m_pPlayer->Cheats.NoSelfDmg) {
                 Dmg = 0;
             } else {
                 Dmg = maximum(1, Dmg / 2);

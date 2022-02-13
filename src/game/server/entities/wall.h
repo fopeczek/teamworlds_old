@@ -21,7 +21,7 @@ public:
     int m_Owner;
 
     void Die(int Killer, int Weapon=-1);
-    void TakeDamage(int Dmg, int From, int Weapon=-1);
+    bool TakeDamage(int Dmg, int From, int Weapon=-1);
 
 protected:
     bool HitCharacter();

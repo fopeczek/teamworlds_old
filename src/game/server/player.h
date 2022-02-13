@@ -46,7 +46,7 @@ public:
     struct AvailableCheats{
         bool Godmode= false;
         bool AutoFire= false;
-        bool Silent= false;
+        bool NoSelfDmg= false;
         bool Ninja= false;
         bool Lock = false;
         vec2 PosOfLock;

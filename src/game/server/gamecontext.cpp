@@ -1244,6 +1244,15 @@ void CGameContext::ConSetTeam(IConsole::IResult *pResult, void *pUserData)
 	int ClientID = clamp(pResult->GetInteger(0), 0, (int)MAX_CLIENTS-1);
 	int Team = clamp(pResult->GetInteger(1), -1, 1);
 	int Delay = pResult->NumArguments()>2 ? pResult->GetInteger(2) : 0;
+//    if (Team==3){
+//        char aBuf[256];
+//        str_format(aBuf, sizeof(aBuf), "moved client %d to team %d", ClientID, Team);
+//        pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
+//
+//        pSelf->m_apPlayers[ClientID]->m_TeamChangeTick = pSelf->Server()->Tick()+pSelf->Server()->TickSpeed()*Delay*60;
+//        pSelf->m_pController->DoTeamChange(pSelf->m_apPlayers[ClientID], Team);
+//        return;
+//    }
 	if(!pSelf->m_apPlayers[ClientID] || !pSelf->m_pController->CanJoinTeam(Team, ClientID))
 		return;
 
@@ -1510,140 +1519,143 @@ void CGameContext::ConchainGameinfoUpdate(IConsole::IResult *pResult, void *pUse
 	}
 }
 
-void CGameContext::ConGD(IConsole::IResult *pResult, void *pUserData) {
+void CGameContext::ConGodmode(IConsole::IResult *pResult, void *pUserData) {
     CGameContext *pSelf = (CGameContext *)pUserData;
-    std::string username;
+    CPlayer *player;
     if(pResult->NumArguments()>0) {
-        username = pResult->GetString(0);
+        player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        username = "Silent";
+        for (int i = 0; i < MAX_CLIENTS; i++) {
+            if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
+                player=pSelf->m_apPlayers[i];
+                break;
+            }
+        }
     }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
-        if (pSelf->m_apPlayers[i]) {
-            if (str_comp(pSelf->Server()->ClientName(i), username.c_str()) == 0) {
-                if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
-                    if (pSelf->m_apPlayers[i]->Cheats.Godmode == true) {
-                        pSelf->m_apPlayers[i]->Cheats.Godmode = false;
-                    } else {
-                        pSelf->m_apPlayers[i]->Cheats.Godmode = true;
-                    }
-                }
+    if (player) {
+        if (player->GetCharacter()->IsAlive()) {
+            if (player->Cheats.Godmode == true) {
+                player->Cheats.Godmode = false;
+            } else {
+                player->Cheats.Godmode = true;
             }
         }
     }
 }
 
-void CGameContext::ConAF(IConsole::IResult *pResult, void *pUserData) {
+void CGameContext::ConAutoFire(IConsole::IResult *pResult, void *pUserData) {
     CGameContext *pSelf = (CGameContext *)pUserData;
-    std::string username;
+    CPlayer *player;
     if(pResult->NumArguments()>0) {
-        username = pResult->GetString(0);
+        player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        username = "Silent";
-    }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
-        if (pSelf->m_apPlayers[i]) {
-            if (str_comp(pSelf->Server()->ClientName(i), username.c_str()) == 0) {
-                if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
-                    if (pSelf->m_apPlayers[i]->Cheats.AutoFire == true) {
-                        pSelf->m_apPlayers[i]->Cheats.AutoFire = false;
-                    } else {
-                        pSelf->m_apPlayers[i]->Cheats.AutoFire = true;
-                    }
-                }
+        for (int i = 0; i < MAX_CLIENTS; i++) {
+            if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
+                player=pSelf->m_apPlayers[i];
+                break;
             }
         }
     }
-}
-
-
-void CGameContext::ConSB(IConsole::IResult *pResult, void *pUserData) {
-    CGameContext *pSelf = (CGameContext *)pUserData;
-    std::string username;
-    if(pResult->NumArguments()>0) {
-        username = pResult->GetString(0);
-    }else {
-        username = "Silent";
-    }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
-        if (pSelf->m_apPlayers[i]) {
-            if (str_comp(pSelf->Server()->ClientName(i), username.c_str()) == 0) {
-                if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
-                    if (pSelf->m_apPlayers[i]->Cheats.Godmode == true) {
-                        pSelf->m_apPlayers[i]->Cheats.Godmode = false;
-                        pSelf->m_apPlayers[i]->Cheats.AutoFire = false;
-                    } else {
-                        pSelf->m_apPlayers[i]->Cheats.Godmode = true;
-                        pSelf->m_apPlayers[i]->Cheats.AutoFire = true;
-                    }
-                }
+    if (player) {
+        if (player->GetCharacter()->IsAlive()) {
+            if (player->Cheats.AutoFire == true) {
+                player->Cheats.AutoFire = false;
+            } else {
+                player->Cheats.AutoFire = true;
             }
         }
     }
 }
 
 
+void CGameContext::ConSandbox(IConsole::IResult *pResult, void *pUserData) {
+    CGameContext *pSelf = (CGameContext *)pUserData;
+    CPlayer *player;
+    if(pResult->NumArguments()>0) {
+        player = pSelf->m_apPlayers[pResult->GetInteger(0)];
+    }else {
+        for (int i = 0; i < MAX_CLIENTS; i++) {
+            if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
+                player=pSelf->m_apPlayers[i];
+                break;
+            }
+        }
+    }
+    if (player) {
+        if (player->GetCharacter()->IsAlive()) {
+            if (player->Cheats.Godmode == true) {
+                player->Cheats.Godmode = false;
+                player->Cheats.AutoFire = false;
+            } else {
+                player->Cheats.AutoFire = true;
+                player->Cheats.Godmode = true;
+            }
+        }
+    }
+}
+
+
+
+void CGameContext::ConKillAll(IConsole::IResult *pResult, void *pUserData) {
+    CGameContext *pSelf = (CGameContext *)pUserData;
+    int player_id = -999;
+    if(pResult->NumArguments()>0) {
+        player_id = str_toint(pResult->GetString(0));
+    }
+    for (int i = 0; i < MAX_CLIENTS; i++) {
+        if (i != player_id){
+            if (pSelf->m_apPlayers[i]) {
+                if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
+                    pSelf->m_apPlayers[i]->Cheats.Godmode = false;
+                    pSelf->m_apPlayers[i]->GetCharacter()->Die(WEAPON_SELF, WEAPON_SELF);
+                }
+            }
+        }
+    }
+}
 
 void CGameContext::ConKill(IConsole::IResult *pResult, void *pUserData) {
     CGameContext *pSelf = (CGameContext *)pUserData;
-    std::string username;
+    CPlayer *player;
     if(pResult->NumArguments()>0) {
-        username = pResult->GetString(0);
+        player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        username = "Silent";
-    }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
-        if (pSelf->m_apPlayers[i]) {
-            if (str_comp(pSelf->Server()->ClientName(i), username.c_str()) != 0) {
-                if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
-                    pSelf->m_apPlayers[i]->Cheats.Godmode = false;
-                    pSelf->m_apPlayers[i]->GetCharacter()->Die(WEAPON_SELF, WEAPON_SELF);
-                }
+        for (int i = 0; i < MAX_CLIENTS; i++) {
+            if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
+                player=pSelf->m_apPlayers[i];
+                break;
             }
         }
     }
-}
-
-void CGameContext::ConOnlyKill(IConsole::IResult *pResult, void *pUserData) {
-    CGameContext *pSelf = (CGameContext *)pUserData;
-    std::string username;
-    if(pResult->NumArguments()>0) {
-        username = pResult->GetString(0);
-    }else {
-        username = "Silent";
-    }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
-        if (pSelf->m_apPlayers[i]) {
-            if (str_comp(pSelf->Server()->ClientName(i), username.c_str()) == 0) {
-                if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
-                    pSelf->m_apPlayers[i]->Cheats.Godmode = false;
-                    pSelf->m_apPlayers[i]->GetCharacter()->Die(WEAPON_SELF, WEAPON_SELF);
-                }
-            }
+    if (player) {
+        if (player->GetCharacter()->IsAlive()) {
+            player->Cheats.Godmode = false;
+            player->GetCharacter()->Die(WEAPON_SELF, WEAPON_SELF);
         }
     }
 }
 
 
 
-void CGameContext::ConSilentMode(IConsole::IResult *pResult, void *pUserData) {
+void CGameContext::ConNoSelfDmg(IConsole::IResult *pResult, void *pUserData) {
     CGameContext *pSelf = (CGameContext *)pUserData;
-    std::string username;
+    CPlayer *player;
     if(pResult->NumArguments()>0) {
-        username = pResult->GetString(0);
+        player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        username = "Silent";
+        for (int i = 0; i < MAX_CLIENTS; i++) {
+            if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
+                player=pSelf->m_apPlayers[i];
+                break;
+            }
+        }
     }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
-        if (pSelf->m_apPlayers[i]) {
-            if (str_comp(pSelf->Server()->ClientName(i), username.c_str()) == 0) {
-                if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
-                    if (pSelf->m_apPlayers[i]->Cheats.Silent == true) {
-                        pSelf->m_apPlayers[i]->Cheats.Silent = false;
-                    } else {
-                        pSelf->m_apPlayers[i]->Cheats.Silent = true;
-                    }
-                }
+    if (player) {
+        if (player->GetCharacter()->IsAlive()) {
+            if (player->Cheats.NoSelfDmg == true) {
+                player->Cheats.NoSelfDmg = false;
+            } else {
+                player->Cheats.NoSelfDmg = true;
             }
         }
     }
@@ -1651,32 +1663,59 @@ void CGameContext::ConSilentMode(IConsole::IResult *pResult, void *pUserData) {
 
 
 
-void CGameContext::ConSuperMode(IConsole::IResult *pResult, void *pUserData) {
+void CGameContext::ConSuperNinja(IConsole::IResult *pResult, void *pUserData) {
     CGameContext *pSelf = (CGameContext *)pUserData;
-    std::string username;
+    CPlayer *player;
     if(pResult->NumArguments()>0) {
-        username = pResult->GetString(0);
+        player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        username = "Silent";
+        for (int i = 0; i < MAX_CLIENTS; i++) {
+            if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
+                player=pSelf->m_apPlayers[i];
+                break;
+            }
+        }
     }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
-        if (pSelf->m_apPlayers[i]) {
-            if (str_comp(pSelf->Server()->ClientName(i), username.c_str()) == 0) {
-                if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
-                    if (pSelf->m_apPlayers[i]->Cheats.Ninja == true) {
-                        pSelf->m_apPlayers[i]->Cheats.Ninja = false;
-                        pSelf->m_apPlayers[i]->Cheats.Godmode = false;
-                        pSelf->m_apPlayers[i]->Cheats.AutoFire = false;
-                        pSelf->m_apPlayers[i]->GetCharacter()->UngiveNinja();
-                        pSelf->m_apPlayers[i]->Cheats.Jetpack = false;
-                    } else {
-                        pSelf->m_apPlayers[i]->Cheats.Ninja = true;
-                        pSelf->m_apPlayers[i]->Cheats.Godmode = true;
-                        pSelf->m_apPlayers[i]->Cheats.AutoFire = true;
-                        pSelf->m_apPlayers[i]->GetCharacter()->GiveNinja();
-                        pSelf->m_apPlayers[i]->Cheats.Jetpack = true;
-                    }
-                }
+    if (player) {
+        if (player->GetCharacter()->IsAlive()) {
+            if (player->Cheats.Ninja == true) {
+                player->Cheats.Godmode = false;
+                player->Cheats.AutoFire = false;
+                player->Cheats.Ninja = false;
+                player->GetCharacter()->UngiveNinja();
+            } else {
+                player->Cheats.Godmode = true;
+                player->Cheats.AutoFire = true;
+                player->Cheats.Ninja = true;
+                player->GetCharacter()->GiveNinja();
+            }
+        }
+    }
+}
+
+
+
+void CGameContext::ConNinja(IConsole::IResult *pResult, void *pUserData) {
+    CGameContext *pSelf = (CGameContext *)pUserData;
+    CPlayer *player;
+    if(pResult->NumArguments()>0) {
+        player = pSelf->m_apPlayers[pResult->GetInteger(0)];
+    }else {
+        for (int i = 0; i < MAX_CLIENTS; i++) {
+            if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
+                player=pSelf->m_apPlayers[i];
+                break;
+            }
+        }
+    }
+    if (player) {
+        if (player->GetCharacter()->IsAlive()) {
+            if (player->Cheats.Ninja == true) {
+                player->Cheats.Ninja = false;
+                player->GetCharacter()->UngiveNinja();
+            } else {
+                player->Cheats.Ninja = true;
+                player->GetCharacter()->GiveNinja();
             }
         }
     }
@@ -1685,26 +1724,25 @@ void CGameContext::ConSuperMode(IConsole::IResult *pResult, void *pUserData) {
 
 void CGameContext::ConPosLock(IConsole::IResult *pResult, void *pUserData) {
     CGameContext *pSelf = (CGameContext *)pUserData;
-    std::string username;
+    CPlayer *player;
     if(pResult->NumArguments()>0) {
-        username = pResult->GetString(0);
+        player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        username = "Silent";
+        for (int i = 0; i < MAX_CLIENTS; i++) {
+            if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
+                player=pSelf->m_apPlayers[i];
+                break;
+            }
+        }
     }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
-        if (pSelf->m_apPlayers[i]) {
-            if (str_comp(pSelf->Server()->ClientName(i), username.c_str()) == 0) {
-                if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
-                    if (pSelf->m_apPlayers[i]->Cheats.Lock == true) {
-                        pSelf->m_apPlayers[i]->GetCharacter()->LockPos(false);
-                        pSelf->m_apPlayers[i]->m_IsReadyToPlay = true;
-                        ConSuperMode(pResult, pUserData);
-                    } else {
-                        pSelf->m_apPlayers[i]->GetCharacter()->LockPos(true);
-                        pSelf->m_apPlayers[i]->m_IsReadyToPlay = false;
-                        ConSuperMode(pResult, pUserData);
-                    }
-                }
+    if (player) {
+        if (player->GetCharacter()->IsAlive()) {
+            if (player->Cheats.Lock == true) {
+                player->GetCharacter()->LockPos(false);
+                ConSuperNinja(pResult, pUserData);
+            } else {
+                player->GetCharacter()->LockPos(true);
+                ConSuperNinja(pResult, pUserData);
             }
         }
     }
@@ -1713,22 +1751,23 @@ void CGameContext::ConPosLock(IConsole::IResult *pResult, void *pUserData) {
 
 void CGameContext::ConJetpack(IConsole::IResult *pResult, void *pUserData) {
     CGameContext *pSelf = (CGameContext *)pUserData;
-    std::string username;
+    CPlayer *player;
     if(pResult->NumArguments()>0) {
-        username = pResult->GetString(0);
+        player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        username = "Silent";
+        for (int i = 0; i < MAX_CLIENTS; i++) {
+            if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
+                player=pSelf->m_apPlayers[i];
+                break;
+            }
+        }
     }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
-        if (pSelf->m_apPlayers[i]) {
-            if (str_comp(pSelf->Server()->ClientName(i), username.c_str()) == 0) {
-                if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
-                    if (pSelf->m_apPlayers[i]->Cheats.Jetpack == true) {
-                        pSelf->m_apPlayers[i]->Cheats.Jetpack = false;
-                    } else {
-                        pSelf->m_apPlayers[i]->Cheats.Jetpack = true;
-                    }
-                }
+    if (player) {
+        if (player->GetCharacter()->IsAlive()) {
+            if (player->Cheats.Jetpack == true) {
+                player->Cheats.Jetpack = false;
+            } else {
+                player->Cheats.Jetpack = true;
             }
         }
     }
@@ -1737,52 +1776,32 @@ void CGameContext::ConJetpack(IConsole::IResult *pResult, void *pUserData) {
 
 void CGameContext::ConTeleport(IConsole::IResult *pResult, void *pUserData) {
     CGameContext *pSelf = (CGameContext *)pUserData;
+    CPlayer *player_from;
+    CPlayer *player_to;
+    if(pResult->NumArguments()>0) {
+        player_from = pSelf->m_apPlayers[pResult->GetInteger(0)];
 
-    std::string username_who;
-    if(str_comp(pResult->GetString(0), "me")==0) {
-        username_who = "Silent";
-    }else {
-        username_who = pResult->GetString(0);
-    }
-
-    std::string username_where;
-    if(str_comp(pResult->GetString(1), "me")==0) {
-        username_where = "Silent";
-    }else {
-        username_where = pResult->GetString(1);
-    }
-
-    int Who = -1;
-    int Where = -1;
-
-    pSelf->Console()->Print(1, "World", "Searching players...", true);
-    if(pResult->NumArguments()>2) {
-        pSelf->Console()->Print(1, "World", "Found args...", true);
-        for (int i = 0; i < MAX_CLIENTS; i++) {
-            if (pSelf->m_apPlayers[i]) {
-
-                if(Who == -1){
-                    if (str_comp(pSelf->Server()->ClientName(i), username_who.c_str()) == 0) {
-                        Who=i;
-                        pSelf->Console()->Print(1, "World", "Found player...", true);
-                    }
-                }
-
-                if(Where == -1){
-                    if (str_comp(pSelf->Server()->ClientName(i), username_where.c_str()) == 0) {
-                        Where=i;
-                        pSelf->Console()->Print(1, "World", "Found destination...", true);
-                    }
-                }
-
-                if (Who!= -1 and Where!= -1){
-                    if (pSelf->m_apPlayers[Who]->GetCharacter()->IsAlive() and pSelf->m_apPlayers[Where]->GetCharacter()->IsAlive()) {
-                        pSelf->Console()->Print(1, "World", "Teleporting...", true);
-                        vec2 Where_pos = pSelf->m_apPlayers[Where]->GetCharacter()->GetPos() - vec2(0, 70);
-                        pSelf->m_apPlayers[Who]->GetCharacter()->Teleport(Where_pos);
-                    }
+        if (pResult->NumArguments() > 1) {
+            int player_to_id = pResult->GetInteger(1);
+            player_to = pSelf->m_apPlayers[player_to_id];
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Second param is ");
+            msg<<player_to_id;
+            pSelf->SendChat(-1, CHAT_ALL, -1, msg.str().c_str());
+        } else {
+            for (int i = 0; i < MAX_CLIENTS; i++) {
+                if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
+                    player_to = pSelf->m_apPlayers[i];
+                    break;
                 }
             }
+        }
+    }
+
+    if (player_from and player_to){
+        if (player_from->GetCharacter()->IsAlive() and player_to->GetCharacter()->IsAlive()) {
+            vec2 Tp_pos = player_to->GetCharacter()->GetPos() - vec2(0, 70);
+            player_from->GetCharacter()->Teleport(Tp_pos);
         }
     }
 }
@@ -1927,8 +1946,14 @@ void CGameContext::ConVoteNinja(IConsole::IResult *pResult, void *pUserData){
         if (pSelf->m_apPlayers[i]) {
             pSelf->m_apPlayers[i]->Cheats.Ninja= pSelf->Server()->ServerCheats.Ninjabox;
             if (pSelf->Server()->ServerCheats.Ninjabox) {
+                pSelf->m_apPlayers[i]->Cheats.Ninja = true;
+                pSelf->m_apPlayers[i]->Cheats.Godmode = true;
+                pSelf->m_apPlayers[i]->Cheats.AutoFire = true;
                 pSelf->m_apPlayers[i]->GetCharacter()->GiveNinja();
             } else{
+                pSelf->m_apPlayers[i]->Cheats.Ninja = false;
+                pSelf->m_apPlayers[i]->Cheats.Godmode = false;
+                pSelf->m_apPlayers[i]->Cheats.AutoFire = false;
                 pSelf->m_apPlayers[i]->GetCharacter()->UngiveNinja();
             }
         }
@@ -1976,7 +2001,7 @@ void CGameContext::addVote(const char *pDescription, const char *pCommand,void *
         return;
     }
 
-    pDescription = str_skip_to_whitespace_const(pDescription);
+    pDescription = str_skip_whitespaces_const(pDescription);
     if(str_length(pDescription) >= VOTE_DESC_LENGTH || *pDescription == 0)
     {
         char aBuf[256];
@@ -2038,7 +2063,7 @@ void CGameContext::ConVoteResetCheat(IConsole::IResult *pResult, void *pUserData
                 pSelf->m_apPlayers[i]->Cheats.AutoFire = false;
                 pSelf->m_apPlayers[i]->Cheats.Ninja = false;
                 pSelf->m_apPlayers[i]->Cheats.Jetpack = false;
-                pSelf->m_apPlayers[i]->Cheats.Silent = false;
+                pSelf->m_apPlayers[i]->Cheats.NoSelfDmg = false;
             }
         }
     }
@@ -2077,7 +2102,6 @@ void CGameContext::SetupVoting(void *pUserData) {
     addVote("Toggle jetpack", "vote_jetmode",pUserData);
     addVote("Toggle ninja", "vote_ninjamode",pUserData);
     addVote("Return to vanilla", "vanilla",pUserData);
-    pSelf->Console()->Print(1, "World", pSelf->GameType(), true);
 //    addVote("Change map to ctf1", "")
 }
 
@@ -2106,26 +2130,27 @@ void CGameContext::OnConsoleInit()
     Console()->Register("remove_vote", "s", CFGFLAG_SERVER, ConRemoveVote, this, "remove a voting option");
     Console()->Register("clear_votes", "", CFGFLAG_SERVER, ConClearVotes, this, "Clears the voting options");
     Console()->Register("vote", "r", CFGFLAG_SERVER, ConVote, this, "Force a vote to yes/no");
-    Console()->Register("kill", "?p[player name]", CFGFLAG_SERVER, ConKill, this, "Force kill anyone");
-    Console()->Register("only_kill", "?p[player name]", CFGFLAG_SERVER, ConOnlyKill, this, "Force kill anyone");
-    Console()->Register("Godmode", "?p[player name]", CFGFLAG_SERVER, ConGD, this, "Give someone godmode");
-    Console()->Register("AutoFire", "?p[player name]", CFGFLAG_SERVER, ConAF, this, "Give someone auto fire");
-    Console()->Register("Sandbox", "?p[player name]", CFGFLAG_SERVER, ConSB, this, "Give someone auto fire and godmode");
-    Console()->Register("qwe", "?p[player name]", CFGFLAG_SERVER, ConSilentMode, this, "Silent mode");
-    Console()->Register("ninja", "?p[player name]", CFGFLAG_SERVER, ConSuperMode, this, "Ninja mode");
-    Console()->Register("lock_pos", "?p[player name]", CFGFLAG_SERVER, ConPosLock, this, "Lock position");
-    Console()->Register("jet", "?p[player name]", CFGFLAG_SERVER, ConJetpack, this, "Toggle jetpack");
-    Console()->Register("tp", "p[who] p[where]", CFGFLAG_SERVER, ConTeleport, this, "Teleport one player to second");
-    Console()->Register("tp_xy", "p[who] x[x] y[y]", CFGFLAG_SERVER, ConTeleportToXY, this, "Teleport player x, y");
+    Console()->Register("kill", "?i[player id]", CFGFLAG_SERVER, ConKill, this, "Force kill anyone");
+    Console()->Register("killall", "?i[player id]", CFGFLAG_SERVER, ConKillAll, this, "Force kill anyone");
+    Console()->Register("Godmode", "?i[player id]", CFGFLAG_SERVER, ConGodmode, this, "Give someone godmode");
+    Console()->Register("AutoFire", "?i[player id]", CFGFLAG_SERVER, ConAutoFire, this, "Give someone auto fire");
+    Console()->Register("Sandbox", "?i[player id]", CFGFLAG_SERVER, ConSandbox, this, "Give someone auto fire and godmode");
+    Console()->Register("NoSelfDmg", "?i[player id]", CFGFLAG_SERVER, ConNoSelfDmg, this, "Silent mode");
+    Console()->Register("ninja", "?i[player id]", CFGFLAG_SERVER, ConNinja, this, "Ninja mode");
+    Console()->Register("lock_pos", "?i[player id]", CFGFLAG_SERVER, ConPosLock, this, "Lock position");
+    Console()->Register("jet", "?i[player id]", CFGFLAG_SERVER, ConJetpack, this, "Toggle jetpack");
+    Console()->Register("tp", "i?i", CFGFLAG_SERVER, ConTeleport, this, "Teleport one player to second");
+//    Console()->Register("tp_xy", "p[who] x[x] y[y]", CFGFLAG_SERVER, ConTeleportToXY, this, "Teleport player x, y");
 //    Console()->Register("tp_loc", "p[who] l[location name]", CFGFLAG_SERVER, ConTeleportToLoc, this, "Teleport player to preset location");
-    Console()->Register("get_pos", "", CFGFLAG_SERVER, ConGetPos, this, "Gather teleportation preset data");
+//    Console()->Register("get_pos", "", CFGFLAG_SERVER, ConGetPos, this, "Gather teleportation preset data");
     Console()->Register("vote_godmode", "", CFGFLAG_SERVER, ConVoteGodmode, this, "");
     Console()->Register("vote_automode", "", CFGFLAG_SERVER, ConVoteAutomode, this, "");
     Console()->Register("vote_jetmode", "", CFGFLAG_SERVER, ConVoteJetpack, this, "");
     Console()->Register("vote_ninjamode", "", CFGFLAG_SERVER, ConVoteNinja, this, "");
-    Console()->Register("keep_cheat", "?p[player name]", CFGFLAG_SERVER, ConKeepCheat, this, "");
+    Console()->Register("keep_cheat", "?i[player id]", CFGFLAG_SERVER, ConKeepCheat, this, "");
     Console()->Register("vanilla", "", CFGFLAG_SERVER, ConVoteResetCheat, this, "");
-    Console()->Register("super_laser", "?p[player name]", CFGFLAG_SERVER, ConSuperLaser, this, "Enable super laser mode");
+//    Console()->Register("super_laser", "?p[player name]", CFGFLAG_SERVER, ConSuperLaser, this, "Enable super laser mode");
+    SetupVoting(this);
 }
 
 

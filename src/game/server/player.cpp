@@ -471,14 +471,59 @@ void CPlayer::TryRespawn()
 	m_pCharacter = new(m_ClientID) CCharacter(&GameServer()->m_World);
 	m_pCharacter->Spawn(this, SpawnPos);
 	GameServer()->CreatePlayerSpawn(SpawnPos);
+
+    CNetMsg_Sv_Chat chatMsg;
+    chatMsg.m_Mode = CHAT_WHISPER;
+    chatMsg.m_ClientID = m_ClientID;
+    chatMsg.m_TargetID = m_ClientID;
     if (m_Team==TEAM_BLUE){
         MyClass=Class::Engineer;
         m_pCharacter->GiveWeapon(WEAPON_LASER, 10);//10 is max ammo for grenade launcher
         m_pCharacter->SetWeapon(WEAPON_LASER);
+
+        chatMsg.m_pMessage = "Hi you are in blue engineers team. Every engineer starts with laser gun. ";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
+
+        chatMsg.m_pMessage = "Engineers laser gun can create walls, by shooting it first time to set first end of the wall, and then ...";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
+
+        chatMsg.m_pMessage = "... shooting second time anywhere to set the second point from your position. Each wall has 5 hp. ";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
+
+        chatMsg.m_pMessage = "You as an engineer deal 2x damage to yourself (so be careful when rocket boosting). ";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
+
+        chatMsg.m_pMessage = "The other team is the team of commandos, which grenade launchers can deal 2x damage to you, and don't deal any damage to themself. ";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
+
+        chatMsg.m_pMessage = "IMPORTANT: Commandos can destroy your walls by shooting any of two ends of it (so place your wall ends in hard to shoot points). Please enjoy my class mod (made by Silent). ";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
+
+        chatMsg.m_pMessage = "Please enjoy my class mod (made by Silent). ";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
+
     } else if (m_Team == TEAM_RED){
         MyClass=Class::Commando;
         m_pCharacter->IncreaseArmor(10);
         m_pCharacter->GiveWeapon(WEAPON_GRENADE, 10);//10 is max ammo for grenade launcher
         m_pCharacter->SetWeapon(WEAPON_GRENADE);
+
+        chatMsg.m_pMessage = "Hi you are in red commandos team. Every commando starts with full armor and grenade launcher. ";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
+
+        chatMsg.m_pMessage = "Commando grenade launcher explosions deal 2x damage to enemy team, and 0 damage to themself (for rocket boosting). ";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
+
+        chatMsg.m_pMessage = "The other team is team of engineers, which deal 2x to themself, but can make walls. ";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
+
+        chatMsg.m_pMessage = "IMPORTANT: To destroy a wall shoot any of two ends of it ... ";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
+
+        chatMsg.m_pMessage = "... (you can use any weapon, but using grenade launcher you will deal more damage), each wall has 5 hp. ";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
+
+        chatMsg.m_pMessage = "Please enjoy my class mod (made by Silent). ";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
     }
 }

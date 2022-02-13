@@ -54,14 +54,16 @@ void CWall::StartWallEdit(vec2 Dir){
     }
 }
 
-void CWall::TakeDamage(int Dmg, int From, int Weapon) {
+bool CWall::TakeDamage(int Dmg, int From, int Weapon) {
     if (Dmg>0){
         m_Health-=Dmg;
     }
 
     if (m_Health <= 0) {
         Die(From, Weapon);
+        return true;
     }
+    return false;
 }
 
 void CWall::Die(int Killer, int Weapon) {
@@ -86,7 +88,9 @@ void CWall::Die(int Killer, int Weapon) {
         chatMsg.m_TargetID = m_Owner;
         chatMsg.m_pMessage = "Wall was destroyed by zombie";
         Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_Owner);
-    }else{
+    } else if (Killer == -2) {
+        
+    } else {
         CNetMsg_Sv_Chat chatMsg;
         chatMsg.m_Mode = CHAT_WHISPER;
         chatMsg.m_ClientID = m_Owner;
@@ -117,7 +121,11 @@ void CWall::CheckForBulletCollision(){
                         }else{
                             Dmg = 1;
                         }
-                        TakeDamage(Dmg, pAttackBullet->GetOwner(), pAttackBullet->GetWeapon());
+                        if (TakeDamage(Dmg, pAttackBullet->GetOwner(), pAttackBullet->GetWeapon())){
+                            pAttackBullet->Wall_Coll= true;
+                            pAttackBullet->Tick();
+                            return;
+                        }
                         GameServer()->CreateDamage(m_Pos, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false);
                     }
 
@@ -128,7 +136,11 @@ void CWall::CheckForBulletCollision(){
                         }else{
                             Dmg = 1;
                         }
-                        TakeDamage(Dmg, pAttackBullet->GetOwner(), pAttackBullet->GetWeapon());
+                        if (TakeDamage(Dmg, pAttackBullet->GetOwner(), pAttackBullet->GetWeapon())){
+                            pAttackBullet->Wall_Coll= true;
+                            pAttackBullet->Tick();
+                            return;
+                        }
                         GameServer()->CreateDamage(m_From, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false);
                     }
                     pAttackBullet->Wall_Coll= true;
@@ -192,7 +204,7 @@ void CWall::Tick() {
                 CheckForBulletCollision();
             }
         } else{
-            Reset();
+            Die(-2);
         }
     }
 }
