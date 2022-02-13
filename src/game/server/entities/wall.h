@@ -5,6 +5,7 @@
 #include <game/server/entity.h>
 #include <game/server/player.h>
 #include <game/server/gamecontext.h>
+#include "pickup.h"
 
 class CWall : public CEntity
 {
@@ -12,7 +13,7 @@ public:
 	CWall(CGameWorld *pGameWorld, int Owner);
 
 	virtual void Reset();
-	virtual void Tick();
+    virtual void Tick();
 	virtual void TickPaused();
 	virtual void Snap(int SnappingClient);
     void StartWallEdit(vec2 Dir);
@@ -27,9 +28,11 @@ protected:
     bool HitCharacter();
     void CheckForBullets();
     void CheckForBulletCollision();
+    void UpdateHealthInterface();
 private:
     const float m_deconstruct_range = 50.f;
     const float m_collision_range = 30.f;
+    const int m_wall_score = 2;
 
     CPlayer *pPlayer;
 	vec2 m_From;
@@ -38,4 +41,5 @@ private:
     bool m_Done;
     float m_Delay_fac;
     float m_Health;
+    CPickup *m_Health_Interface[CPlayer::m_Engineer_MaxWallHp];
 };

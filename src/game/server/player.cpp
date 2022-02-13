@@ -493,7 +493,7 @@ void CPlayer::TryRespawn()
         chatMsg.m_pMessage = "You as an engineer deal 2x damage to yourself (so be careful when rocket boosting). ";
         Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
 
-        chatMsg.m_pMessage = "The other team is the team of commandos, which grenade launchers can deal 2x damage to you, and don't deal any damage to themself. ";
+        chatMsg.m_pMessage = "The other team is the team of commandos, which grenade launchers can deal 2x damage to you, and don't deal any damage to themselves. ";
         Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
 
         chatMsg.m_pMessage = "IMPORTANT: Commandos can destroy your walls by shooting any of two ends of it (so place your wall ends in hard to shoot points). Please enjoy my class mod (made by Silent). ";

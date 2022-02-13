@@ -872,7 +872,7 @@ bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weap
         }else if (m_pPlayer->MyClass == CPlayer::Class::Engineer){
             Dmg *= 2;
         }else if (m_pPlayer->MyClass == CPlayer::Class::Commando){
-            Dmg = 0;
+            return false;
         }
     }
 

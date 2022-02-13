@@ -239,7 +239,6 @@ bool CGameWorld::IntersectBullet(vec2 Pos0, vec2 Pos1, float Radius, vec2& NewPo
 {
     // Find other players
     float ClosestLen = distance(Pos0, Pos1) * 100.0f;
-    CProjectile *pClosest = 0;
 
     float Ct = (Server()->Tick()-Bullet->GetStartTick())/(float)Server()->TickSpeed();
     vec2 Trg_pos =Bullet->GetPos(Ct);

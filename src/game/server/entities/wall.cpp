@@ -6,6 +6,7 @@
 #include "character.h"
 #include "wall.h"
 #include "projectile.h"
+#include "pickup.h"
 
 CWall::CWall(CGameWorld *pGameWorld, int Owner) :  CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER, vec2(0, 0))
 {
@@ -16,6 +17,9 @@ CWall::CWall(CGameWorld *pGameWorld, int Owner) :  CEntity(pGameWorld, CGameWorl
     m_Done= false;
     m_Delay_fac = 1000.0f;
     m_Health=0;
+    for (int i = 0; i<=pPlayer->m_Engineer_MaxWallHp; i++){
+        m_Health_Interface[i] = nullptr;
+    }
     m_Pos=vec2 (0,0);
 }
 
@@ -38,7 +42,16 @@ bool CWall::HitCharacter()
 void CWall::EndWallEdit(){
     m_From = pPlayer->GetCharacter()->GetPos();
     m_Delay_fac = 10000.0f;
+
+    GameServer()->Collision()->IntersectLine(m_Pos, m_From, 0x0, &m_From);
+    
     m_Health=pPlayer->m_Engineer_MaxWallHp;
+
+    vec2 Middle = vec2((m_Pos.x+m_From.x)/2, (m_Pos.y+m_From.y)/2);
+    for (int i = 0; i<=pPlayer->m_Engineer_MaxWallHp; i++){
+        m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH, Middle, false);
+    }
+
     m_Done= true;
 }
 
@@ -89,7 +102,7 @@ void CWall::Die(int Killer, int Weapon) {
         chatMsg.m_pMessage = "Wall was destroyed by zombie";
         Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_Owner);
     } else if (Killer == -2) {
-        
+
     } else {
         CNetMsg_Sv_Chat chatMsg;
         chatMsg.m_Mode = CHAT_WHISPER;
@@ -99,6 +112,7 @@ void CWall::Die(int Killer, int Weapon) {
         str_format(WallMsg, sizeof(WallMsg), "Wall was destroyed by %s", Server()->ClientName(Killer));
         chatMsg.m_pMessage = WallMsg;
         Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_Owner);
+        GameServer()->m_apPlayers[Killer]->m_Score+=m_wall_score;
     }
     Reset();
 }
@@ -174,8 +188,14 @@ void CWall::CheckForBullets() {
     }
 }
 
+void CWall::UpdateHealthInterface(){
+}
+
 void CWall::Reset()
 {
+    for (int i = 0; i<=pPlayer->m_Engineer_MaxWallHp; i++){
+        m_Health_Interface[i]->Destroy();
+    }
     pPlayer->m_Engineer_ActiveWalls--;
     GameWorld()->DestroyEntity(this);
 }
@@ -202,6 +222,7 @@ void CWall::Tick() {
                 HitCharacter();
                 CheckForBullets();
                 CheckForBulletCollision();
+                UpdateHealthInterface();
             }
         } else{
             Die(-2);

@@ -69,8 +69,8 @@ public:
 
     bool m_Engineer_Wall_Editing= false;
     int m_Engineer_ActiveWalls= 0;
-    int m_Engineer_MaxActiveWalls= 5;
-    int m_Engineer_MaxWallHp= 5;
+    static constexpr int m_Engineer_MaxActiveWalls= 5;
+    static constexpr int m_Engineer_MaxWallHp= 5;
 
     Class MyClass=Class::None;
 
