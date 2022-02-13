@@ -39,12 +39,13 @@ bool CWall::HitCharacter()
     TakeDamage(1, pHit->GetPlayer()->GetCID());
     return true;
 }
+
 void CWall::EndWallEdit(){
     m_From = pPlayer->GetCharacter()->GetPos();
     m_Delay_fac = 10000.0f;
 
     GameServer()->Collision()->IntersectLine(m_Pos, m_From, 0x0, &m_From);
-    
+
     m_Health=pPlayer->m_Engineer_MaxWallHp;
 
     vec2 Middle = vec2((m_Pos.x+m_From.x)/2, (m_Pos.y+m_From.y)/2);
@@ -189,6 +190,7 @@ void CWall::CheckForBullets() {
 }
 
 void CWall::UpdateHealthInterface(){
+
 }
 
 void CWall::Reset()
