@@ -52,6 +52,8 @@ out
 tags
 
 # CMake
+/cmake-build-debug
+/cmake
 data
 generated
 
