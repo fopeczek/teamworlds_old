@@ -1806,45 +1806,45 @@ void CGameContext::ConTeleport(IConsole::IResult *pResult, void *pUserData) {
     }
 }
 
-void CGameContext::ConTeleportToXY(IConsole::IResult *pResult, void *pUserData) {
-    CGameContext *pSelf = (CGameContext *)pUserData;
+//void CGameContext::ConTeleportToXY(IConsole::IResult *pResult, void *pUserData) {
+//    CGameContext *pSelf = (CGameContext *)pUserData;
+//
+//    std::string username_who;
+//    if(str_comp(pResult->GetString(0), "me")==0) {
+//        username_who = "Silent";
+//    }else {
+//        username_who = pResult->GetString(0);
+//    }
+//
+//    int Who = -1;
+//    vec2 Where_pos = vec2 (0,0);
+//
+//
+//    if(pResult->NumArguments()>0) {
+//        pSelf->Console()->Print(1, "World", "Found args...", true);
+//        float x = pResult->GetFloat(1);
+//        float y = pResult->GetFloat(2);
+//        Where_pos+=vec2 (x,y);
+//        for (int i = 0; i < MAX_CLIENTS; i++) {
+//            if (pSelf->m_apPlayers[i]) {
+//                if(Who == -1){
+//                    if (str_comp(pSelf->Server()->ClientName(i), username_who.c_str()) == 0) {
+//                        Who=i;
+//                        pSelf->Console()->Print(1, "World", "Found player...", true);
+//                    }
+//                }
+//                if (Who!= -1){
+//                    if (pSelf->m_apPlayers[Who]->GetCharacter()->IsAlive()) {
+//                        pSelf->Console()->Print(1, "World", "Teleporting...", true);
+//                        pSelf->m_apPlayers[Who]->GetCharacter()->Teleport(Where_pos);
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
 
-    std::string username_who;
-    if(str_comp(pResult->GetString(0), "me")==0) {
-        username_who = "Silent";
-    }else {
-        username_who = pResult->GetString(0);
-    }
-
-    int Who = -1;
-    vec2 Where_pos = vec2 (0,0);
-
-
-    if(pResult->NumArguments()>0) {
-        pSelf->Console()->Print(1, "World", "Found args...", true);
-        float x = pResult->GetFloat(1);
-        float y = pResult->GetFloat(2);
-        Where_pos+=vec2 (x,y);
-        for (int i = 0; i < MAX_CLIENTS; i++) {
-            if (pSelf->m_apPlayers[i]) {
-                if(Who == -1){
-                    if (str_comp(pSelf->Server()->ClientName(i), username_who.c_str()) == 0) {
-                        Who=i;
-                        pSelf->Console()->Print(1, "World", "Found player...", true);
-                    }
-                }
-                if (Who!= -1){
-                    if (pSelf->m_apPlayers[Who]->GetCharacter()->IsAlive()) {
-                        pSelf->Console()->Print(1, "World", "Teleporting...", true);
-                        pSelf->m_apPlayers[Who]->GetCharacter()->Teleport(Where_pos);
-                    }
-                }
-            }
-        }
-    }
-}
-
-void CGameContext::ConTeleportToLoc(IConsole::IResult *pResult, void *pUserData) {
+//void CGameContext::ConTeleportToLoc(IConsole::IResult *pResult, void *pUserData) {
 //    CGameContext *pSelf = (CGameContext *)pUserData;
 //    int Who = -1;
 //    pSelf->Console()->Print(1, "World", "Searching players...", true);
@@ -1882,16 +1882,16 @@ void CGameContext::ConTeleportToLoc(IConsole::IResult *pResult, void *pUserData)
 //            }
 //        }
 //    }
-}
+//}
 
-void CGameContext::ConGetPos(IConsole::IResult *pResult, void *pUserData){
-    CGameContext *pSelf = (CGameContext *)pUserData;
-    vec2 act_pos = vec2 (pSelf->m_apPlayers[0]->GetCharacter()->GetPos().x, pSelf->m_apPlayers[0]->GetCharacter()->GetPos().y);
-    std::ostringstream msg (std::ostringstream::ate);
-    msg.str("My pos is ");
-    msg<<act_pos.x<<", "<<act_pos.y;
-    pSelf->SendChat(-1, CHAT_NONE, -1, msg.str().c_str());
-}
+//void CGameContext::ConGetPos(IConsole::IResult *pResult, void *pUserData){
+//    CGameContext *pSelf = (CGameContext *)pUserData;
+//    vec2 act_pos = vec2 (pSelf->m_apPlayers[0]->GetCharacter()->GetPos().x, pSelf->m_apPlayers[0]->GetCharacter()->GetPos().y);
+//    std::ostringstream msg (std::ostringstream::ate);
+//    msg.str("My pos is ");
+//    msg<<act_pos.x<<", "<<act_pos.y;
+//    pSelf->SendChat(-1, CHAT_NONE, -1, msg.str().c_str());
+//}
 
 void CGameContext::ConVoteGodmode(IConsole::IResult *pResult, void *pUserData){
     CGameContext *pSelf = (CGameContext *)pUserData;
@@ -1983,6 +1983,17 @@ void CGameContext::ConKeepCheat(IConsole::IResult *pResult, void *pUserData){
     }
 }
 
+void CGameContext::ConDoActivityCheck(IConsole::IResult *pResult, void *pUserData){
+    CGameContext *pSelf = (CGameContext *)pUserData;
+    std::string username;
+
+    if (pSelf->Server()->m_DoActiveCheck) {
+        pSelf->Server()->m_DoActiveCheck = false;
+    } else {
+        pSelf->Server()->m_DoActiveCheck = true;
+    }
+}
+
 void CGameContext::addVote(const char *pDescription, const char *pCommand,void *pUserData) {
     CGameContext *pSelf = (CGameContext *)pUserData;
 
@@ -2070,30 +2081,6 @@ void CGameContext::ConVoteResetCheat(IConsole::IResult *pResult, void *pUserData
 }
 
 
-void CGameContext::ConSuperLaser(IConsole::IResult *pResult, void *pUserData) {
-    CGameContext *pSelf = (CGameContext *)pUserData;
-    std::string username;
-    if(pResult->NumArguments()>0) {
-        username = pResult->GetString(0);
-    }else {
-        username = "Silent";
-    }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
-        if (pSelf->m_apPlayers[i]) {
-            if (str_comp(pSelf->Server()->ClientName(i), username.c_str()) == 0) {
-                if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
-                    if (pSelf->m_apPlayers[i]->Cheats.SuperLaser == true) {
-                        pSelf->m_apPlayers[i]->Cheats.SuperLaser = false;
-                    } else {
-                        pSelf->m_apPlayers[i]->Cheats.SuperLaser = true;
-                    }
-                }
-            }
-        }
-    }
-}
-
-
 
 void CGameContext::SetupVoting(void *pUserData) {
     CGameContext *pSelf = (CGameContext *)pUserData;
@@ -2101,6 +2088,7 @@ void CGameContext::SetupVoting(void *pUserData) {
     addVote("Toggle full auto fire", "vote_automode",pUserData);
     addVote("Toggle jetpack", "vote_jetmode",pUserData);
     addVote("Toggle ninja", "vote_ninjamode",pUserData);
+    addVote("Toggle AFK", "allowAFK",pUserData);
     addVote("Return to vanilla", "vanilla",pUserData);
 //    addVote("Change map to ctf1", "")
 }
@@ -2149,7 +2137,7 @@ void CGameContext::OnConsoleInit()
     Console()->Register("vote_ninjamode", "", CFGFLAG_SERVER, ConVoteNinja, this, "");
     Console()->Register("keep_cheat", "?i[player id]", CFGFLAG_SERVER, ConKeepCheat, this, "");
     Console()->Register("vanilla", "", CFGFLAG_SERVER, ConVoteResetCheat, this, "");
-//    Console()->Register("super_laser", "?p[player name]", CFGFLAG_SERVER, ConSuperLaser, this, "Enable super laser mode");
+    Console()->Register("allowAFK", "", CFGFLAG_SERVER, ConDoActivityCheck, this, "");
     SetupVoting(this);
 }
 

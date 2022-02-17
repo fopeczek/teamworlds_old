@@ -56,51 +56,47 @@ IGameController::IGameController(CGameContext *pGameServer)
 //activity
 void IGameController::DoActivityCheck()
 {
-//	if(Config()->m_SvInactiveKickTime == 0)
-//		return;
-//
-//	for(int i = 0; i < MAX_CLIENTS; ++i)
-//	{
-//		if(GameServer()->m_apPlayers[i] && !GameServer()->m_apPlayers[i]->IsDummy() && (GameServer()->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS || Config()->m_SvInactiveKick > 0) &&
-//			!Server()->IsAuthed(i) && (GameServer()->m_apPlayers[i]->m_InactivityTickCounter > Config()->m_SvInactiveKickTime*Server()->TickSpeed()*60))
-//		{
-//			if(GameServer()->m_apPlayers[i]->GetTeam() == TEAM_SPECTATORS)
-//			{
-//				if(Config()->m_SvInactiveKickSpec)
-//					Server()->Kick(i, "Kicked for inactivity");
-//			}
-//			else
-//			{
-//				switch(Config()->m_SvInactiveKick)
-//				{
-//				case 1:
-//					{
-//						// move player to spectator
-//						DoTeamChange(GameServer()->m_apPlayers[i], TEAM_SPECTATORS);
-//					}
-//					break;
-//				case 2:
-//					{
-//						// move player to spectator if the reserved slots aren't filled yet, kick him otherwise
-//						int Spectators = 0;
-//						for(int j = 0; j < MAX_CLIENTS; ++j)
-//							if(GameServer()->m_apPlayers[j] && GameServer()->m_apPlayers[j]->GetTeam() == TEAM_SPECTATORS)
-//								++Spectators;
-//						if(Spectators >= Config()->m_SvMaxClients - Config()->m_SvPlayerSlots)
-//							Server()->Kick(i, "Kicked for inactivity");
-//						else
-//							DoTeamChange(GameServer()->m_apPlayers[i], TEAM_SPECTATORS);
-//					}
-//					break;
-//				case 3:
-//					{
-//						// kick the player
-//						Server()->Kick(i, "Kicked for inactivity");
-//					}
-//				}
-//			}
-//		}
-//	}
+    if (Server()->m_DoActiveCheck) {
+        if (Config()->m_SvInactiveKickTime == 0)
+            return;
+
+        for (int i = 0; i < MAX_CLIENTS; ++i) {
+            if (GameServer()->m_apPlayers[i] && !GameServer()->m_apPlayers[i]->IsDummy() &&
+                (GameServer()->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS || Config()->m_SvInactiveKick > 0) &&
+                !Server()->IsAuthed(i) && (GameServer()->m_apPlayers[i]->m_InactivityTickCounter >
+                                           Config()->m_SvInactiveKickTime * Server()->TickSpeed() * 60)) {
+                if (GameServer()->m_apPlayers[i]->GetTeam() == TEAM_SPECTATORS) {
+                    if (Config()->m_SvInactiveKickSpec)
+                        Server()->Kick(i, "Kicked for inactivity");
+                } else {
+                    switch (Config()->m_SvInactiveKick) {
+                        case 1: {
+                            // move player to spectator
+                            DoTeamChange(GameServer()->m_apPlayers[i], TEAM_SPECTATORS);
+                        }
+                            break;
+                        case 2: {
+                            // move player to spectator if the reserved slots aren't filled yet, kick him otherwise
+                            int Spectators = 0;
+                            for (int j = 0; j < MAX_CLIENTS; ++j)
+                                if (GameServer()->m_apPlayers[j] &&
+                                    GameServer()->m_apPlayers[j]->GetTeam() == TEAM_SPECTATORS)
+                                    ++Spectators;
+                            if (Spectators >= Config()->m_SvMaxClients - Config()->m_SvPlayerSlots)
+                                Server()->Kick(i, "Kicked for inactivity");
+                            else
+                                DoTeamChange(GameServer()->m_apPlayers[i], TEAM_SPECTATORS);
+                        }
+                            break;
+                        case 3: {
+                            // kick the player
+                            Server()->Kick(i, "Kicked for inactivity");
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 bool IGameController::GetPlayersReadyState(int WithoutID)
@@ -768,7 +764,7 @@ void IGameController::Tick()
 			case IGS_END_MATCH:
 				// start next match
 				if(m_MatchCount >= m_GameInfo.m_MatchNum-1)
-					CycleMap();
+					CycleMap(); //not working why?
 
 				if(Config()->m_SvMatchSwap)
 					GameServer()->SwapTeams();

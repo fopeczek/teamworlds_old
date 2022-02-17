@@ -20,6 +20,8 @@ public:
         bool Ninjabox = false;
     };
     ServerAvalableCheats ServerCheats;
+
+    bool m_DoActiveCheck = true;
 	/*
 		Structure: CClientInfo
 	*/

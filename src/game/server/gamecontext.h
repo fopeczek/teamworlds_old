@@ -77,16 +77,17 @@ class CGameContext : public IGameServer
     static void ConPosLock(IConsole::IResult *pResult, void *pUserData);
     static void ConJetpack(IConsole::IResult *pResult, void *pUserData);
     static void ConTeleport(IConsole::IResult *pResult, void *pUserData);
-    static void ConTeleportToXY(IConsole::IResult *pResult, void *pUserData);
-    static void ConTeleportToLoc(IConsole::IResult *pResult, void *pUserData);
-    static void ConGetPos(IConsole::IResult *pResult, void *pUserData);
+//    static void ConTeleportToXY(IConsole::IResult *pResult, void *pUserData);
+//    static void ConTeleportToLoc(IConsole::IResult *pResult, void *pUserData);
+//    static void ConGetPos(IConsole::IResult *pResult, void *pUserData);
     static void ConVoteGodmode(IConsole::IResult *pResult, void *pUserData);
     static void ConVoteAutomode(IConsole::IResult *pResult, void *pUserData);
     static void ConVoteJetpack(IConsole::IResult *pResult, void *pUserData);
     static void ConVoteNinja(IConsole::IResult *pResult, void *pUserData);
     static void ConKeepCheat(IConsole::IResult *pResult, void *pUserData);
     static void ConVoteResetCheat(IConsole::IResult *pResult, void *pUserData);
-    static void ConSuperLaser(IConsole::IResult *pResult, void *pUserData);
+    static void ConDoActivityCheck(IConsole::IResult *pResult, void *pUserData);
+//    static void ConSuperLaser(IConsole::IResult *pResult, void *pUserData);
 
     static void addVote(const char *pDescription, const char *pCommand,void *pUserData);
     static void SetupVoting(void *pUserData);
