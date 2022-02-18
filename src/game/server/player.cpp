@@ -481,6 +481,9 @@ void CPlayer::TryRespawn()
         m_pCharacter->GiveWeapon(WEAPON_LASER, 10);//10 is max ammo for grenade launcher
         m_pCharacter->SetWeapon(WEAPON_LASER);
 
+        chatMsg.m_pMessage = "---------------------------------------------------------------------";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
+
         chatMsg.m_pMessage = "Hi you are in blue engineers team. Every engineer starts with laser gun. ";
         Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
 
@@ -502,11 +505,17 @@ void CPlayer::TryRespawn()
         chatMsg.m_pMessage = "Please enjoy my class mod (made by Silent). ";
         Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
 
+        chatMsg.m_pMessage = "---------------------------------------------------------------------";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
+
     } else if (m_Team == TEAM_RED){
         MyClass=Class::Commando;
         m_pCharacter->IncreaseArmor(10);
         m_pCharacter->GiveWeapon(WEAPON_GRENADE, 10);//10 is max ammo for grenade launcher
         m_pCharacter->SetWeapon(WEAPON_GRENADE);
+
+        chatMsg.m_pMessage = "---------------------------------------------------------------------";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
 
         chatMsg.m_pMessage = "Hi you are in red commandos team. Every commando starts with full armor and grenade launcher. ";
         Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
@@ -524,6 +533,9 @@ void CPlayer::TryRespawn()
         Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
 
         chatMsg.m_pMessage = "Please enjoy my class mod (made by Silent). ";
+        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
+
+        chatMsg.m_pMessage = "---------------------------------------------------------------------";
         Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
     }
 }
