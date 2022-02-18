@@ -74,6 +74,9 @@ public:
 
     Class MyClass=Class::None;
 
+    bool IamNewEng = true;
+    bool IamNewCmd = true;
+
 
     //---------------------------------------------------------
 	// this is used for snapping so we know how we can clip the view for the player
