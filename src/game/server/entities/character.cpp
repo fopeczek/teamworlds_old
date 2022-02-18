@@ -331,38 +331,48 @@ void CCharacter::FireWeapon()
             m_NumObjectsHit = 0;
             GameServer()->CreateSound(m_Pos, SOUND_HAMMER_FIRE);
 
-            CCharacter *apEnts[MAX_CLIENTS];
-            int Hits = 0;
-            int Num = GameWorld()->FindEntities(ProjStartPos, GetProximityRadius()*0.5f, (CEntity**)apEnts,
-                                                MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+            if (m_pPlayer->m_Engineer_ActiveWalls>0){
+                CWall *apWalls[m_pPlayer->m_Engineer_MaxActiveWalls];
+                int Num = GameWorld()->FindEntities(ProjStartPos, 10000.f, (CEntity**)apWalls,
+                                                    m_pPlayer->m_Engineer_MaxActiveWalls, CGameWorld::ENTTYPE_LASER);
+                for (int i =0; i<Num; i++){
+                    apWalls[i]->HeIsHealing(m_pPlayer);
+                }
+            } else {
 
-            for (int i = 0; i < Num; ++i)
-            {
-                CCharacter *pTarget = apEnts[i];
+                CCharacter *apEnts[MAX_CLIENTS];
+                int Hits = 0;
+                int Num = GameWorld()->FindEntities(ProjStartPos, GetProximityRadius()*0.5f, (CEntity**)apEnts,
+                                                    MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
 
-                if ((pTarget == this) || GameServer()->Collision()->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL))
-                    continue;
+                for (int i = 0; i < Num; ++i)
+                {
+                    CCharacter *pTarget = apEnts[i];
 
-                // set his velocity to fast upward (for now)
-                if(length(pTarget->m_Pos-ProjStartPos) > 0.0f)
-                    GameServer()->CreateHammerHit(pTarget->m_Pos-normalize(pTarget->m_Pos-ProjStartPos)*GetProximityRadius()*0.5f);
-                else
-                    GameServer()->CreateHammerHit(ProjStartPos);
+                    if ((pTarget == this) || GameServer()->Collision()->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL))
+                        continue;
 
-                vec2 Dir;
-                if (length(pTarget->m_Pos - m_Pos) > 0.0f)
-                    Dir = normalize(pTarget->m_Pos - m_Pos);
-                else
-                    Dir = vec2(0.f, -1.f);
+                    // set his velocity to fast upward (for now)
+                    if(length(pTarget->m_Pos-ProjStartPos) > 0.0f)
+                        GameServer()->CreateHammerHit(pTarget->m_Pos-normalize(pTarget->m_Pos-ProjStartPos)*GetProximityRadius()*0.5f);
+                    else
+                        GameServer()->CreateHammerHit(ProjStartPos);
 
-                pTarget->TakeDamage(vec2(0.f, -1.f) + normalize(Dir + vec2(0.f, -1.1f)) * 10.0f, Dir*-1, g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage,
-                                    m_pPlayer->GetCID(), m_ActiveWeapon);
-                Hits++;
+                    vec2 Dir;
+                    if (length(pTarget->m_Pos - m_Pos) > 0.0f)
+                        Dir = normalize(pTarget->m_Pos - m_Pos);
+                    else
+                        Dir = vec2(0.f, -1.f);
+
+                    pTarget->TakeDamage(vec2(0.f, -1.f) + normalize(Dir + vec2(0.f, -1.1f)) * 10.0f, Dir*-1, g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage,
+                                        m_pPlayer->GetCID(), m_ActiveWeapon);
+                    Hits++;
+                }
+
+                // if we Hit anything, we have to wait for the reload
+                if(Hits)
+                    m_ReloadTimer = Server()->TickSpeed()/3;
             }
-
-            // if we Hit anything, we have to wait for the reload
-            if(Hits)
-                m_ReloadTimer = Server()->TickSpeed()/3;
 
         } break;
 
@@ -790,6 +800,9 @@ bool CCharacter::IncreaseArmor(int Amount)
 void CCharacter::Die(int Killer, int Weapon)
 {
     if (m_pPlayer->Cheats.Godmode== false) {
+
+        m_pPlayer->m_Engineer_Wall_Editing=false;
+        m_pPlayer->m_Engineer_ActiveWalls=0;
         // we got to wait 0.5 secs before respawning
         m_Alive = false;
         m_pPlayer->m_RespawnTick = Server()->Tick() + Server()->TickSpeed() / 2;

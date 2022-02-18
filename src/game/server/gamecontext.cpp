@@ -2083,7 +2083,6 @@ void CGameContext::ConVoteResetCheat(IConsole::IResult *pResult, void *pUserData
 
 
 void CGameContext::SetupVoting(void *pUserData) {
-    CGameContext *pSelf = (CGameContext *)pUserData;
     addVote("Toggle god mode", "vote_godmode",pUserData);
     addVote("Toggle full auto fire", "vote_automode",pUserData);
     addVote("Toggle jetpack", "vote_jetmode",pUserData);

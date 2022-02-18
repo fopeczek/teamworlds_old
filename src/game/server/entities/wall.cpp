@@ -40,6 +40,19 @@ bool CWall::HitCharacter()
     return true;
 }
 
+
+void CWall::HeIsHealing(CPlayer* player)
+{
+    if (player->MyClass == CPlayer::Class::Engineer){
+        if (distance(player->GetCharacter()->GetPos(), m_Pos) <= player->GetCharacter()->GetProximityRadius()*1.5f or distance(player->GetCharacter()->GetPos(), m_From) <= player->GetCharacter()->GetProximityRadius()*1.5f){
+            if (m_Health <5){
+                m_Health += 1;
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH);
+            }
+        }
+    }
+}
+
 void CWall::EndWallEdit(){
     m_From = pPlayer->GetCharacter()->GetPos();
     m_Delay_fac = 10000.0f;
@@ -195,8 +208,10 @@ void CWall::UpdateHealthInterface(){
 
 void CWall::Reset()
 {
-    for (int i = 0; i<=pPlayer->m_Engineer_MaxWallHp; i++){
-        m_Health_Interface[i]->Destroy();
+    if (m_Done){
+        for (int i = 0; i<=pPlayer->m_Engineer_MaxWallHp; i++){
+            m_Health_Interface[i]->Destroy();
+        }
     }
     pPlayer->m_Engineer_ActiveWalls--;
     GameWorld()->DestroyEntity(this);

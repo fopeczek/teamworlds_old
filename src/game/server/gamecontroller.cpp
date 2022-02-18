@@ -612,7 +612,17 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 		if(GameState == IGS_END_ROUND && DoWincheckMatch())
 			break;
 		// only possible when game is running or over
-		if(m_GameState == IGS_GAME_RUNNING || m_GameState == IGS_END_MATCH || m_GameState == IGS_END_ROUND || m_GameState == IGS_GAME_PAUSED)
+        if (m_GameState == IGS_WARMUP_GAME){
+
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_WHISPER;
+            chatMsg.m_ClientID = GameServer()->m_apPlayers[0]->GetCID();
+            chatMsg.m_TargetID = GameServer()->m_apPlayers[0]->GetCID();
+
+            chatMsg.m_pMessage = "You have won, but you are still alone though";
+            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, GameServer()->m_apPlayers[0]->GetCID());
+        }
+		if(m_GameState == IGS_GAME_RUNNING || m_GameState == IGS_END_MATCH || m_GameState == IGS_END_ROUND || m_GameState == IGS_GAME_PAUSED || m_GameState == IGS_WARMUP_GAME)
 		{
 			m_GameState = GameState;
 			m_GameStateTimer = Timer*Server()->TickSpeed();

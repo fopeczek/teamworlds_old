@@ -24,6 +24,7 @@ public:
     void Die(int Killer, int Weapon=-1);
     bool TakeDamage(int Dmg, int From, int Weapon=-1);
 
+    void HeIsHealing(CPlayer* player);
 protected:
     bool HitCharacter();
     void CheckForBullets();
@@ -40,6 +41,6 @@ private:
 	int m_EvalTick;
     bool m_Done;
     float m_Delay_fac;
-    float m_Health;
+    int m_Health;
     CPickup *m_Health_Interface[CPlayer::m_Engineer_MaxWallHp];
 };
