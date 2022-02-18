@@ -53,13 +53,14 @@ void CWall::HeIsHealing(CPlayer* player)
     }
 }
 
-void CWall::EndWallEdit(){
+void CWall::EndWallEdit(int ammo){
     m_From = pPlayer->GetCharacter()->GetPos();
     m_Delay_fac = 10000.0f;
 
     GameServer()->Collision()->IntersectLine(m_Pos, m_From, 0x0, &m_From);
 
-    m_Health=pPlayer->m_Engineer_MaxWallHp;
+    m_Health=ammo/2;
+    clamp(m_Health, 0, pPlayer->m_Engineer_MaxWallHp);
 
     vec2 Middle = vec2((m_Pos.x+m_From.x)/2, (m_Pos.y+m_From.y)/2);
     for (int i = 0; i<=pPlayer->m_Engineer_MaxWallHp; i++){
@@ -186,7 +187,7 @@ void CWall::CheckForBullets() {
     CProjectile *pPosBullet = (CProjectile *) GameWorld()->ClosestEntity(m_Pos, m_deconstruct_range, GameWorld()->ENTTYPE_PROJECTILE, this);
     if (pPosBullet){
         if(pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon()==WEAPON_GUN){
-            pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, 10); //max laser ammo
+            pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER,  2*m_Health); //max laser ammo
             pPosBullet->Destroy();
             Reset();
         }
@@ -195,7 +196,7 @@ void CWall::CheckForBullets() {
     CProjectile *pFromBullet = (CProjectile *) GameWorld()->ClosestEntity(m_From, m_deconstruct_range, GameWorld()->ENTTYPE_PROJECTILE, this);
     if (pFromBullet){
         if(pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon()==WEAPON_GUN){
-            pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, 10); //max laser ammo
+            pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, 2*m_Health); //max laser ammo
             pFromBullet->Destroy();
             Reset();
         }

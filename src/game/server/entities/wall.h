@@ -17,7 +17,7 @@ public:
 	virtual void TickPaused();
 	virtual void Snap(int SnappingClient);
     void StartWallEdit(vec2 Dir);
-    void EndWallEdit();
+    void EndWallEdit(int ammo);
     bool Created;
     int m_Owner;
 

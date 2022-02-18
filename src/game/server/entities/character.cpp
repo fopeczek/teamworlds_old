@@ -438,7 +438,7 @@ void CCharacter::FireWeapon()
                 if(m_pPlayer->m_Engineer_ActiveWalls < m_pPlayer->m_Engineer_MaxActiveWalls or m_pPlayer->Cheats.Godmode==true){
                     if (m_pPlayer->m_Engineer_Wall_Editing) {
                         m_pPlayer->m_Engineer_ActiveWalls++;
-                        m_Wall->EndWallEdit();
+                        m_Wall->EndWallEdit(m_aWeapons[m_ActiveWeapon].m_Ammo);
                         m_pPlayer->m_Engineer_Wall_Editing = false;
                         m_aWeapons[m_ActiveWeapon].m_Ammo=0;
                         m_Wall = new CWall (GameWorld(), m_pPlayer->GetCID());
