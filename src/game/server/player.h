@@ -62,7 +62,7 @@ public:
         Ninja,
         Medic,
         Commando,
-        Grenadier,
+        Machinegunner,
         Sniper,
         Engineer
     };

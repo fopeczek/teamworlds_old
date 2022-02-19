@@ -333,8 +333,18 @@ void CCharacter::FireWeapon()
 
             if (m_pPlayer->m_Engineer_ActiveWalls>0){
                 CWall *apWalls[m_pPlayer->m_Engineer_MaxActiveWalls];
+                int PlayerNum;
+                for (int i; i < MAX_CLIENTS; i++){
+                    if (GameServer()->m_apPlayers[i]){
+                        if(GameServer()->m_apPlayers[i]->GetCharacter()){
+                            if (GameServer()->m_apPlayers[i]->MyClass == CPlayer::Class::Engineer){
+                                PlayerNum++;
+                            }
+                        }
+                    }
+                }
                 int Num = GameWorld()->FindEntities(ProjStartPos, 10000.f, (CEntity**)apWalls,
-                                                    m_pPlayer->m_Engineer_MaxActiveWalls, CGameWorld::ENTTYPE_LASER);
+                                                    m_pPlayer->m_Engineer_MaxActiveWalls*PlayerNum, CGameWorld::ENTTYPE_LASER);
                 for (int i =0; i<Num; i++){
                     apWalls[i]->HeIsHealing(m_pPlayer);
                 }
@@ -435,7 +445,7 @@ void CCharacter::FireWeapon()
         case WEAPON_LASER:
         {
             if (m_pPlayer->MyClass==CPlayer::Class::Engineer) {
-                if(m_pPlayer->m_Engineer_ActiveWalls < m_pPlayer->m_Engineer_MaxActiveWalls or m_pPlayer->Cheats.Godmode==true){
+                if(m_pPlayer->m_Engineer_ActiveWalls < m_pPlayer->m_Engineer_MaxActiveWalls or m_pPlayer->Cheats.Godmode){
                     if (m_pPlayer->m_Engineer_Wall_Editing) {
                         m_pPlayer->m_Engineer_ActiveWalls++;
                         m_Wall->EndWallEdit(m_aWeapons[m_ActiveWeapon].m_Ammo);
@@ -641,6 +651,7 @@ void CCharacter::Tick()
 {
     if (m_pPlayer->Cheats.Lock){
         ResetInput();
+        m_ActiveWeapon=WEAPON_NINJA;
         m_Core.Tick(false, m_pPlayer->Cheats.Jetpack);
         m_Pos = m_pPlayer->Cheats.PosOfLock;
         m_Core.m_Pos=m_pPlayer->Cheats.PosOfLock;

@@ -18,11 +18,12 @@ public:
 	virtual void Snap(int SnappingClient);
     void StartWallEdit(vec2 Dir);
     void EndWallEdit(int ammo);
+    vec2 Clamp_vec(vec2 From, vec2 To, float clamp);
     bool Created;
     int m_Owner;
 
-    void Die(int Killer, int Weapon=-1);
-    bool TakeDamage(int Dmg, int From, int Weapon=-1);
+    void Die(int Killer);
+    bool TakeDamage(int Dmg, int From);
 
     void HeIsHealing(CPlayer* player);
 protected:
@@ -31,12 +32,13 @@ protected:
     void CheckForBulletCollision();
     void UpdateHealthInterface();
 private:
-    const float m_deconstruct_range = 50.f;
-    const float m_collision_range = 30.f;
-    const int m_wall_score = 2;
+    static constexpr float m_laser_range = 800.f;
+    static constexpr float m_deconstruct_range = 50.f;
+    static constexpr float m_collision_range = 30.f;
+    static constexpr int m_wall_score = 2;
 
     CPlayer *pPlayer;
-	vec2 m_From;
+    vec2 m_From;
     vec2 m_Dir;
 	int m_EvalTick;
     bool m_Done;

@@ -45,7 +45,7 @@ void CWall::HeIsHealing(CPlayer* player)
 {
     if (player->MyClass == CPlayer::Class::Engineer){
         if (distance(player->GetCharacter()->GetPos(), m_Pos) <= player->GetCharacter()->GetProximityRadius()*1.5f or distance(player->GetCharacter()->GetPos(), m_From) <= player->GetCharacter()->GetProximityRadius()*1.5f){
-            if (m_Health <5){
+            if (m_Health <pPlayer->m_Engineer_MaxWallHp){
                 m_Health += 1;
                 GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH);
             }
@@ -54,13 +54,14 @@ void CWall::HeIsHealing(CPlayer* player)
 }
 
 void CWall::EndWallEdit(int ammo){
-    m_From = pPlayer->GetCharacter()->GetPos();
     m_Delay_fac = 10000.0f;
+
+    m_From = pPlayer->GetCharacter()->GetPos();
+    m_From = Clamp_vec(m_Pos, m_From, m_laser_range);
 
     GameServer()->Collision()->IntersectLine(m_Pos, m_From, 0x0, &m_From);
 
-    m_Health=ammo/2;
-    clamp(m_Health, 0, pPlayer->m_Engineer_MaxWallHp);
+    m_Health=ammo;
 
     vec2 Middle = vec2((m_Pos.x+m_From.x)/2, (m_Pos.y+m_From.y)/2);
     for (int i = 0; i<=pPlayer->m_Engineer_MaxWallHp; i++){
@@ -75,26 +76,26 @@ void CWall::StartWallEdit(vec2 Dir){
         m_Dir = Dir;
         GameWorld()->InsertEntity(this);
         m_From = pPlayer->GetCharacter()->GetPos();
-        m_Pos = m_From + m_Dir * 800.0f;
+        m_Pos = m_From + m_Dir * m_laser_range;
         GameServer()->Collision()->IntersectLine(m_From, m_Pos, 0x0, &m_Pos);
         m_EvalTick = Server()->Tick();
         Created = true;
     }
 }
 
-bool CWall::TakeDamage(int Dmg, int From, int Weapon) {
+bool CWall::TakeDamage(int Dmg, int From) {
     if (Dmg>0){
         m_Health-=Dmg;
     }
 
     if (m_Health <= 0) {
-        Die(From, Weapon);
+        Die(From);
         return true;
     }
     return false;
 }
 
-void CWall::Die(int Killer, int Weapon) {
+void CWall::Die(int Killer) {
     if (pPlayer) {
         if (pPlayer->GetCharacter()) {
             new CProjectile(GameWorld(), WEAPON_GRENADE,
@@ -150,31 +151,44 @@ void CWall::CheckForBulletCollision(){
                     if (distance(pAttackBullet->GetPos(Ct), m_Pos) <= m_deconstruct_range){
                         int Dmg;
                         if (pAttackBullet->GetExposive()){
-                            Dmg = 3;
+                            Dmg = 5;
                         }else{
-                            Dmg = 1;
+                            Dmg = 3;
                         }
-                        if (TakeDamage(Dmg, pAttackBullet->GetOwner(), pAttackBullet->GetWeapon())){
+                        Dmg *=2;
+                        if (TakeDamage(Dmg, pAttackBullet->GetOwner())){
                             pAttackBullet->Wall_Coll= true;
                             pAttackBullet->Tick();
                             return;
                         }
                         GameServer()->CreateDamage(m_Pos, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false);
-                    }
-
-                    if (distance(pAttackBullet->GetPos(Ct), m_From) <= m_deconstruct_range){
+                    } else if (distance(pAttackBullet->GetPos(Ct), m_From) <= m_deconstruct_range){
                         int Dmg;
                         if (pAttackBullet->GetExposive()){
-                            Dmg = 3;
+                            Dmg = 5;
                         }else{
-                            Dmg = 1;
+                            Dmg = 3;
                         }
-                        if (TakeDamage(Dmg, pAttackBullet->GetOwner(), pAttackBullet->GetWeapon())){
+                        Dmg *=2;
+                        if (TakeDamage(Dmg, pAttackBullet->GetOwner())){
                             pAttackBullet->Wall_Coll= true;
                             pAttackBullet->Tick();
                             return;
                         }
                         GameServer()->CreateDamage(m_From, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false);
+                    } else {
+                        int Dmg;
+                        if (pAttackBullet->GetExposive()){
+                            Dmg = 5;
+                        }else{
+                            Dmg = 2;
+                        }
+                        if (TakeDamage(Dmg, pAttackBullet->GetOwner())){
+                            pAttackBullet->Wall_Coll= true;
+                            pAttackBullet->Tick();
+                            return;
+                        }
+                        GameServer()->CreateDamage(At, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false);
                     }
                     pAttackBullet->Wall_Coll= true;
                     pAttackBullet->Tick();
@@ -191,7 +205,7 @@ void CWall::CheckForBullets() {
     CProjectile *pPosBullet = (CProjectile *) GameWorld()->ClosestEntity(m_Pos, m_deconstruct_range, GameWorld()->ENTTYPE_PROJECTILE, this);
     if (pPosBullet){
         if(pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon()==WEAPON_GUN){
-            pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER,  2*m_Health); //max laser ammo
+            pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER,  m_Health); //max laser ammo
             pPosBullet->Destroy();
             Reset();
         }
@@ -200,7 +214,7 @@ void CWall::CheckForBullets() {
     CProjectile *pFromBullet = (CProjectile *) GameWorld()->ClosestEntity(m_From, m_deconstruct_range, GameWorld()->ENTTYPE_PROJECTILE, this);
     if (pFromBullet){
         if(pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon()==WEAPON_GUN){
-            pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, 2*m_Health); //max laser ammo
+            pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, m_Health); //max laser ammo
             pFromBullet->Destroy();
             Reset();
         }
@@ -222,6 +236,18 @@ void CWall::Reset()
     GameWorld()->DestroyEntity(this);
 }
 
+vec2 CWall::Clamp_vec(vec2 From, vec2 To, float clamp){
+    vec2 diff = To - From;
+    float d = maximum(clamp, distance(To, From));
+    vec2 clamped_end;
+    if (d <= clamp) {
+        clamped_end = To;
+    } else {
+        clamped_end = From + diff * clamp /d;
+    }
+    return clamped_end;
+}
+
 void CWall::Tick() {
     if (Server()->Tick() > m_EvalTick + (Server()->TickSpeed() * GameServer()->Tuning()->m_LaserBounceDelay) / m_Delay_fac){
         if(pPlayer->GetCharacter()) {
@@ -232,10 +258,10 @@ void CWall::Tick() {
                 m_EvalTick = Server()->Tick();
 
                 m_From = pPlayer->GetCharacter()->GetPos();
-
+                m_From = Clamp_vec(m_Pos, m_From, m_laser_range);
                 GameServer()->Collision()->IntersectLine(m_Pos, m_From, 0x0, &m_From);
 
-                GameServer()->CreateSound(m_Pos, SOUND_LASER_BOUNCE);
+                GameServer()->CreateSound(m_From, SOUND_LASER_BOUNCE);
             } else {
                 m_EvalTick = Server()->Tick();
 
