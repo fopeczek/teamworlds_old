@@ -95,39 +95,43 @@ bool CWall::TakeDamage(int Dmg, int From, int Weapon) {
 }
 
 void CWall::Die(int Killer, int Weapon) {
-    new CProjectile(GameWorld(), WEAPON_GRENADE,
-                    pPlayer->GetCID(),
-                    m_Pos,
-                    vec2(0, 0),
-                    0,
-                    g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
-                    WEAPON_GRENADE);
-    new CProjectile(GameWorld(), WEAPON_GRENADE,
-                    pPlayer->GetCID(),
-                    m_From,
-                    vec2(0, 0),
-                    0,
-                    g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
-                    WEAPON_GRENADE);
-    if (Killer==-1){
-        CNetMsg_Sv_Chat chatMsg;
-        chatMsg.m_Mode = CHAT_WHISPER;
-        chatMsg.m_ClientID = m_Owner;
-        chatMsg.m_TargetID = m_Owner;
-        chatMsg.m_pMessage = "Wall was destroyed by zombie";
-        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_Owner);
-    } else if (Killer == -2) {
+    if (pPlayer) {
+        if (pPlayer->GetCharacter()) {
+            new CProjectile(GameWorld(), WEAPON_GRENADE,
+                            pPlayer->GetCID(),
+                            m_Pos,
+                            vec2(0, 0),
+                            0,
+                            g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
+                            WEAPON_GRENADE);
+            new CProjectile(GameWorld(), WEAPON_GRENADE,
+                            pPlayer->GetCID(),
+                            m_From,
+                            vec2(0, 0),
+                            0,
+                            g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
+                            WEAPON_GRENADE);
+            if (Killer == -1) {
+                CNetMsg_Sv_Chat chatMsg;
+                chatMsg.m_Mode = CHAT_WHISPER;
+                chatMsg.m_ClientID = m_Owner;
+                chatMsg.m_TargetID = m_Owner;
+                chatMsg.m_pMessage = "Wall was destroyed by zombie";
+                Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_Owner);
+            } else if (Killer == -2) {
 
-    } else {
-        CNetMsg_Sv_Chat chatMsg;
-        chatMsg.m_Mode = CHAT_WHISPER;
-        chatMsg.m_ClientID = m_Owner;
-        chatMsg.m_TargetID = m_Owner;
-        char WallMsg[128];
-        str_format(WallMsg, sizeof(WallMsg), "Wall was destroyed by %s", Server()->ClientName(Killer));
-        chatMsg.m_pMessage = WallMsg;
-        Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_Owner);
-        GameServer()->m_apPlayers[Killer]->m_Score+=m_wall_score;
+            } else {
+                CNetMsg_Sv_Chat chatMsg;
+                chatMsg.m_Mode = CHAT_WHISPER;
+                chatMsg.m_ClientID = m_Owner;
+                chatMsg.m_TargetID = m_Owner;
+                char WallMsg[128];
+                str_format(WallMsg, sizeof(WallMsg), "Wall was destroyed by %s", Server()->ClientName(Killer));
+                chatMsg.m_pMessage = WallMsg;
+                Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_Owner);
+                GameServer()->m_apPlayers[Killer]->m_Score += m_wall_score;
+            }
+        }
     }
     Reset();
 }
@@ -209,8 +213,8 @@ void CWall::UpdateHealthInterface(){
 
 void CWall::Reset()
 {
-    if (m_Done){
-        for (int i = 0; i<=pPlayer->m_Engineer_MaxWallHp; i++){
+    for (int i = 0; i<=pPlayer->m_Engineer_MaxWallHp; i++){
+        if (m_Health_Interface[i]) {
             m_Health_Interface[i]->Destroy();
         }
     }
