@@ -24,6 +24,7 @@ public:
 	};
 
 	CCharacter(CGameWorld *pWorld);
+    ~CCharacter();
 
 	virtual void Reset();
 	virtual void Destroy();

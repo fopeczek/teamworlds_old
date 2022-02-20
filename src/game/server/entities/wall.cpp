@@ -17,7 +17,7 @@ CWall::CWall(CGameWorld *pGameWorld, int Owner) :  CEntity(pGameWorld, CGameWorl
     m_Done= false;
     m_Delay_fac = 1000.0f;
     m_Health=0;
-    for (int i = 0; i<=pPlayer->m_Engineer_MaxWallHp; i++){
+    for (int i = 0; i<m_MAX_Health; i++){
         m_Health_Interface[i] = nullptr;
     }
     m_Pos=vec2 (0,0);
@@ -45,7 +45,7 @@ void CWall::HeIsHealing(CPlayer* player)
 {
     if (player->MyClass == CPlayer::Class::Engineer){
         if (distance(player->GetCharacter()->GetPos(), m_Pos) <= player->GetCharacter()->GetProximityRadius()*1.5f or distance(player->GetCharacter()->GetPos(), m_From) <= player->GetCharacter()->GetProximityRadius()*1.5f){
-            if (m_Health <pPlayer->m_Engineer_MaxWallHp){
+            if (m_Health <m_MAX_Health){
                 m_Health += 1;
                 GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH);
             }
@@ -64,7 +64,7 @@ void CWall::EndWallEdit(int ammo){
     m_Health=ammo;
 
     vec2 Middle = vec2((m_Pos.x+m_From.x)/2, (m_Pos.y+m_From.y)/2);
-    for (int i = 0; i<=pPlayer->m_Engineer_MaxWallHp; i++){
+    for (int i = 0; i<m_Health; i++){
         m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH, Middle, false);
     }
 
@@ -87,6 +87,7 @@ bool CWall::TakeDamage(int Dmg, int From) {
     if (Dmg>0){
         m_Health-=Dmg;
     }
+//    m_Health_Interface[];
 
     if (m_Health <= 0) {
         Die(From);
@@ -205,7 +206,7 @@ void CWall::CheckForBullets() {
     CProjectile *pPosBullet = (CProjectile *) GameWorld()->ClosestEntity(m_Pos, m_deconstruct_range, GameWorld()->ENTTYPE_PROJECTILE, this);
     if (pPosBullet){
         if(pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon()==WEAPON_GUN){
-            pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER,  m_Health); //max laser ammo
+            pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER,  m_Health);
             pPosBullet->Destroy();
             Reset();
         }
@@ -214,7 +215,7 @@ void CWall::CheckForBullets() {
     CProjectile *pFromBullet = (CProjectile *) GameWorld()->ClosestEntity(m_From, m_deconstruct_range, GameWorld()->ENTTYPE_PROJECTILE, this);
     if (pFromBullet){
         if(pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon()==WEAPON_GUN){
-            pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, m_Health); //max laser ammo
+            pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, m_Health);
             pFromBullet->Destroy();
             Reset();
         }
@@ -227,9 +228,10 @@ void CWall::UpdateHealthInterface(){
 
 void CWall::Reset()
 {
-    for (int i = 0; i<=pPlayer->m_Engineer_MaxWallHp; i++){
+    for (int i = 0; i<m_MAX_Health; i++){
         if (m_Health_Interface[i]) {
             m_Health_Interface[i]->Destroy();
+            m_Health_Interface[i] = nullptr;
         }
     }
     pPlayer->m_Engineer_ActiveWalls--;

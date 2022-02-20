@@ -36,6 +36,7 @@ private:
     static constexpr float m_deconstruct_range = 50.f;
     static constexpr float m_collision_range = 30.f;
     static constexpr int m_wall_score = 2;
+    static constexpr int m_MAX_Health = 10;
 
     CPlayer *pPlayer;
     vec2 m_From;
@@ -44,5 +45,6 @@ private:
     bool m_Done;
     float m_Delay_fac;
     int m_Health;
-    CPickup *m_Health_Interface[CPlayer::m_Engineer_MaxWallHp];
+
+    CPickup *m_Health_Interface[m_MAX_Health];
 };

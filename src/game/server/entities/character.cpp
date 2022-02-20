@@ -86,8 +86,16 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	return true;
 }
 
+CCharacter::~CCharacter(){
+    Destroy();
+}
+
 void CCharacter::Destroy()
 {
+    if (m_Wall) {
+        delete m_Wall;
+        m_Wall = nullptr;
+    }
 	GameWorld()->m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
 	m_Alive = false;
 }
@@ -429,7 +437,7 @@ void CCharacter::FireWeapon()
                                 ProjStartPos,
                                 Direction,
                                 (int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime),
-                                g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage*2, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
+                                g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
             }else{
                 new CProjectile(GameWorld(), WEAPON_GRENADE,
                                 m_pPlayer->GetCID(),
@@ -893,10 +901,8 @@ bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weap
             } else {
                 Dmg = maximum(1, Dmg / 2);
             }
-        }else if (m_pPlayer->MyClass == CPlayer::Class::Engineer){
-            Dmg *= 2;
         }else if (m_pPlayer->MyClass == CPlayer::Class::Commando){
-            return false;
+            Dmg = 1;
         }
     }
 
