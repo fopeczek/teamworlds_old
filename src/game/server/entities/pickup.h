@@ -16,6 +16,7 @@ public:
 	virtual void Tick();
 	virtual void TickPaused();
 	virtual void Snap(int SnappingClient);
+    void SetPos(vec2 pos) {m_Pos = pos;};
 
 private:
     bool m_Pickupable;

@@ -27,6 +27,7 @@ public:
 
     void HeIsHealing(CPlayer* player);
 protected:
+    vec2 Calc_hp_pos(float alpha);
     bool HitCharacter();
     void CheckForBullets();
     void CheckForBulletCollision();
@@ -35,16 +36,30 @@ private:
     static constexpr float m_laser_range = 800.f;
     static constexpr float m_deconstruct_range = 50.f;
     static constexpr float m_collision_range = 30.f;
+    static constexpr float m_hp_interface_delay = 500.f;
+    static constexpr float m_hp_interface_space = 50.f;
     static constexpr int m_wall_score = 2;
     static constexpr int m_MAX_Health = 10;
 
     CPlayer *pPlayer;
     vec2 m_From;
     vec2 m_Dir;
-	int m_EvalTick;
+    int m_EvalTick;
+    int m_HPTick;
     bool m_Done;
     float m_Delay_fac;
     int m_Health;
 
     CPickup *m_Health_Interface[m_MAX_Health];
+
+    //-----------------------for calculations-------------------------------
+    vec2 midpoint1;
+    vec2 midpoint2;
+    float radius;
+    float theta;
+    vec2 versor;
+    vec2 diff;
+    float total_path;
+    float stops[4];
+    float cumsum_stops[4];
 };

@@ -2,6 +2,8 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <generated/server_data.h>
 #include <game/server/gamecontext.h>
+#include <cassert>
+#include <numeric>
 
 #include "character.h"
 #include "wall.h"
@@ -47,6 +49,13 @@ void CWall::HeIsHealing(CPlayer* player)
         if (distance(player->GetCharacter()->GetPos(), m_Pos) <= player->GetCharacter()->GetProximityRadius()*1.5f or distance(player->GetCharacter()->GetPos(), m_From) <= player->GetCharacter()->GetProximityRadius()*1.5f){
             if (m_Health <m_MAX_Health){
                 m_Health += 1;
+                m_Health = clamp(m_Health, 0, m_MAX_Health);
+
+                for (int i=0;i<m_Health; i++){
+                    if (!m_Health_Interface[i]){
+                        m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH, Calc_hp_pos(m_HPTick/m_hp_interface_delay), false);
+                    }
+                }
                 GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH);
             }
         }
@@ -63,11 +72,36 @@ void CWall::EndWallEdit(int ammo){
 
     m_Health=ammo;
 
-    vec2 Middle = vec2((m_Pos.x+m_From.x)/2, (m_Pos.y+m_From.y)/2);
-    for (int i = 0; i<m_Health; i++){
-        m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH, Middle, false);
+    vec2 pos;
+    if (distance(diff, vec2(0,0)) > 2 * radius){
+        pos = m_From;
+    } else {
+        midpoint1=m_Pos;
+        midpoint2=m_From;
+        radius=50.f;
+        vec2 vec = midpoint2 - midpoint1;
+        theta = std::acos(vec.y/distance(vec, vec2(0,0)));
+        diff = midpoint2 - midpoint1;
+        versor = diff / distance(diff, vec2(0,0));
+        diff = midpoint2 - midpoint1 - versor * radius * 2;
+        float line_segment_len = distance(diff, vec2(0,0));
+        total_path = radius * pi * 2 + 2 * line_segment_len;
+        stops[0] = radius * pi / total_path;
+        stops[1] = line_segment_len / total_path;
+        stops[2] = radius * pi / total_path;
+        stops[3] = line_segment_len / total_path;
+        std::partial_sum(&stops[0], &stops[3], &cumsum_stops[0]);
+        pos = Calc_hp_pos(m_HPTick/m_hp_interface_delay);
     }
 
+    for (int i =0; i < m_Health; i++){
+        if (pos != m_From) {
+            int HPTick = m_HPTick + i * m_hp_interface_space;
+            HPTick %= static_cast<int>(m_hp_interface_delay);
+            pos = Calc_hp_pos(HPTick/m_hp_interface_delay);
+        }
+        m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH, pos, false);
+    }
     m_Done= true;
 }
 
@@ -87,7 +121,15 @@ bool CWall::TakeDamage(int Dmg, int From) {
     if (Dmg>0){
         m_Health-=Dmg;
     }
-//    m_Health_Interface[];
+
+    m_Health = clamp(m_Health, 0, m_MAX_Health);
+
+    for (int i=m_Health+1;i<m_MAX_Health; i++){
+        if (m_Health_Interface[i]){
+            m_Health_Interface[i]->Destroy();
+            m_Health_Interface[i]= nullptr;
+        }
+    }
 
     if (m_Health <= 0) {
         Die(From);
@@ -154,7 +196,7 @@ void CWall::CheckForBulletCollision(){
                         if (pAttackBullet->GetExposive()){
                             Dmg = 5;
                         }else{
-                            Dmg = 3;
+                            Dmg = 2;
                         }
                         Dmg *=2;
                         if (TakeDamage(Dmg, pAttackBullet->GetOwner())){
@@ -168,7 +210,7 @@ void CWall::CheckForBulletCollision(){
                         if (pAttackBullet->GetExposive()){
                             Dmg = 5;
                         }else{
-                            Dmg = 3;
+                            Dmg = 2;
                         }
                         Dmg *=2;
                         if (TakeDamage(Dmg, pAttackBullet->GetOwner())){
@@ -223,7 +265,15 @@ void CWall::CheckForBullets() {
 }
 
 void CWall::UpdateHealthInterface(){
-
+    m_HPTick++;
+    m_HPTick %= static_cast<int>(m_hp_interface_delay);
+    for (int i =0; i < m_MAX_Health; i++){
+        if (m_Health_Interface[i]){
+            int HPTick = m_HPTick + i*m_hp_interface_space;
+            HPTick %= static_cast<int>(m_hp_interface_delay);
+            m_Health_Interface[i]->SetPos(Calc_hp_pos(HPTick/m_hp_interface_delay));
+        }
+    }
 }
 
 void CWall::Reset()
@@ -236,6 +286,42 @@ void CWall::Reset()
     }
     pPlayer->m_Engineer_ActiveWalls--;
     GameWorld()->DestroyEntity(this);
+}
+
+vec2 CWall::Calc_hp_pos(float alpha){
+    if (alpha < cumsum_stops[0]) {
+        alpha = alpha / stops[0];
+        vec2 p;
+        p.x = radius * sin(theta   + alpha * pi);
+        p.y = radius * cos(theta    + alpha * pi);
+        vec2 start = midpoint1 + versor * radius;
+        return start + p;
+    } else if (alpha < cumsum_stops[1]) {
+        float a = (alpha - cumsum_stops[0]) / stops[1];
+
+        vec2 start = midpoint1 + versor * radius +
+                     vec2(-versor[1], versor[0]) * radius;
+        vec2 end = midpoint2 - versor * radius +
+                   vec2(-versor[1], versor[0]) * radius;
+        vec2 p = start * (1 - a) + end * a;
+        return p;
+    } else if (alpha < cumsum_stops[2]) {
+        alpha = alpha / stops[2];
+        vec2 p;
+        p.x = radius * sin(theta - pi  + alpha * pi);
+        p.y = radius * cos(theta - pi  + alpha * pi);
+        vec2 start = midpoint2 - versor * radius;
+        return start + p;
+    } else {
+        float a = (alpha - cumsum_stops[2]) / stops[3];
+
+        vec2 start = midpoint2 - versor * radius +
+                vec2(versor[1], -versor[0]) * radius;
+        vec2 end = midpoint1 + versor * radius +
+              vec2(versor[1], -versor[0]) * radius;
+        vec2 p = start * (1 - a) + end * a;
+        return p;
+    }
 }
 
 vec2 CWall::Clamp_vec(vec2 From, vec2 To, float clamp){
