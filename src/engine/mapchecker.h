@@ -13,7 +13,7 @@ class IMapChecker : public IInterface
 public:
 	virtual void AddMaplist(struct CMapVersion *pMaplist, int Num) = 0;
 	virtual bool IsMapValid(const char *pMapName, const SHA256_DIGEST *pMapSha256, unsigned MapCrc, unsigned MapSize) = 0;
-	virtual bool ReadAndValidateMap(const char *pFilename, int StorageType) = 0;
+	virtual bool ReadAndValidateMap(IStorage *pStorage, const char *pFilename, int StorageType) = 0;
 
 	virtual int NumStandardMaps() = 0;
 	virtual const char *GetStandardMapName(int Index) = 0;

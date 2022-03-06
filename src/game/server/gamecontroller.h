@@ -9,6 +9,7 @@
 #include <game/commands.h>
 
 #include <generated/protocol.h>
+#include <vector>
 
 /*
 	Class: Game Controller
@@ -87,11 +88,27 @@ class IGameController
 		int m_FriendlyTeam;
 		float m_Score;
 	};
-	vec2 m_aaSpawnPoints[3][64];
-	int m_aNumSpawnPoints[3];
+    //vec2 m_aaSpawnPoints[3][64];
+    enum
+    {
+        NUM_SPAWN_TYPES = 3,
+        NUM_SPAWN_PER_TYPE = 64,
+        NUM_SPAWN_WORLD = 3*64,
+    };
+
+    struct SpawnData {
+        vec2 m_aaSpawnPoints[3][64];
+    };
+
+    std::vector<SpawnData> m_vSpawnPoints;
+
+    struct NumSpawnData {
+        int m_aNumSpawnPoints[3];
+    };
+    std::vector<NumSpawnData> m_vNumSpawnPoints;
 
 	float EvaluateSpawnPos(CSpawnEval *pEval, vec2 Pos) const;
-	void EvaluateSpawnType(CSpawnEval *pEval, int Type) const;
+	void EvaluateSpawnType(CSpawnEval *pEval, int Type, int MapID) const;
 
 	// team
 	int ClampTeam(int Team) const;
@@ -163,7 +180,7 @@ public:
 		Returns:
 			bool?
 	*/
-	virtual bool OnEntity(int Index, vec2 Pos);
+	virtual bool OnEntity(int Index, vec2 Pos, int MapID);
 
 	void OnPlayerConnect(class CPlayer *pPlayer);
 	void OnPlayerDisconnect(class CPlayer *pPlayer);
@@ -172,6 +189,8 @@ public:
 	void OnPlayerCommand(class CPlayer *pPlayer, const char *pCommandName, const char *pCommandArgs);
 
 	void OnReset();
+
+    void SetSpawnNum(int MapNum);
 
 	// game
 	enum
@@ -216,7 +235,7 @@ public:
 	void ChangeMap(const char *pToMap);
 
 	//spawn
-	bool CanSpawn(int Team, vec2 *pPos) const;
+	bool CanSpawn(int Team, vec2 *pPos, int MapID) const;
 	bool GetStartRespawnState() const;
 
 	// team

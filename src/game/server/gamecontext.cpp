@@ -70,22 +70,22 @@ CGameContext::~CGameContext()
 
 void CGameContext::Clear()
 {
-	CHeap *pVoteOptionHeap = m_pVoteOptionHeap;
-	CVoteOptionServer *pVoteOptionFirst = m_pVoteOptionFirst;
-	CVoteOptionServer *pVoteOptionLast = m_pVoteOptionLast;
-	int NumVoteOptions = m_NumVoteOptions;
-	CTuningParams Tuning = m_Tuning;
+    CHeap *pVoteOptionHeap = m_pVoteOptionHeap;
+    CVoteOptionServer *pVoteOptionFirst = m_pVoteOptionFirst;
+    CVoteOptionServer *pVoteOptionLast = m_pVoteOptionLast;
+    int NumVoteOptions = m_NumVoteOptions;
+    CTuningParams Tuning = m_Tuning;
 
-	m_Resetting = true;
-	this->~CGameContext();
-	mem_zero(this, sizeof(*this));
-	new (this) CGameContext(RESET);
+    m_Resetting = true;
+    this->~CGameContext();
+    mem_zero(this, sizeof(*this));
+    new (this) CGameContext(RESET);
 
-	m_pVoteOptionHeap = pVoteOptionHeap;
-	m_pVoteOptionFirst = pVoteOptionFirst;
-	m_pVoteOptionLast = pVoteOptionLast;
-	m_NumVoteOptions = NumVoteOptions;
-	m_Tuning = Tuning;
+    m_pVoteOptionHeap = pVoteOptionHeap;
+    m_pVoteOptionFirst = pVoteOptionFirst;
+    m_pVoteOptionLast = pVoteOptionLast;
+    m_NumVoteOptions = NumVoteOptions;
+    m_Tuning = Tuning;
 }
 
 
@@ -124,7 +124,7 @@ void CGameContext::CreateHammerHit(vec2 Pos)
 }
 
 
-void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamage)
+void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamage, int MapID)
 {
 	// create the event
 	CNetEvent_Explosion *pEvent = (CNetEvent_Explosion *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(CNetEvent_Explosion));
@@ -139,7 +139,7 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamag
 	float Radius = g_pData->m_Explosion.m_Radius;
 	float InnerRadius = 48.0f;
 	float MaxForce = g_pData->m_Explosion.m_MaxForce;
-	int Num = m_World.FindEntities(Pos, Radius, (CEntity**)apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+	int Num = m_World.FindEntities(Pos, Radius, (CEntity**)apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER, MapID);
 	for(int i = 0; i < Num; i++)
 	{
 		vec2 Diff = apEnts[i]->GetPos() - Pos;
@@ -711,24 +711,39 @@ void CGameContext::OnClientEnter(int ClientID)
 	}
 }
 
+void CGameContext::KillCharacter(int ClientID)
+{
+    if(m_apPlayers[ClientID])
+    {
+        if(m_apPlayers[ClientID]->GetCharacter())
+            m_apPlayers[ClientID]->KillCharacter(-1);
+        //m_apPlayers->SetSpawning(false);
+    }
+}
+
 void CGameContext::OnClientConnected(int ClientID, bool Dummy, bool AsSpec)
 {
-	dbg_assert(!m_apPlayers[ClientID], "non-free player slot");
+    if(m_apPlayers[ClientID])
+    {
+        //dbg_assert(m_apPlayers[ClientID]->IsDummy(), "invalid clientID");
+        OnClientDrop(ClientID, "removing dummy");
+    }
 
-	m_apPlayers[ClientID] = new(ClientID) CPlayer(this, ClientID, Dummy, AsSpec);
+    //if(!m_apPlayers[ClientID])
+    m_apPlayers[ClientID] = new(ClientID) CPlayer(this, ClientID, Dummy, AsSpec);
 
-	if(Dummy)
-		return;
+    if(Dummy)
+        return;
 
-	// send active vote
-	if(m_VoteCloseTime)
-		SendVoteSet(m_VoteType, ClientID);
+    // send active vote
+    if(m_VoteCloseTime)
+        SendVoteSet(m_VoteType, ClientID);
 
-	// send motd
-	SendMotd(ClientID);
+    // send motd
+    SendMotd(ClientID);
 
-	// send settings
-	SendSettings(ClientID);
+    // send settings
+    SendSettings(ClientID);
 }
 
 void CGameContext::OnClientTeamChange(int ClientID)
@@ -2170,9 +2185,6 @@ void CGameContext::OnInit()
 	for(int i = 0; i < OLD_NUM_NETOBJTYPES; i++)
 		Server()->SnapSetStaticsize(i, m_NetObjHandler.GetObjSize(i));
 
-	m_Layers.Init(Kernel());
-	m_Collision.Init(&m_Layers);
-
 	// select gametype
     if(str_comp_nocase(Config()->m_SvGametype, "mod") == 0)
         m_pController = new CGameControllerMOD(this);
@@ -2189,24 +2201,9 @@ void CGameContext::OnInit()
 	else
 		m_pController = new CGameControllerDM(this);
 
+    OnInitMap(0);//default map is 0
+
 	m_pController->RegisterChatCommands(CommandManager());
-
-	// create all entities from the game layer
-	CMapItemLayerTilemap *pTileMap = m_Layers.GameLayer();
-	CTile *pTiles = (CTile *)Kernel()->RequestInterface<IMap>()->GetData(pTileMap->m_Data);
-	for(int y = 0; y < pTileMap->m_Height; y++)
-	{
-		for(int x = 0; x < pTileMap->m_Width; x++)
-		{
-			int Index = pTiles[y*pTileMap->m_Width+x].m_Index;
-
-			if(Index >= ENTITY_OFFSET)
-			{
-				vec2 Pos(x*32.0f+16.0f, y*32.0f+16.0f);
-				m_pController->OnEntity(Index-ENTITY_OFFSET, Pos);
-			}
-		}
-	}
 
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 
@@ -2235,6 +2232,43 @@ void CGameContext::OnInit()
 			OnClientConnected(MAX_CLIENTS -i-1, true, false);
 	}
 #endif
+}
+
+void CGameContext::OnInitMap(int MapID)
+{
+    if(MapID < (int)m_vLayers.size())//Map exists already, hurray
+        return;
+
+    IEngineMap* pMap = Server()->GetMap(MapID);
+
+    m_vLayers.push_back(CLayers());
+    m_vCollision.push_back(CCollision());
+
+    m_vLayers[MapID].Init(Kernel(), pMap);//Default map id
+    m_vCollision[MapID].Init(&(m_vLayers[MapID]));
+
+    m_pController->SetSpawnNum((MapID+1));
+
+    // create all entities from the game layer
+    CMapItemLayerTilemap *pTileMap = m_vLayers[MapID].GameLayer();
+    CTile *pTiles = (CTile *)pMap->GetData(pTileMap->m_Data);
+    for(int y = 0; y < pTileMap->m_Height; y++)
+    {
+        for(int x = 0; x < pTileMap->m_Width; x++)
+        {
+            int Index = pTiles[y*pTileMap->m_Width+x].m_Index;
+
+            if(Index >= ENTITY_OFFSET)
+            {
+                vec2 Pos(x*32.0f+16.0f, y*32.0f+16.0f);
+                m_pController->OnEntity(Index-ENTITY_OFFSET, Pos, MapID);
+            }
+        }
+    }
+
+    char aBuf[128];
+    str_format(aBuf, sizeof(aBuf), "Initalized new Map with ID '%d'", MapID);
+    Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "multimap", aBuf);
 }
 
 void CGameContext::OnShutdown()

@@ -10,7 +10,7 @@
 class CWall : public CEntity
 {
 public:
-	CWall(CGameWorld *pGameWorld, int Owner);
+	CWall(CGameWorld *pGameWorld, int Owner, int MapID);
 
 	virtual void Reset();
     virtual void Tick();

@@ -5,6 +5,7 @@
 
 #include <engine/server.h>
 #include <engine/shared/memheap.h>
+#include <vector>
 
 class CSnapIDPool
 {
@@ -67,7 +68,8 @@ class CServer : public IServer
 	class IStorage *m_pStorage;
 public:
 	class IGameServer *GameServer() { return m_pGameServer; }
-	class CConfig *Config() { return m_pConfig; }
+    class CConfig *Config() { return m_pConfig; }
+    const CConfig *Config() const { return m_pConfig; }
 	class IConsole *Console() { return m_pConsole; }
 	class IStorage *Storage() { return m_pStorage; }
 
@@ -138,6 +140,9 @@ public:
 		const CMapListEntry *m_pMapListEntryToSend;
 
 		void Reset();
+
+        int m_MapID;
+        int m_NextMapID;
 	};
 
 	CClient m_aClients[MAX_CLIENTS];
@@ -148,6 +153,8 @@ public:
 	CNetServer m_NetServer;
 	CEcon m_Econ;
 	CServerBan m_ServerBan;
+
+    std::vector<IEngineMap*> m_vpMap;
 
 	IEngineMap *m_pMap;
 	IMapChecker *m_pMapChecker;
@@ -160,17 +167,26 @@ public:
 	int m_PrintCBIndex;
 	char m_aShutdownReason[128];
 
+    int64 m_Lastheartbeat;
+
 	// map
 	enum
 	{
 		MAP_CHUNK_SIZE=NET_MAX_PAYLOAD-NET_MAX_CHUNKHEADERSIZE-4, // msg type
+        MAP_DEFAULT_ID=0,
 	};
-	char m_aCurrentMap[64];
-	SHA256_DIGEST m_CurrentMapSha256;
-	unsigned m_CurrentMapCrc;
-	unsigned char *m_pCurrentMapData;
-	int m_CurrentMapSize;
-	int m_MapChunksPerRequest;
+
+    struct CMapData
+    {
+        char m_aCurrentMap[64];
+        SHA256_DIGEST m_CurrentMapSha256;
+        unsigned m_CurrentMapCrc;
+        unsigned char *m_pCurrentMapData;
+        int m_CurrentMapSize;
+        int m_MapChunksPerRequest;
+    };
+
+    std::vector<CMapData> m_vMapData;
 
 	//maplist
 	struct CMapListEntry
@@ -179,6 +195,12 @@ public:
 		CMapListEntry *m_pNext;
 		char m_aName[IConsole::TEMPMAP_NAME_LENGTH];
 	};
+
+    struct CSubdirCallbackUserdata
+    {
+        CServer *m_pServer;
+        char m_aName[IConsole::TEMPMAP_NAME_LENGTH];
+    };
 
 	CHeap *m_pMapListHeap;
 	CMapListEntry *m_pLastMapEntry;
@@ -190,6 +212,7 @@ public:
 
 	CDemoRecorder m_DemoRecorder;
 	CRegister m_Register;
+    CMapChecker m_MapChecker;
 
 	CServer();
 
@@ -197,6 +220,12 @@ public:
 	virtual void SetClientClan(int ClientID, char const *pClan);
 	virtual void SetClientCountry(int ClientID, int Country);
 	virtual void SetClientScore(int ClientID, int Score);
+
+    //Multimap
+    virtual void SetClientMap(int ClientID, int MapID);
+    virtual void SetClientMap(int ClientID, char* MapName);
+
+    virtual IEngineMap* GetMap(int MapID) const override {return m_vpMap[MapID];}
 
 	void Kick(int ClientID, const char *pReason);
 
@@ -219,6 +248,7 @@ public:
 	const char *ClientClan(int ClientID) const;
 	int ClientCountry(int ClientID) const;
 	bool ClientIngame(int ClientID) const;
+    int ClientMapID(int ClientID) const override;
 
 	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID);
 
@@ -227,7 +257,8 @@ public:
 	static int NewClientCallback(int ClientID, void *pUser);
 	static int DelClientCallback(int ClientID, const char *pReason, void *pUser);
 
-	void SendMap(int ClientID);
+	void SendMap(int ClientID, int MapID);
+    void ChangeClientMap(int ClientID);
 	void SendConnectionReady(int ClientID);
 	void SendRconLine(int ClientID, const char *pLine);
 	static void SendRconLineAuthed(const char *pLine, void *pUser, bool Highlighted);
@@ -246,8 +277,7 @@ public:
 
 	void PumpNetwork();
 
-	virtual void ChangeMap(const char *pMap);
-	const char *GetMapName();
+    const char *GetMapName(int MapID, char* aMapName) const;
 	int LoadMap(const char *pMapName);
 
 	void InitRegister(CNetServer *pNetServer, IEngineMasterServer *pMasterServer, CConfig *pConfig, IConsole *pConsole);
@@ -263,6 +293,8 @@ public:
 	static void ConShutdown(IConsole::IResult *pResult, void *pUser);
 	static void ConRecord(IConsole::IResult *pResult, void *pUser);
 	static void ConStopRecord(IConsole::IResult *pResult, void *pUser);
+    static void ConSetMapByID(IConsole::IResult *pResult, void *pUser);
+    static void ConSetMapByName(IConsole::IResult *pResult, void *pUser);
 	static void ConMapReload(IConsole::IResult *pResult, void *pUser);
 	static void ConSaveConfig(IConsole::IResult *pResult, void *pUser);
 	static void ConLogout(IConsole::IResult *pResult, void *pUser);

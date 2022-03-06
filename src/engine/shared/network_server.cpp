@@ -41,6 +41,14 @@ bool CNetServer::Open(NETADDR BindAddr, CConfig *pConfig, IConsole *pConsole, IE
 	return true;
 }
 
+int CNetServer::SetCallbacks(NETFUNC_NEWCLIENT pfnNewClient, NETFUNC_DELCLIENT pfnDelClient, void *pUser)
+{
+    m_pfnNewClient = pfnNewClient;
+    m_pfnDelClient = pfnDelClient;
+    m_UserPtr = pUser;
+    return 0;
+}
+
 void CNetServer::Close(const char *pReason)
 {
 	for(int i = 0; i < NET_MAX_CLIENTS; i++)

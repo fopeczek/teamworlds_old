@@ -6,7 +6,7 @@
 
 #include "player.h"
 
-CEntity::CEntity(CGameWorld *pGameWorld, int ObjType, vec2 Pos, int ProximityRadius)
+CEntity::CEntity(CGameWorld *pGameWorld, int ObjType, vec2 Pos, int MapID, int ProximityRadius)
 {
 	m_pGameWorld = pGameWorld;
 
@@ -14,6 +14,8 @@ CEntity::CEntity(CGameWorld *pGameWorld, int ObjType, vec2 Pos, int ProximityRad
 	m_pNextTypeEntity = 0;
 
 	m_ID = Server()->SnapNewID();
+    m_MapID = MapID;
+
 	m_ObjType = ObjType;
 
 	m_ProximityRadius = ProximityRadius;
@@ -53,8 +55,8 @@ bool CEntity::GameLayerClipped(vec2 CheckPos)
 {
 	int rx = round_to_int(CheckPos.x) / 32;
 	int ry = round_to_int(CheckPos.y) / 32;
-	return (rx < -200 || rx >= GameServer()->Collision()->GetWidth()+200)
-			|| (ry < -200 || ry >= GameServer()->Collision()->GetHeight()+200);
+	return (rx < -200 || rx >= GameServer()->Collision(GetMapID())->GetWidth()+200)
+			|| (ry < -200 || ry >= GameServer()->Collision(GetMapID())->GetHeight()+200);
 }
 
 CConfig *CEntity::Config() {

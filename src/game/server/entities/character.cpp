@@ -42,8 +42,8 @@ CInputCount CountInput(int Prev, int Cur)
 MACRO_ALLOC_POOL_ID_IMPL(CCharacter, MAX_CLIENTS)
 
 // Character, "physical" player's part
-CCharacter::CCharacter(CGameWorld *pWorld)
-: CEntity(pWorld, CGameWorld::ENTTYPE_CHARACTER, vec2(0, 0), ms_PhysSize)
+CCharacter::CCharacter(CGameWorld *pWorld, int MapID)
+: CEntity(pWorld, CGameWorld::ENTTYPE_CHARACTER, vec2(0, 0), MapID, ms_PhysSize)
 {
 	m_Health = 0;
 	m_Armor = 0;
@@ -68,7 +68,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_Pos = Pos;
 
 	m_Core.Reset();
-	m_Core.Init(&GameWorld()->m_Core, GameServer()->Collision());
+	m_Core.Init(&GameWorld()->m_Core, GameServer()->Collision(GetMapID()));
 	m_Core.m_Pos = m_Pos;
 	GameWorld()->m_Core.m_apCharacters[m_pPlayer->GetCID()] = &m_Core;
 
@@ -81,7 +81,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 
 	GameServer()->m_pController->OnCharacterSpawn(this);
 
-    m_Wall = new CWall (GameWorld(), m_pPlayer->GetCID());
+    m_Wall = new CWall (GameWorld(), m_pPlayer->GetCID(), GetMapID());
 
 	return true;
 }
@@ -117,9 +117,9 @@ void CCharacter::SetWeapon(int W)
 
 bool CCharacter::IsGrounded()
 {
-	if(GameServer()->Collision()->CheckPoint(m_Pos.x+GetProximityRadius()/2, m_Pos.y+GetProximityRadius()/2+5))
+	if(GameServer()->Collision(GetMapID())->CheckPoint(m_Pos.x+GetProximityRadius()/2, m_Pos.y+GetProximityRadius()/2+5))
 		return true;
-	if(GameServer()->Collision()->CheckPoint(m_Pos.x-GetProximityRadius()/2, m_Pos.y+GetProximityRadius()/2+5))
+	if(GameServer()->Collision(GetMapID())->CheckPoint(m_Pos.x-GetProximityRadius()/2, m_Pos.y+GetProximityRadius()/2+5))
 		return true;
 	return false;
 }
@@ -162,7 +162,7 @@ void CCharacter::HandleNinja()
 		// Set velocity
 		m_Core.m_Vel = m_Ninja.m_ActivationDir * g_pData->m_Weapons.m_Ninja.m_Velocity;
 		vec2 OldPos = m_Pos;
-		GameServer()->Collision()->MoveBox(&m_Core.m_Pos, &m_Core.m_Vel, vec2(GetProximityRadius(), GetProximityRadius()), 0.f);
+		GameServer()->Collision(GetMapID())->MoveBox(&m_Core.m_Pos, &m_Core.m_Vel, vec2(GetProximityRadius(), GetProximityRadius()), 0.f);
 
 		// reset velocity so the client doesn't predict stuff
 		m_Core.m_Vel = vec2(0.f, 0.f);
@@ -171,7 +171,7 @@ void CCharacter::HandleNinja()
 		const float Radius = GetProximityRadius() * 2.0f;
 		const vec2 Center = OldPos + (m_Pos - OldPos) * 0.5f;
 		CCharacter *aEnts[MAX_CLIENTS];
-		const int Num = GameWorld()->FindEntities(Center, Radius, (CEntity**)aEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+		const int Num = GameWorld()->FindEntities(Center, Radius, (CEntity**)aEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER,GetMapID());
 
 		for(int i = 0; i < Num; ++i)
 		{
@@ -352,7 +352,7 @@ void CCharacter::FireWeapon()
                     }
                 }
                 int Num = GameWorld()->FindEntities(ProjStartPos, 10000.f, (CEntity**)apWalls,
-                                                    m_pPlayer->m_Engineer_MaxActiveWalls*PlayerNum, CGameWorld::ENTTYPE_LASER);
+                                                    m_pPlayer->m_Engineer_MaxActiveWalls*PlayerNum, CGameWorld::ENTTYPE_LASER, GetMapID());
                 for (int i =0; i<Num; i++){
                     apWalls[i]->HeIsHealing(m_pPlayer);
                 }
@@ -361,13 +361,13 @@ void CCharacter::FireWeapon()
                 CCharacter *apEnts[MAX_CLIENTS];
                 int Hits = 0;
                 int Num = GameWorld()->FindEntities(ProjStartPos, GetProximityRadius()*0.5f, (CEntity**)apEnts,
-                                                    MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+                                                    MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER, GetMapID());
 
                 for (int i = 0; i < Num; ++i)
                 {
                     CCharacter *pTarget = apEnts[i];
 
-                    if ((pTarget == this) || GameServer()->Collision()->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL))
+                    if ((pTarget == this) || GameServer()->Collision(GetMapID())->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL))
                         continue;
 
                     // set his velocity to fast upward (for now)
@@ -401,7 +401,7 @@ void CCharacter::FireWeapon()
                             ProjStartPos,
                             Direction,
                             (int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GunLifetime),
-                            g_pData->m_Weapons.m_Gun.m_pBase->m_Damage, false, 0, -1, WEAPON_GUN);
+                            g_pData->m_Weapons.m_Gun.m_pBase->m_Damage, false, 0, -1, WEAPON_GUN, GetMapID());
 
             GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE);
         } break;
@@ -423,7 +423,7 @@ void CCharacter::FireWeapon()
                                 ProjStartPos,
                                 vec2(cosf(a), sinf(a))*Speed,
                                 (int)(Server()->TickSpeed()*GameServer()->Tuning()->m_ShotgunLifetime),
-                                g_pData->m_Weapons.m_Shotgun.m_pBase->m_Damage, false, 0, -1, WEAPON_SHOTGUN);
+                                g_pData->m_Weapons.m_Shotgun.m_pBase->m_Damage, false, 0, -1, WEAPON_SHOTGUN, GetMapID());
             }
 
             GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
@@ -437,14 +437,14 @@ void CCharacter::FireWeapon()
                                 ProjStartPos,
                                 Direction,
                                 (int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime),
-                                g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
+                                g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE, GetMapID());
             }else{
                 new CProjectile(GameWorld(), WEAPON_GRENADE,
                                 m_pPlayer->GetCID(),
                                 ProjStartPos,
                                 Direction,
                                 (int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime),
-                                g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
+                                g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE, GetMapID());
             }
 
             GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE);
@@ -459,7 +459,7 @@ void CCharacter::FireWeapon()
                             m_pPlayer->m_Engineer_ActiveWalls++;
                             m_pPlayer->m_Engineer_Wall_Editing = false;
                             m_aWeapons[m_ActiveWeapon].m_Ammo = 0;
-                            m_Wall = new CWall(GameWorld(), m_pPlayer->GetCID());
+                            m_Wall = new CWall(GameWorld(), m_pPlayer->GetCID(), GetMapID());
                         } else {
                             GameServer()->CreateSound(m_Pos, SOUND_WEAPON_NOAMMO);
                             return;
@@ -476,7 +476,7 @@ void CCharacter::FireWeapon()
                     return;
                 }
             } else{
-                new CLaser(GameWorld(), m_Pos, Direction, GameServer()->Tuning()->m_LaserReach, m_pPlayer->GetCID());
+                new CLaser(GameWorld(), m_Pos, Direction, GameServer()->Tuning()->m_LaserReach, m_pPlayer->GetCID(), GetMapID());
                 GameServer()->CreateSound(m_Pos, SOUND_LASER_FIRE);
             }
         } break;
@@ -709,7 +709,7 @@ void CCharacter::TickDefered()
 	// advance the dummy
 	{
 		CWorldCore TempWorld;
-		m_ReckoningCore.Init(&TempWorld, GameServer()->Collision());
+		m_ReckoningCore.Init(&TempWorld, GameServer()->Collision(GetMapID()));
 		m_ReckoningCore.Tick(false);
 		m_ReckoningCore.Move();
 		m_ReckoningCore.Quantize();
@@ -724,13 +724,13 @@ void CCharacter::TickDefered()
 	//lastsentcore
 	vec2 StartPos = m_Core.m_Pos;
 	vec2 StartVel = m_Core.m_Vel;
-	bool StuckBefore = GameServer()->Collision()->TestBox(m_Core.m_Pos, ColBox);
+	bool StuckBefore = GameServer()->Collision(GetMapID())->TestBox(m_Core.m_Pos, ColBox);
 
 	m_Core.Move();
 
-	bool StuckAfterMove = GameServer()->Collision()->TestBox(m_Core.m_Pos, ColBox);
+	bool StuckAfterMove = GameServer()->Collision(GetMapID())->TestBox(m_Core.m_Pos, ColBox);
 	m_Core.Quantize();
-	bool StuckAfterQuant = GameServer()->Collision()->TestBox(m_Core.m_Pos, ColBox);
+	bool StuckAfterQuant = GameServer()->Collision(GetMapID())->TestBox(m_Core.m_Pos, ColBox);
 	m_Pos = m_Core.m_Pos;
 
 	if(!StuckBefore && (StuckAfterMove || StuckAfterQuant))

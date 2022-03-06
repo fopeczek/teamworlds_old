@@ -10,7 +10,7 @@
 #include "projectile.h"
 #include "pickup.h"
 
-CWall::CWall(CGameWorld *pGameWorld, int Owner) :  CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER, vec2(0, 0))
+CWall::CWall(CGameWorld *pGameWorld, int Owner, int MapID) :  CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER, vec2(0, 0), MapID)
 {
     m_Owner = Owner;
     m_EvalTick = 0;
@@ -67,14 +67,14 @@ bool CWall::EndWallEdit(int ammo){
     m_From = pPlayer->GetCharacter()->GetPos();
     m_From = Clamp_vec(m_Pos, m_From, m_laser_range);
 
-    GameServer()->Collision()->IntersectLine(m_Pos, m_From, 0x0, &m_From);
+    GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, m_From, 0x0, &m_From);
     if (distance(m_Pos,m_From) >= radius*2) {
         m_Delay_fac = 10000.0f;
 
         m_From = pPlayer->GetCharacter()->GetPos();
         m_From = Clamp_vec(m_Pos, m_From, m_laser_range);
 
-        GameServer()->Collision()->IntersectLine(m_Pos, m_From, 0x0, &m_From);
+        GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, m_From, 0x0, &m_From);
 
         m_Health = ammo;
 
@@ -122,7 +122,7 @@ void CWall::StartWallEdit(vec2 Dir){
         GameWorld()->InsertEntity(this);
         m_From = pPlayer->GetCharacter()->GetPos();
         m_Pos = m_From + m_Dir * m_laser_range;
-        GameServer()->Collision()->IntersectLine(m_From, m_Pos, 0x0, &m_Pos);
+        GameServer()->Collision(GetMapID())->IntersectLine(m_From, m_Pos, 0x0, &m_Pos);
         m_EvalTick = Server()->Tick();
         Created = true;
     }
@@ -160,14 +160,14 @@ void CWall::Die(int Killer) {
                             vec2(0, 0),
                             0,
                             g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
-                            WEAPON_GRENADE);
+                            WEAPON_GRENADE, GetMapID());
             new CProjectile(GameWorld(), WEAPON_GRENADE,
                             pPlayer->GetCID(),
                             m_From,
                             vec2(0, 0),
                             0,
                             g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
-                            WEAPON_GRENADE);
+                            WEAPON_GRENADE, GetMapID());
             if (Killer == -1) {
                 CNetMsg_Sv_Chat chatMsg;
                 chatMsg.m_Mode = CHAT_WHISPER;
@@ -360,13 +360,13 @@ void CWall::Tick() {
 
                 m_From = pPlayer->GetCharacter()->GetPos();
                 m_From = Clamp_vec(m_Pos, m_From, m_laser_range);
-                GameServer()->Collision()->IntersectLine(m_Pos, m_From, 0x0, &m_From);
+                GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, m_From, 0x0, &m_From);
 
                 GameServer()->CreateSound(m_From, SOUND_LASER_BOUNCE);
             } else {
                 m_EvalTick = Server()->Tick();
 
-                GameServer()->Collision()->IntersectLine(m_Pos, m_From, 0x0, &m_From);
+                GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, m_From, 0x0, &m_From);
 
                 HitCharacter();
                 CheckForBullets();

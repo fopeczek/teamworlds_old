@@ -35,7 +35,7 @@ public:
 	CMapChecker();
 	void AddMaplist(struct CMapVersion *pMaplist, int Num);
 	bool IsMapValid(const char *pMapName, const SHA256_DIGEST *pMapSha256, unsigned MapCrc, unsigned MapSize);
-	bool ReadAndValidateMap(const char *pFilename, int StorageType);
+	bool ReadAndValidateMap(IStorage *pStorage, const char *pFilename, int StorageType);
 
 	int NumStandardMaps();
 	const char *GetStandardMapName(int Index);

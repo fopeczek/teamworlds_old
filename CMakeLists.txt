@@ -1337,6 +1337,7 @@ set_src(ENGINE_SHARED GLOB src/engine/shared
   linereader.cpp
   linereader.h
   map.cpp
+  map.h
   mapchecker.cpp
   mapchecker.h
   masterserver.cpp

@@ -3,12 +3,14 @@
 #ifndef GAME_SERVER_GAMECONTEXT_H
 #define GAME_SERVER_GAMECONTEXT_H
 
+#include "engine/map.h"
 #include <engine/console.h>
 #include <engine/server.h>
 
 #include <game/commands.h>
 #include <game/layers.h>
 #include <game/voting.h>
+#include <vector>
 
 #include "eventhandler.h"
 #include "gameworld.h"
@@ -40,8 +42,8 @@ class CGameContext : public IGameServer
 	class CConfig *m_pConfig;
 	class IConsole *m_pConsole;
 	class IStorage *m_pStorage;
-	CLayers m_Layers;
-	CCollision m_Collision;
+    std::vector<CLayers> m_vLayers;
+    std::vector<CCollision> m_vCollision;
 	CNetObjHandler m_NetObjHandler;
 	CTuningParams m_Tuning;
 
@@ -104,7 +106,7 @@ public:
 	class CConfig *Config() { return m_pConfig; }
 	class IConsole *Console() { return m_pConsole; }
 	class IStorage *Storage() { return m_pStorage; }
-	CCollision *Collision() { return &m_Collision; }
+    CCollision *Collision(int MapID) { return &(m_vCollision[MapID]); }
 	CTuningParams *Tuning() { return &m_Tuning; }
 
 	CGameContext();
@@ -161,7 +163,7 @@ public:
 
 	// helper functions
 	void CreateDamage(vec2 Pos, int Id, vec2 Source, int HealthAmount, int ArmorAmount, bool Self);
-	void CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamage);
+	void CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamage, int MapID);
 	void CreateHammerHit(vec2 Pos);
 	void CreatePlayerSpawn(vec2 Pos);
 	void CreateDeath(vec2 Pos, int Who);
@@ -193,6 +195,7 @@ public:
 
 	// engine events
 	virtual void OnInit();
+    virtual void OnInitMap(int MapID);
 	virtual void OnConsoleInit();
 	virtual void OnShutdown();
 
@@ -207,6 +210,7 @@ public:
 	void OnClientConnected(int ClientID, bool Dummy, bool AsSpec);
 	void OnClientTeamChange(int ClientID);
 	virtual void OnClientEnter(int ClientID);
+    virtual void KillCharacter(int ClientID);
 	virtual void OnClientDrop(int ClientID, const char *pReason);
 	virtual void OnClientDirectInput(int ClientID, void *pInput);
 	virtual void OnClientPredictedInput(int ClientID, void *pInput);
