@@ -80,7 +80,7 @@ void CWall::EndWallEdit(int ammo){
         midpoint2=m_From;
         radius=50.f;
         vec2 vec = midpoint2 - midpoint1;
-        theta = std::acos(vec.y/distance(vec, vec2(0,0)));
+        theta = std::atan2(vec.x, vec.y) + pi/2;
         diff = midpoint2 - midpoint1;
         versor = diff / distance(diff, vec2(0,0));
         diff = midpoint2 - midpoint1 - versor * radius * 2;
@@ -306,7 +306,7 @@ vec2 CWall::Calc_hp_pos(float alpha){
         vec2 p = start * (1 - a) + end * a;
         return p;
     } else if (alpha < cumsum_stops[2]) {
-        alpha = alpha / stops[2];
+        alpha = (alpha - cumsum_stops[1]) / stops[2];
         vec2 p;
         p.x = radius * sin(theta - pi  + alpha * pi);
         p.y = radius * cos(theta - pi  + alpha * pi);
