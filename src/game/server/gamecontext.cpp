@@ -1987,10 +1987,10 @@ void CGameContext::ConDoActivityCheck(IConsole::IResult *pResult, void *pUserDat
     CGameContext *pSelf = (CGameContext *)pUserData;
     std::string username;
 
-    if (pSelf->Server()->m_DoActiveCheck) {
-        pSelf->Server()->m_DoActiveCheck = false;
+    if (pSelf->Server()->AFK) {
+        pSelf->Server()->AFK = false;
     } else {
-        pSelf->Server()->m_DoActiveCheck = true;
+        pSelf->Server()->AFK = true;
     }
 }
 

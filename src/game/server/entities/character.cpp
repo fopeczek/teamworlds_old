@@ -455,11 +455,15 @@ void CCharacter::FireWeapon()
             if (m_pPlayer->MyClass==CPlayer::Class::Engineer) {
                 if(m_pPlayer->m_Engineer_ActiveWalls < m_pPlayer->m_Engineer_MaxActiveWalls or m_pPlayer->Cheats.Godmode){
                     if (m_pPlayer->m_Engineer_Wall_Editing) {
-                        m_pPlayer->m_Engineer_ActiveWalls++;
-                        m_Wall->EndWallEdit(m_aWeapons[m_ActiveWeapon].m_Ammo);
-                        m_pPlayer->m_Engineer_Wall_Editing = false;
-                        m_aWeapons[m_ActiveWeapon].m_Ammo=0;
-                        m_Wall = new CWall (GameWorld(), m_pPlayer->GetCID());
+                        if (m_Wall->EndWallEdit(m_aWeapons[m_ActiveWeapon].m_Ammo)) {
+                            m_pPlayer->m_Engineer_ActiveWalls++;
+                            m_pPlayer->m_Engineer_Wall_Editing = false;
+                            m_aWeapons[m_ActiveWeapon].m_Ammo = 0;
+                            m_Wall = new CWall(GameWorld(), m_pPlayer->GetCID());
+                        } else {
+                            GameServer()->CreateSound(m_Pos, SOUND_WEAPON_NOAMMO);
+                            return;
+                        }
                     } else {
                         if(!m_Wall->Created) {
                             m_Wall->StartWallEdit(Direction);

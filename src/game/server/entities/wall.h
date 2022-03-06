@@ -17,7 +17,7 @@ public:
 	virtual void TickPaused();
 	virtual void Snap(int SnappingClient);
     void StartWallEdit(vec2 Dir);
-    void EndWallEdit(int ammo);
+    bool EndWallEdit(int ammo);
     vec2 Clamp_vec(vec2 From, vec2 To, float clamp);
     bool Created;
     int m_Owner;
@@ -53,9 +53,10 @@ private:
     CPickup *m_Health_Interface[m_MAX_Health];
 
     //-----------------------for calculations-------------------------------
+    static constexpr float radius = 50.f;
+
     vec2 midpoint1;
     vec2 midpoint2;
-    float radius;
     float theta;
     vec2 versor;
     vec2 diff;

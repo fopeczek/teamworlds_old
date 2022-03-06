@@ -21,7 +21,7 @@ public:
     };
     ServerAvalableCheats ServerCheats;
 
-    bool m_DoActiveCheck = true;
+    bool AFK = false;
 	/*
 		Structure: CClientInfo
 	*/

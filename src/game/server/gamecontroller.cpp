@@ -56,7 +56,7 @@ IGameController::IGameController(CGameContext *pGameServer)
 //activity
 void IGameController::DoActivityCheck()
 {
-    if (Server()->m_DoActiveCheck) {
+    if (Server()->AFK) {
         if (Config()->m_SvInactiveKickTime == 0)
             return;
 
@@ -829,7 +829,7 @@ void IGameController::Tick()
 	}
 
 	// check for inactive players
-	DoActivityCheck();
+    DoActivityCheck();
 
 	// win check
 	if((m_GameState == IGS_GAME_RUNNING || m_GameState == IGS_GAME_PAUSED) && !GameServer()->m_World.m_ResetRequested)

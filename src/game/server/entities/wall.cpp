@@ -62,47 +62,58 @@ void CWall::HeIsHealing(CPlayer* player)
     }
 }
 
-void CWall::EndWallEdit(int ammo){
-    m_Delay_fac = 10000.0f;
+bool CWall::EndWallEdit(int ammo){
 
     m_From = pPlayer->GetCharacter()->GetPos();
     m_From = Clamp_vec(m_Pos, m_From, m_laser_range);
 
     GameServer()->Collision()->IntersectLine(m_Pos, m_From, 0x0, &m_From);
+    if (distance(m_Pos,m_From) >= radius*2) {
+        m_Delay_fac = 10000.0f;
 
-    m_Health=ammo;
+        m_From = pPlayer->GetCharacter()->GetPos();
+        m_From = Clamp_vec(m_Pos, m_From, m_laser_range);
 
-    vec2 pos;
-    if (distance(diff, vec2(0,0)) > 2 * radius){
-        pos = m_From;
-    } else {
-        midpoint1=m_Pos;
-        midpoint2=m_From;
-        radius=50.f;
-        vec2 vec = midpoint2 - midpoint1;
-        theta = std::atan2(vec.x, vec.y) + pi/2;
-        diff = midpoint2 - midpoint1;
-        versor = diff / distance(diff, vec2(0,0));
-        diff = midpoint2 - midpoint1 - versor * radius * 2;
-        float line_segment_len = distance(diff, vec2(0,0));
-        total_path = radius * pi * 2 + 2 * line_segment_len;
-        stops[0] = radius * pi / total_path;
-        stops[1] = line_segment_len / total_path;
-        stops[2] = radius * pi / total_path;
-        stops[3] = line_segment_len / total_path;
-        std::partial_sum(&stops[0], &stops[3], &cumsum_stops[0]);
-        pos = Calc_hp_pos(m_HPTick/m_hp_interface_delay);
-    }
+        GameServer()->Collision()->IntersectLine(m_Pos, m_From, 0x0, &m_From);
 
-    for (int i =0; i < m_Health; i++){
-        if (pos != m_From) {
-            int HPTick = m_HPTick + i * m_hp_interface_space;
-            HPTick %= static_cast<int>(m_hp_interface_delay);
-            pos = Calc_hp_pos(HPTick/m_hp_interface_delay);
+        m_Health = ammo;
+
+        vec2 pos;
+        if (distance(diff, vec2(0, 0)) > 2 * radius) {
+            pos = m_From;
+        } else {
+            midpoint1 = m_Pos;
+            midpoint2 = m_From;
+            vec2 vec = midpoint2 - midpoint1;
+            theta = std::atan2(vec.x, vec.y) + pi / 2;
+            diff = midpoint2 - midpoint1;
+            versor = diff / distance(diff, vec2(0, 0));
+            diff = midpoint2 - midpoint1 - versor * radius * 2;
+            float line_segment_len = distance(diff, vec2(0, 0));
+            total_path = radius * pi * 2 + 2 * line_segment_len;
+            stops[0] = radius * pi / total_path;
+            stops[1] = line_segment_len / total_path;
+            stops[2] = radius * pi / total_path;
+            stops[3] = line_segment_len / total_path;
+            std::partial_sum(&stops[0], &stops[3], &cumsum_stops[0]);
+            pos = Calc_hp_pos(m_HPTick / m_hp_interface_delay);
         }
-        m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH, pos, false);
+
+        for (int i = 0; i < m_Health; i++) {
+            if (pos != m_From) {
+                int HPTick = m_HPTick + i * m_hp_interface_space;
+                HPTick %= static_cast<int>(m_hp_interface_delay);
+                pos = Calc_hp_pos(HPTick / m_hp_interface_delay);
+            }
+            m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH, pos, false);
+        }
+        m_Done = true;
+        return true;
+    } else {
+        m_From = pPlayer->GetCharacter()->GetPos();
+        m_From = Clamp_vec(m_Pos, m_From, m_laser_range);
+        return false;
     }
-    m_Done= true;
 }
 
 void CWall::StartWallEdit(vec2 Dir){
@@ -124,10 +135,12 @@ bool CWall::TakeDamage(int Dmg, int From) {
 
     m_Health = clamp(m_Health, 0, m_MAX_Health);
 
-    for (int i=m_Health+1;i<m_MAX_Health; i++){
-        if (m_Health_Interface[i]){
-            m_Health_Interface[i]->Destroy();
-            m_Health_Interface[i]= nullptr;
+    for (int i=m_Health+1;i<=m_MAX_Health; i++){
+        if (m_Health<m_MAX_Health) {
+            if (m_Health_Interface[i - 1]) {
+                m_Health_Interface[i - 1]->Destroy();
+                m_Health_Interface[i - 1] = nullptr;
+            }
         }
     }
 
@@ -194,9 +207,9 @@ void CWall::CheckForBulletCollision(){
                     if (distance(pAttackBullet->GetPos(Ct), m_Pos) <= m_deconstruct_range){
                         int Dmg;
                         if (pAttackBullet->GetExposive()){
-                            Dmg = 5;
-                        }else{
                             Dmg = 2;
+                        }else{
+                            Dmg = 1;
                         }
                         Dmg *=2;
                         if (TakeDamage(Dmg, pAttackBullet->GetOwner())){
@@ -208,9 +221,9 @@ void CWall::CheckForBulletCollision(){
                     } else if (distance(pAttackBullet->GetPos(Ct), m_From) <= m_deconstruct_range){
                         int Dmg;
                         if (pAttackBullet->GetExposive()){
-                            Dmg = 5;
-                        }else{
                             Dmg = 2;
+                        }else{
+                            Dmg = 1;
                         }
                         Dmg *=2;
                         if (TakeDamage(Dmg, pAttackBullet->GetOwner())){
@@ -222,9 +235,9 @@ void CWall::CheckForBulletCollision(){
                     } else {
                         int Dmg;
                         if (pAttackBullet->GetExposive()){
-                            Dmg = 5;
-                        }else{
                             Dmg = 2;
+                        }else{
+                            Dmg = 1;
                         }
                         if (TakeDamage(Dmg, pAttackBullet->GetOwner())){
                             pAttackBullet->Wall_Coll= true;
