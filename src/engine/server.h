@@ -4,6 +4,7 @@
 #define ENGINE_SERVER_H
 #include "kernel.h"
 #include "message.h"
+#include "game/server/player_classes.h"
 
 class IServer : public IInterface
 {
@@ -45,6 +46,9 @@ public:
 	virtual int GetClientVersion(int ClientID) const = 0;
     virtual int ClientMapID(int ClientID) const = 0;
 
+    virtual Class GetClientClass(int ClientID) = 0;
+    virtual void SetClientClass(int ClientID, Class who) = 0;
+
     virtual IEngineMap* GetMap(int MapID) const = 0;
 
 	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID) = 0;
@@ -61,7 +65,8 @@ public:
 	virtual void SetClientName(int ClientID, char const *pName) = 0;
 	virtual void SetClientClan(int ClientID, char const *pClan) = 0;
 	virtual void SetClientCountry(int ClientID, int Country) = 0;
-	virtual void SetClientScore(int ClientID, int Score) = 0;
+    virtual void SetClientScore(int ClientID, int Score) = 0;
+    virtual void SetClientMap(int ClientID, int MapID) = 0;
 
 	virtual int SnapNewID() = 0;
 	virtual void SnapFreeID(int ID) = 0;

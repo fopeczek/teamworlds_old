@@ -6,6 +6,7 @@
 #include <engine/server.h>
 #include <engine/shared/memheap.h>
 #include <vector>
+#include "game/server/player_classes.h"
 
 class CSnapIDPool
 {
@@ -133,6 +134,8 @@ public:
 		int m_Authed;
 		int m_AuthTries;
 
+        Class MyClass;
+
 		int m_MapChunk;
 		bool m_NoRconNote;
 		bool m_Quitting;
@@ -221,6 +224,10 @@ public:
 	virtual void SetClientCountry(int ClientID, int Country);
 	virtual void SetClientScore(int ClientID, int Score);
 
+
+    virtual Class GetClientClass(int ClientID);
+    virtual void SetClientClass(int ClientID, Class who);
+
     //Multimap
     virtual void SetClientMap(int ClientID, int MapID);
     virtual void SetClientMap(int ClientID, char* MapName);
@@ -246,6 +253,7 @@ public:
 	int GetClientVersion(int ClientID) const;
 	const char *ClientName(int ClientID) const;
 	const char *ClientClan(int ClientID) const;
+
 	int ClientCountry(int ClientID) const;
 	bool ClientIngame(int ClientID) const;
     int ClientMapID(int ClientID) const override;

@@ -298,7 +298,7 @@ bool IGameController::OnEntity(int Index, vec2 Pos, int MapID)
 
 	if(Type != -1)
 	{
-		new CPickup(&GameServer()->m_World, Type, Pos);
+		new CPickup(&GameServer()->m_World, Type, Pos, MapID);
 		return true;
 	}
 

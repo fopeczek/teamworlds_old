@@ -83,6 +83,9 @@ void CFlag::TickPaused()
 
 void CFlag::Snap(int SnappingClient)
 {
+	if(GameServer()->Server()->ClientMapID(SnappingClient) != GetMapID())
+		return;
+
 	if(NetworkClipped(SnappingClient))
 		return;
 

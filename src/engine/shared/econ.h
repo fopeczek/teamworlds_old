@@ -3,7 +3,6 @@
 
 #include "network.h"
 
-
 class CEcon
 {
 	enum

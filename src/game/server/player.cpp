@@ -77,6 +77,12 @@ void CPlayer::Tick()
 		m_pCharacter = 0;
 	}
 
+    if (Server()->GetClientClass(GetCID())==Class::None){
+        Server()->SetClientMap(GetCID(), Server()->LobbyMapID);
+    } else {
+        Server()->SetClientMap(GetCID(), Server()->MainMapID);
+    }
+
 	if(!GameServer()->m_pController->IsGamePaused())
 	{
 		if(!m_pCharacter && m_Team == TEAM_SPECTATORS && m_SpecMode == SPEC_FREEVIEW)
@@ -270,8 +276,8 @@ void CPlayer::OnDirectInput(CNetObj_PlayerInput *NewInput)
 			m_ActiveSpecSwitch = true;
 			if(m_SpecMode == SPEC_FREEVIEW)
 			{
-				CCharacter *pChar = (CCharacter *)GameServer()->m_World.ClosestEntity(m_ViewPos, 6.0f*32, CGameWorld::ENTTYPE_CHARACTER, 0);
-				CFlag *pFlag = (CFlag *)GameServer()->m_World.ClosestEntity(m_ViewPos, 6.0f*32, CGameWorld::ENTTYPE_FLAG, 0);
+				CCharacter *pChar = (CCharacter *)GameServer()->m_World.ClosestEntity(m_ViewPos, 6.0f*32, CGameWorld::ENTTYPE_CHARACTER, 0, GameServer()->Server()->ClientMapID(m_ClientID));
+				CFlag *pFlag = (CFlag *)GameServer()->m_World.ClosestEntity(m_ViewPos, 6.0f*32, CGameWorld::ENTTYPE_FLAG, 0, GameServer()->Server()->ClientMapID(m_ClientID));
 				if(pChar || pFlag)
 				{
 					if(!pChar || (pFlag && pChar && distance(m_ViewPos, pFlag->GetPos()) < distance(m_ViewPos, pChar->GetPos())))
@@ -462,87 +468,38 @@ void CPlayer::SetTeam(int Team, bool DoChatMsg)
 
 void CPlayer::TryRespawn()
 {
-	vec2 SpawnPos;
+    vec2 SpawnPos;
 
     int MapID = GameServer()->Server()->ClientMapID(m_ClientID);
-	if(!GameServer()->m_pController->CanSpawn(m_Team, &SpawnPos, MapID))
-		return;
+    if(!GameServer()->m_pController->CanSpawn(m_Team, &SpawnPos, MapID))
+        return;
 
-	m_Spawning = false;
-	m_pCharacter = new(m_ClientID) CCharacter(&GameServer()->m_World, MapID);
-	m_pCharacter->Spawn(this, SpawnPos);
-	GameServer()->CreatePlayerSpawn(SpawnPos);
+    m_Spawning = false;
+    m_pCharacter = new(m_ClientID) CCharacter(&GameServer()->m_World, MapID);
+    m_pCharacter->Spawn(this, SpawnPos);
+    GameServer()->CreatePlayerSpawn(SpawnPos, MapID);
+    if (Server()->GetClientClass(GetCID()) == Class::Commando){
+        GetCharacter()->GiveWeapon(WEAPON_GRENADE, 10);
+        GetCharacter()->SetWeapon(WEAPON_GRENADE);
+        GetCharacter()->IncreaseArmor(10);
+    } else if (Server()->GetClientClass(GetCID()) == Class::Engineer){
+        GetCharacter()->GiveWeapon(WEAPON_LASER, 10);
+        GetCharacter()->SetWeapon(WEAPON_LASER);
+    }
+}
 
-    CNetMsg_Sv_Chat chatMsg;
-    chatMsg.m_Mode = CHAT_WHISPER;
-    chatMsg.m_ClientID = m_ClientID;
-    chatMsg.m_TargetID = m_ClientID;
-    if (m_Team==TEAM_BLUE){
-        MyClass=Class::Engineer;
-        m_pCharacter->GiveWeapon(WEAPON_LASER, 10);//10 is max ammo for grenade launcher
-        m_pCharacter->SetWeapon(WEAPON_LASER);
-        if (IamNewEng) {
-            IamNewEng = false;
-
-            chatMsg.m_pMessage = "---------------------------------------------------------------------";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-
-            chatMsg.m_pMessage = "Hi you are in blue engineers team. Every engineer starts with laser gun. ";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-
-            chatMsg.m_pMessage = "Engineers laser gun can create walls, by shooting it first time to set first end of the wall, and then ...";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-
-            chatMsg.m_pMessage = "... shooting second time anywhere to set the second point from your position. Each wall has 5 hp. ";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-
-            chatMsg.m_pMessage = "You as an engineer deal 2x damage to yourself (so be careful when rocket boosting). ";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-
-            chatMsg.m_pMessage = "The other team is the team of commandos, which grenade launchers can deal 2x damage to you, and don't deal any damage to themselves. ";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-
-            chatMsg.m_pMessage = "IMPORTANT: Commandos can destroy your walls by shooting any of two ends of it (so place your wall ends in hard to shoot points). Please enjoy my class mod (made by Silent). ";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-
-            chatMsg.m_pMessage = "Please enjoy my class mod (made by Silent). ";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-
-            chatMsg.m_pMessage = "---------------------------------------------------------------------";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-        }
-
-    } else if (m_Team == TEAM_RED){
-        MyClass=Class::Commando;
-        m_pCharacter->IncreaseArmor(10);
-        m_pCharacter->GiveWeapon(WEAPON_GRENADE, 10);//10 is max ammo for grenade launcher
-        m_pCharacter->SetWeapon(WEAPON_GRENADE);
-
-        if (IamNewCmd) {
-            IamNewCmd = false;
-            chatMsg.m_pMessage = "---------------------------------------------------------------------";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-
-            chatMsg.m_pMessage = "Hi you are in red commandos team. Every commando starts with full armor and grenade launcher. ";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-
-            chatMsg.m_pMessage = "Commando grenade launcher explosions deal 2x damage to enemy team, and 0 damage to themself (for rocket boosting). ";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-
-            chatMsg.m_pMessage = "The other team is team of engineers, which deal 2x to themself, but can make walls. ";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-
-            chatMsg.m_pMessage = "IMPORTANT: To destroy a wall shoot any of two ends of it ... ";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-
-            chatMsg.m_pMessage = "... (you can use any weapon, but using grenade launcher you will deal more damage), each wall has 5 hp. ";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-
-            chatMsg.m_pMessage = "Please enjoy my class mod (made by Silent). ";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-
-            chatMsg.m_pMessage = "---------------------------------------------------------------------";
-            Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_ClientID);
-        }
+void CPlayer::Become(Class who){
+    switch (who) {
+        case Class::Commando:
+            Server()->SetClientClass(GetCID(), Class::Commando);
+            GetCharacter()->GiveWeapon(WEAPON_GRENADE, 10);
+            GetCharacter()->SetWeapon(WEAPON_GRENADE);
+            GetCharacter()->IncreaseArmor(10);
+            break;
+        case Class::Engineer:
+            Server()->SetClientClass(GetCID(), Class::Engineer);
+            GetCharacter()->GiveWeapon(WEAPON_LASER, 10);
+            GetCharacter()->SetWeapon(WEAPON_LASER);
+            break;
     }
 }

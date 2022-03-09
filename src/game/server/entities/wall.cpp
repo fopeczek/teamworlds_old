@@ -45,7 +45,7 @@ bool CWall::HitCharacter()
 
 void CWall::HeIsHealing(CPlayer* player)
 {
-    if (player->MyClass == CPlayer::Class::Engineer){
+    if (Server()->GetClientClass(player->GetCID()) == Class::Engineer){
         if (distance(player->GetCharacter()->GetPos(), m_Pos) <= player->GetCharacter()->GetProximityRadius()*1.5f or distance(player->GetCharacter()->GetPos(), m_From) <= player->GetCharacter()->GetProximityRadius()*1.5f){
             if (m_Health <m_MAX_Health){
                 m_Health += 1;
@@ -53,10 +53,10 @@ void CWall::HeIsHealing(CPlayer* player)
 
                 for (int i=0;i<m_Health; i++){
                     if (!m_Health_Interface[i]){
-                        m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH, Calc_hp_pos(m_HPTick/m_hp_interface_delay), false);
+                        m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH, Calc_hp_pos(m_HPTick/m_hp_interface_delay), GetMapID(), false);
                     }
                 }
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH);
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH, -1, GetMapID());
             }
         }
     }
@@ -105,7 +105,7 @@ bool CWall::EndWallEdit(int ammo){
                 HPTick %= static_cast<int>(m_hp_interface_delay);
                 pos = Calc_hp_pos(HPTick / m_hp_interface_delay);
             }
-            m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH, pos, false);
+            m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH, pos, GetMapID(), false);
         }
         m_Done = true;
         return true;
@@ -217,7 +217,7 @@ void CWall::CheckForBulletCollision(){
                             pAttackBullet->Tick();
                             return;
                         }
-                        GameServer()->CreateDamage(m_Pos, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false);
+                        GameServer()->CreateDamage(m_Pos, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false, GetMapID());
                     } else if (distance(pAttackBullet->GetPos(Ct), m_From) <= m_deconstruct_range){
                         int Dmg;
                         if (pAttackBullet->GetExposive()){
@@ -231,7 +231,7 @@ void CWall::CheckForBulletCollision(){
                             pAttackBullet->Tick();
                             return;
                         }
-                        GameServer()->CreateDamage(m_From, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false);
+                        GameServer()->CreateDamage(m_From, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false, GetMapID());
                     } else {
                         int Dmg;
                         if (pAttackBullet->GetExposive()){
@@ -244,7 +244,7 @@ void CWall::CheckForBulletCollision(){
                             pAttackBullet->Tick();
                             return;
                         }
-                        GameServer()->CreateDamage(At, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false);
+                        GameServer()->CreateDamage(At, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false, GetMapID());
                     }
                     pAttackBullet->Wall_Coll= true;
                     pAttackBullet->Tick();
@@ -258,7 +258,7 @@ void CWall::CheckForBulletCollision(){
 }
 
 void CWall::CheckForBullets() {
-    CProjectile *pPosBullet = (CProjectile *) GameWorld()->ClosestEntity(m_Pos, m_deconstruct_range, GameWorld()->ENTTYPE_PROJECTILE, this);
+    CProjectile *pPosBullet = (CProjectile *) GameWorld()->ClosestEntity(m_Pos, m_deconstruct_range, GameWorld()->ENTTYPE_PROJECTILE, this, GetMapID());
     if (pPosBullet){
         if(pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon()==WEAPON_GUN){
             pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER,  m_Health);
@@ -267,7 +267,7 @@ void CWall::CheckForBullets() {
         }
     }
 
-    CProjectile *pFromBullet = (CProjectile *) GameWorld()->ClosestEntity(m_From, m_deconstruct_range, GameWorld()->ENTTYPE_PROJECTILE, this);
+    CProjectile *pFromBullet = (CProjectile *) GameWorld()->ClosestEntity(m_From, m_deconstruct_range, GameWorld()->ENTTYPE_PROJECTILE, this, GetMapID());
     if (pFromBullet){
         if(pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon()==WEAPON_GUN){
             pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, m_Health);
@@ -362,7 +362,7 @@ void CWall::Tick() {
                 m_From = Clamp_vec(m_Pos, m_From, m_laser_range);
                 GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, m_From, 0x0, &m_From);
 
-                GameServer()->CreateSound(m_From, SOUND_LASER_BOUNCE);
+                GameServer()->CreateSound(m_From, SOUND_LASER_BOUNCE, -1, GetMapID());
             } else {
                 m_EvalTick = Server()->Tick();
 

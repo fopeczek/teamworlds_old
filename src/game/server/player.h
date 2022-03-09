@@ -4,6 +4,7 @@
 #define GAME_SERVER_PLAYER_H
 
 #include "alloc.h"
+#include "player_classes.h"
 
 
 enum
@@ -24,7 +25,7 @@ public:
 
 	void Init(int CID);
 
-	void TryRespawn();
+    void TryRespawn();
 	void Respawn();
 	void SetTeam(int Team, bool DoChatMsg=true);
 	int GetTeam() const { return m_Team; }
@@ -57,24 +58,11 @@ public:
 
     AvailableCheats Cheats;
 
-    enum class Class {
-        None,
-        Ninja,
-        Medic,
-        Commando,
-        Machinegunner,
-        Sniper,
-        Engineer
-    };
-
     bool m_Engineer_Wall_Editing= false;
     int m_Engineer_ActiveWalls= 0;
     static constexpr int m_Engineer_MaxActiveWalls= 5;
 
-    Class MyClass=Class::None;
-
-    bool IamNewEng = true;
-    bool IamNewCmd = true;
+    void Become(Class who);
 
 
     //---------------------------------------------------------

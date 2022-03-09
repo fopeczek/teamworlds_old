@@ -317,6 +317,14 @@ void CServer::SetClientScore(int ClientID, int Score)
     m_aClients[ClientID].m_Score = Score;
 }
 
+void CServer::SetClientClass(int ClientID, Class who){
+    m_aClients[ClientID].MyClass=who;
+}
+
+Class CServer::GetClientClass(int ClientID){
+    return m_aClients[ClientID].MyClass;
+}
+
 void CServer::SetClientMap(int ClientID, int MapID)
 {
     if(ClientID < 0 || ClientID >= MAX_CLIENTS || MapID < 0 || MapID >= (int)m_vpMap.size())
@@ -1322,9 +1330,10 @@ int CServer::LoadMap(const char *pMapName)
     if(!m_MapChecker.ReadAndValidateMap(Storage(), aBuf, IStorage::TYPE_ALL))
     {
         Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "mapchecker", "invalid standard map");
-        delete m_vpMap[MapID];
+        m_vpMap.pop_back();
 
-        delete m_vMapData[MapID].m_pCurrentMapData;
+        m_vMapData.pop_back();
+
         return 0;
     }
 
@@ -1332,9 +1341,9 @@ int CServer::LoadMap(const char *pMapName)
     Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "multimap", aBufMultiMap);
 
     if(!m_vpMap[MapID]->Load(aBuf, Storage())) {
-        delete m_vpMap[MapID];
+        m_vpMap.pop_back();
 
-        delete m_vMapData[MapID].m_pCurrentMapData;
+        m_vMapData.pop_back();
 
         return 0;
     }
@@ -1404,6 +1413,13 @@ int CServer::Run()
     if(!LoadMap(Config()->m_SvMap))
     {
         dbg_msg("server", "failed to load map. mapname='%s'", Config()->m_SvMap);
+        return -1;
+    }
+
+    // load map
+    if(!LoadMap(Config()->m_SvLobby))
+    {
+        dbg_msg("server", "failed to load map. mapname='%s'", Config()->m_SvLobby);
         return -1;
     }
     m_vMapData[MAP_DEFAULT_ID].m_MapChunksPerRequest = Config()->m_SvMapDownloadSpeed;
