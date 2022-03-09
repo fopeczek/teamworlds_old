@@ -22,6 +22,8 @@ public:
     ServerAvalableCheats ServerCheats;
 
     bool AFK = false;
+    int LobbyMapID=1;
+    int MainMapID=0;
 	/*
 		Structure: CClientInfo
 	*/

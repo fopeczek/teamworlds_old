@@ -339,6 +339,11 @@ void CServer::SetClientMap(int ClientID, char* MapName)
     {
         //Must be the last loaded map
         m_aClients[ClientID].m_NextMapID = (int)m_vMapData.size()-1;
+    } else {
+        m_aClients[ClientID].m_NextMapID = 0;
+        char aBuf[256];
+        str_format(aBuf, sizeof(aBuf), "Failed to load map for ClientID %d with MapName %s. Returning to initial map", ClientID, MapName);
+        Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "multimap", aBuf);
     }
 }
 
@@ -1317,14 +1322,22 @@ int CServer::LoadMap(const char *pMapName)
     if(!m_MapChecker.ReadAndValidateMap(Storage(), aBuf, IStorage::TYPE_ALL))
     {
         Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "mapchecker", "invalid standard map");
+        delete m_vpMap[MapID];
+
+        delete m_vMapData[MapID].m_pCurrentMapData;
         return 0;
     }
 
     str_format(aBufMultiMap, sizeof(aBufMultiMap), "Loading Map with ID '%d' and name '%s'", MapID, pMapName);
     Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "multimap", aBufMultiMap);
 
-    if(!m_vpMap[MapID]->Load(aBuf, Storage()))
+    if(!m_vpMap[MapID]->Load(aBuf, Storage())) {
+        delete m_vpMap[MapID];
+
+        delete m_vMapData[MapID].m_pCurrentMapData;
+
         return 0;
+    }
 
     // stop recording when we change map
     m_DemoRecorder.Stop();

@@ -106,13 +106,14 @@ void CPickup::Tick()
                     break;
             };
 
-            if (Picked) {
+            if(Picked)
+            {
                 char aBuf[256];
-                str_format(aBuf, sizeof(aBuf), "pickup player='%d:%s' item=%d",
-                           pChr->GetPlayer()->GetCID(), Server()->ClientName(pChr->GetPlayer()->GetCID()), m_Type);
-                GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
+                str_format(aBuf, sizeof(aBuf), "pickup player='%d:%s' item=%d map='%d",
+                           pChr->GetPlayer()->GetCID(), Server()->ClientName(pChr->GetPlayer()->GetCID()), m_Type, GetMapID());
+                GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game/multimap", aBuf);
                 int RespawnTime = g_pData->m_aPickups[m_Type].m_Respawntime;
-                if (RespawnTime >= 0)
+                if(RespawnTime >= 0)
                     m_SpawnTick = Server()->Tick() + Server()->TickSpeed() * RespawnTime;
             }
         }

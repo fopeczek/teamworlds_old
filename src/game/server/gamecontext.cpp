@@ -2104,6 +2104,7 @@ void CGameContext::SetupVoting(void *pUserData) {
     addVote("Toggle ninja", "vote_ninjamode",pUserData);
     addVote("Toggle AFK", "allowAFK",pUserData);
     addVote("Return to vanilla", "vanilla",pUserData);
+    addVote("Shuffle teams", "shuffle_teams",pUserData);
 //    addVote("Change map to ctf1", "")
 }
 
@@ -2179,11 +2180,8 @@ void CGameContext::OnInit()
 	m_Events.SetGameServer(this);
 	m_CommandManager.Init(m_pConsole, this, NewCommandHook, RemoveCommandHook);
 
-	// HACK: only set static size for items, which were available in the first 0.7 release
-	// so new items don't break the snapshot delta
-	static const int OLD_NUM_NETOBJTYPES = 23;
-	for(int i = 0; i < OLD_NUM_NETOBJTYPES; i++)
-		Server()->SnapSetStaticsize(i, m_NetObjHandler.GetObjSize(i));
+    for(int i = 0; i < NUM_NETOBJTYPES; i++)
+        Server()->SnapSetStaticsize(i, m_NetObjHandler.GetObjSize(i));
 
 	// select gametype
     if(str_comp_nocase(Config()->m_SvGametype, "mod") == 0)
@@ -2201,7 +2199,7 @@ void CGameContext::OnInit()
 	else
 		m_pController = new CGameControllerDM(this);
 
-    OnInitMap(0);//default map is 0
+    OnInitMap(Server()->MainMapID);//default map is 0
 
 	m_pController->RegisterChatCommands(CommandManager());
 
