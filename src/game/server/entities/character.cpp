@@ -339,58 +339,50 @@ void CCharacter::FireWeapon()
             m_NumObjectsHit = 0;
             GameServer()->CreateSound(m_Pos, SOUND_HAMMER_FIRE, -1, GetMapID());
 
-            if (m_pPlayer->m_Engineer_ActiveWalls>0){
-                CWall *apWalls[m_pPlayer->m_Engineer_MaxActiveWalls];
-                int PlayerNum;
-                for (int i; i < MAX_CLIENTS; i++){
-                    if (GameServer()->m_apPlayers[i]){
-                        if(GameServer()->m_apPlayers[i]->GetCharacter()){
-                            if (Server()->GetClientClass(i) == Class::Engineer){
-                                PlayerNum++;
-                            }
-                        }
-                    }
-                }
-                int Num = GameWorld()->FindEntities(ProjStartPos, 10000.f, (CEntity**)apWalls,
-                                                    m_pPlayer->m_Engineer_MaxActiveWalls*PlayerNum, CGameWorld::ENTTYPE_LASER, GetMapID());
-                for (int i =0; i<Num; i++){
+            if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Engineer) {
+                CWall *apWalls[MAX_PLAYERS * m_pPlayer->m_Engineer_MaxActiveWalls];
+                int manyWalls = GameWorld()->FindEntities(ProjStartPos, 10000000000.f,
+                                                          (CEntity **) apWalls,
+                                                          MAX_PLAYERS * m_pPlayer->m_Engineer_MaxActiveWalls,
+                                                          CGameWorld::ENTTYPE_LASER, GetMapID());
+
+                for (int i = 0; i < manyWalls; ++i) {
                     apWalls[i]->HeIsHealing(m_pPlayer);
                 }
-            } else {
-
-                CCharacter *apEnts[MAX_CLIENTS];
-                int Hits = 0;
-                int Num = GameWorld()->FindEntities(ProjStartPos, GetProximityRadius()*0.5f, (CEntity**)apEnts,
-                                                    MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER, GetMapID());
-
-                for (int i = 0; i < Num; ++i)
-                {
-                    CCharacter *pTarget = apEnts[i];
-
-                    if ((pTarget == this) || GameServer()->Collision(GetMapID())->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL))
-                        continue;
-
-                    // set his velocity to fast upward (for now)
-                    if(length(pTarget->m_Pos-ProjStartPos) > 0.0f)
-                        GameServer()->CreateHammerHit(pTarget->m_Pos-normalize(pTarget->m_Pos-ProjStartPos)*GetProximityRadius()*0.5f, GetMapID());
-                    else
-                        GameServer()->CreateHammerHit(ProjStartPos, GetMapID());
-
-                    vec2 Dir;
-                    if (length(pTarget->m_Pos - m_Pos) > 0.0f)
-                        Dir = normalize(pTarget->m_Pos - m_Pos);
-                    else
-                        Dir = vec2(0.f, -1.f);
-
-                    pTarget->TakeDamage(vec2(0.f, -1.f) + normalize(Dir + vec2(0.f, -1.1f)) * 10.0f, Dir*-1, g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage,
-                                        m_pPlayer->GetCID(), m_ActiveWeapon);
-                    Hits++;
-                }
-
-                // if we Hit anything, we have to wait for the reload
-                if(Hits)
-                    m_ReloadTimer = Server()->TickSpeed()/3;
             }
+
+            CCharacter *apEnts[MAX_CLIENTS];
+            int Hits = 0;
+            int Num = GameWorld()->FindEntities(ProjStartPos, GetProximityRadius()*0.5f, (CEntity**)apEnts,
+                                                MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER, GetMapID());
+
+            for (int i = 0; i < Num; ++i)
+            {
+                CCharacter *pTarget = apEnts[i];
+
+                if ((pTarget == this) || GameServer()->Collision(GetMapID())->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL))
+                    continue;
+
+                // set his velocity to fast upward (for now)
+                if(length(pTarget->m_Pos-ProjStartPos) > 0.0f)
+                    GameServer()->CreateHammerHit(pTarget->m_Pos-normalize(pTarget->m_Pos-ProjStartPos)*GetProximityRadius()*0.5f, GetMapID());
+                else
+                    GameServer()->CreateHammerHit(ProjStartPos, GetMapID());
+
+                vec2 Dir;
+                if (length(pTarget->m_Pos - m_Pos) > 0.0f)
+                    Dir = normalize(pTarget->m_Pos - m_Pos);
+                else
+                    Dir = vec2(0.f, -1.f);
+
+                pTarget->TakeDamage(vec2(0.f, -1.f) + normalize(Dir + vec2(0.f, -1.1f)) * 10.0f, Dir*-1, g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage,
+                                    m_pPlayer->GetCID(), m_ActiveWeapon);
+                Hits++;
+            }
+
+            // if we Hit anything, we have to wait for the reload
+            if(Hits)
+                m_ReloadTimer = Server()->TickSpeed()/3;
 
         } break;
 
@@ -457,6 +449,7 @@ void CCharacter::FireWeapon()
                     if (m_pPlayer->m_Engineer_Wall_Editing) {
                         if (m_Wall->EndWallEdit(m_aWeapons[m_ActiveWeapon].m_Ammo)) {
                             m_pPlayer->m_Engineer_ActiveWalls++;
+                            Server()->ActActiveWalls++;
                             m_pPlayer->m_Engineer_Wall_Editing = false;
                             m_aWeapons[m_ActiveWeapon].m_Ammo = 0;
                             m_Wall = new CWall(GameWorld(), m_pPlayer->GetCID(), GetMapID());
@@ -619,7 +612,7 @@ void CCharacter::OnDirectInput(CNetObj_PlayerInput *pNewInput)
 	if(m_LatestInput.m_TargetX == 0 && m_LatestInput.m_TargetY == 0)
 		m_LatestInput.m_TargetY = -1;
 
-	if(m_NumInputs > 2 && m_pPlayer->GetTeam() != TEAM_SPECTATORS)
+	if(m_NumInputs > 2 && m_pPlayer->GetTeam() != TEAM_SPECTATORS and Server()->GetClientClass(GetPlayer()->GetCID()) != Class::None and GetMapID()!=Server()->LobbyMapID)
 	{
 		HandleWeaponSwitch();
 		FireWeapon();
@@ -697,9 +690,12 @@ void CCharacter::Tick()
         if (GameLayerClipped(m_Pos)) {
             Die(m_pPlayer->GetCID(), WEAPON_WORLD);
         }
-
-        // handle Weapons
-        HandleWeapons();
+        if (Server()->GetClientClass(GetPlayer()->GetCID()) != Class::None and GetMapID()!=Server()->LobbyMapID) {
+            // handle Weapons
+            HandleWeapons();
+        } else {
+            SetWeapon(WEAPON_GUN);
+        }
     }
 }
 
@@ -983,6 +979,9 @@ bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weap
 
 void CCharacter::Snap(int SnappingClient)
 {
+    if(GameServer()->Server()->ClientMapID(SnappingClient) != GetMapID())
+        return;
+
 	if(NetworkClipped(SnappingClient))
 		return;
 

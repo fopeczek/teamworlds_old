@@ -1224,15 +1224,15 @@ int IGameController::GetStartTeam()
 	return TEAM_SPECTATORS;
 }
 
-/*void IGameController::Com_Example(IConsole::IResult *pResult, void *pContext)
+void IGameController::Com_reset_class(IConsole::IResult *pResult, void *pContext)
 {
 	CCommandManager::SCommandContext *pComContext = (CCommandManager::SCommandContext *)pContext;
 	IGameController *pSelf = (IGameController *)pComContext->m_pContext;
 
-	pSelf->GameServer()->SendBroadcast(pResult->GetString(0), -1);
-}*/
+    pSelf->Server()->SetClientClass(pComContext->m_ClientID, Class::None);
+}
 
 void IGameController::RegisterChatCommands(CCommandManager *pManager)
 {
-	//pManager->AddCommand("test", "Test the command system", "r", Com_Example, this);
+	pManager->AddCommand("changeClass", "Reset your class and return to lobby to chose another", "", Com_reset_class, this);
 }

@@ -746,6 +746,7 @@ int CServer::DelClientCallback(int ClientID, const char *pReason, void *pUser)
         pThis->GameServer()->OnClientDrop(ClientID, pReason);
     }
 
+    pThis->m_aClients[ClientID].MyClass = Class::None;
     pThis->m_aClients[ClientID].m_State = CClient::STATE_EMPTY;
     pThis->m_aClients[ClientID].m_aName[0] = 0;
     pThis->m_aClients[ClientID].m_aClan[0] = 0;
