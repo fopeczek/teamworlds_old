@@ -10,7 +10,7 @@ const int PickupPhysSize = 14;
 class CPickup : public CEntity
 {
 public:
-	CPickup(CGameWorld *pGameWorld, int Type, vec2 Pos, int MapID, bool Pickupable = true);
+	CPickup(CGameWorld *pGameWorld, int Type, vec2 Pos, int MapID, bool Pickupable = true, int TeamSpecific=-1);
 
 	virtual void Reset();
 	virtual void Tick();
@@ -22,6 +22,7 @@ private:
     bool m_Pickupable;
 	int m_Type;
 	int m_SpawnTick;
+    int m_Team;
 };
 
 #endif

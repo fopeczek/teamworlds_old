@@ -42,7 +42,6 @@ class CGameContext : public IGameServer
 	class CConfig *m_pConfig;
 	class IConsole *m_pConsole;
 	class IStorage *m_pStorage;
-    std::vector<CLayers> m_vLayers;
     std::vector<CCollision> m_vCollision;
 	CNetObjHandler m_NetObjHandler;
 	CTuningParams m_Tuning;
@@ -109,6 +108,8 @@ public:
     CCollision *Collision(int MapID) { return &(m_vCollision[MapID]); }
 	CTuningParams *Tuning() { return &m_Tuning; }
 
+    std::vector<CLayers> m_vLayers;
+
 	CGameContext();
 	~CGameContext();
 
@@ -125,6 +126,7 @@ public:
 
 	// helper functions
 	class CCharacter *GetPlayerChar(int ClientID);
+    int GetClientTeam(int ClientID);
 
 	int m_LockTeams;
 

@@ -1636,12 +1636,14 @@ set_src(GAME_SERVER GLOB_RECURSE src/game/server
   gamemodes/mod.h
   gamemodes/tdm.cpp
   gamemodes/tdm.h
+  gamemodes/zomb.cpp
+  gamemodes/zomb.h
   gameworld.cpp
   gameworld.h
   gameworld_fwd.h
   player.cpp
   player.h
-  player_fwd.h
+  player_classes.h
 )
 set(GAME_GENERATED_SERVER
   src/generated/server_data.cpp

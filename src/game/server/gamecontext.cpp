@@ -96,6 +96,11 @@ class CCharacter *CGameContext::GetPlayerChar(int ClientID)
 	return m_apPlayers[ClientID]->GetCharacter();
 }
 
+int CGameContext::GetClientTeam(int ClientID)
+{
+    return m_apPlayers[ClientID]->GetTeam();
+}
+
 void CGameContext::CreateDamage(vec2 Pos, int Id, vec2 Source, int HealthAmount, int ArmorAmount, bool Self, int MapID)
 {
 	float f = angle(Source);
@@ -2308,7 +2313,7 @@ void CGameContext::OnPostSnap()
 
 bool CGameContext::IsClientBot(int ClientID) const
 {
-	return m_apPlayers[ClientID] && m_apPlayers[ClientID]->IsDummy();
+    return m_apPlayers[ClientID] && m_apPlayers[ClientID]->IsDummy();
 }
 
 bool CGameContext::IsClientReady(int ClientID) const

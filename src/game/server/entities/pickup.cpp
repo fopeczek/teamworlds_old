@@ -7,12 +7,14 @@
 #include "character.h"
 #include "pickup.h"
 
-CPickup::CPickup(CGameWorld *pGameWorld, int Type, vec2 Pos, int MapID, bool Pickupable)
+CPickup::CPickup(CGameWorld *pGameWorld, int Type, vec2 Pos, int MapID, bool Pickupable, int TeamSpecific)
 : CEntity(pGameWorld, CGameWorld::ENTTYPE_PICKUP, Pos, MapID, PickupPhysSize)
 {
 	m_Type = Type;
 
     m_Pickupable = Pickupable;
+
+    m_Team=TeamSpecific;
 
 	Reset();
 
@@ -25,10 +27,14 @@ void CPickup::Reset()
 		m_SpawnTick = Server()->Tick() + Server()->TickSpeed() * g_pData->m_aPickups[m_Type].m_Spawndelay;
 	else
 		m_SpawnTick = -1;
+
 }
 
 void CPickup::Tick()
 {
+    if(GetMapID()==Server()->LobbyMapID){
+        m_SpawnTick = -1;
+    }
     if (m_Pickupable) {
         // wait for respawn
         if (m_SpawnTick > 0) {
@@ -95,18 +101,23 @@ void CPickup::Tick()
                     break;
 
                 case PICKUP_NINJA: {
-                    Picked = true;
-                    // activate ninja on target player
-                    pChr->GiveNinja();
+                    if (GetMapID()==Server()->LobbyMapID){
+                        pChr->GetPlayer()->Become(Class::Hunter);
+                    } else {
+                        Picked = true;
+                        // activate ninja on target player
+                        pChr->GiveNinja();
 
-                    // loop through all players, setting their emotes
-                    CCharacter *pC = static_cast<CCharacter *>(GameWorld()->FindFirst(CGameWorld::ENTTYPE_CHARACTER));
-                    for (; pC; pC = (CCharacter *) pC->TypeNext()) {
-                        if (pC != pChr)
-                            pC->SetEmote(EMOTE_SURPRISE, Server()->Tick() + Server()->TickSpeed());
+                        // loop through all players, setting their emotes
+                        CCharacter *pC = static_cast<CCharacter *>(GameWorld()->FindFirst(
+                                CGameWorld::ENTTYPE_CHARACTER));
+                        for (; pC; pC = (CCharacter *) pC->TypeNext()) {
+                            if (pC != pChr)
+                                pC->SetEmote(EMOTE_SURPRISE, Server()->Tick() + Server()->TickSpeed());
+                        }
+
+                        pChr->SetEmote(EMOTE_ANGRY, Server()->Tick() + 1200 * Server()->TickSpeed() / 1000);
                     }
-
-                    pChr->SetEmote(EMOTE_ANGRY, Server()->Tick() + 1200 * Server()->TickSpeed() / 1000);
                     break;
                 }
 
@@ -138,6 +149,12 @@ void CPickup::Snap(int SnappingClient)
 {
     if(GameServer()->Server()->ClientMapID(SnappingClient) != GetMapID()) {
         return;
+    }
+
+    if(m_Team!=-1) {
+        if (GameServer()->GetClientTeam(SnappingClient)!=m_Team){
+            return;
+        }
     }
 
 	if(m_SpawnTick != -1 || NetworkClipped(SnappingClient))

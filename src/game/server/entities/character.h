@@ -71,6 +71,30 @@ public:
 
     void LockPos(bool dolock);
 
+    bool m_ShadowDimension= false;
+    bool m_ShadowDimensionTick;
+
+    int m_Health;
+    int m_Armor;
+
+    int m_ActiveWeapon;
+
+    // ninja
+    struct
+    {
+        vec2 m_ActivationDir;
+        int m_ActivationTick;
+        int m_CurrentMoveTime;
+        int m_OldVelAmount;
+    } m_Ninja;
+
+    struct WeaponStat
+    {
+        int m_AmmoRegenStart;
+        int m_Ammo;
+        bool m_Got;
+
+    } m_aWeapons[NUM_WEAPONS];
 private:
 	// player controlling this character
 	class CPlayer *m_pPlayer;
@@ -83,15 +107,6 @@ private:
 	CEntity *m_apHitObjects[MAX_PLAYERS];
 	int m_NumObjectsHit;
 
-	struct WeaponStat
-	{
-		int m_AmmoRegenStart;
-		int m_Ammo;
-		bool m_Got;
-
-	} m_aWeapons[NUM_WEAPONS];
-
-	int m_ActiveWeapon;
 	int m_LastWeapon;
 	int m_QueuedWeapon;
 
@@ -114,19 +129,8 @@ private:
 	int m_NumInputs;
 	int m_Jumped;
 
-	int m_Health;
-	int m_Armor;
 
 	int m_TriggeredEvents;
-
-	// ninja
-	struct
-	{
-		vec2 m_ActivationDir;
-		int m_ActivationTick;
-		int m_CurrentMoveTime;
-		int m_OldVelAmount;
-	} m_Ninja;
 
 	// the player core for the physics
 	CCharacterCore m_Core;

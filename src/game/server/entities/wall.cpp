@@ -68,6 +68,7 @@ bool CWall::EndWallEdit(int ammo){
     m_From = Clamp_vec(m_Pos, m_From, m_laser_range);
 
     GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, m_From, 0x0, &m_From);
+
     if (distance(m_Pos,m_From) >= radius*2) {
         m_Delay_fac = 10000.0f;
 
@@ -78,6 +79,7 @@ bool CWall::EndWallEdit(int ammo){
 
         m_Health = ammo;
 
+        //setup health animation
         vec2 pos;
         if (distance(diff, vec2(0, 0)) > 2 * radius) {
             pos = m_From;
@@ -98,7 +100,6 @@ bool CWall::EndWallEdit(int ammo){
             std::partial_sum(&stops[0], &stops[3], &cumsum_stops[0]);
             pos = Calc_hp_pos(m_HPTick / m_hp_interface_delay);
         }
-
         for (int i = 0; i < m_Health; i++) {
             if (pos != m_From) {
                 int HPTick = m_HPTick + i * m_hp_interface_space;
@@ -107,6 +108,15 @@ bool CWall::EndWallEdit(int ammo){
             }
             m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH, pos, GetMapID(), false);
         }
+
+        //setup hud interface
+        if (str_comp(GameServer()->GameType(), "DM")!=0 and str_comp(GameServer()->GameType(), "LMS")!=0) {
+            vec2 middle((m_Pos.x+m_From.x)/2,(m_Pos.y+m_From.y)/2);
+            m_Hud_Interface [0] = new CPickup(GameWorld(), PICKUP_ARMOR, middle, GetMapID(), false, pPlayer->GetTeam());
+            m_Hud_Interface [1] = new CPickup(GameWorld(), PICKUP_ARMOR, m_From, GetMapID(), false, pPlayer->GetTeam());
+            m_Hud_Interface [2] = new CPickup(GameWorld(), PICKUP_ARMOR, m_Pos, GetMapID(), false, pPlayer->GetTeam());
+        }
+
         m_Done = true;
         return true;
     } else {
@@ -295,6 +305,12 @@ void CWall::Reset()
         if (m_Health_Interface[i]) {
             m_Health_Interface[i]->Destroy();
             m_Health_Interface[i] = nullptr;
+        }
+    }
+    for (int i = 0; i<3; i++){
+        if(m_Hud_Interface[i]){
+            m_Hud_Interface[i]->Destroy();
+            m_Hud_Interface[i] = nullptr;
         }
     }
     pPlayer->m_Engineer_ActiveWalls--;

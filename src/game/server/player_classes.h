@@ -4,7 +4,7 @@
 
 enum class Class {
     None,
-    Ninja,
+    Hunter,
     Medic,
     Commando,
     Machinegunner,

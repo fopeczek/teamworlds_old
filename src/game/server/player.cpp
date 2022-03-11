@@ -478,14 +478,7 @@ void CPlayer::TryRespawn()
     m_pCharacter = new(m_ClientID) CCharacter(&GameServer()->m_World, MapID);
     m_pCharacter->Spawn(this, SpawnPos);
     GameServer()->CreatePlayerSpawn(SpawnPos, MapID);
-    if (Server()->GetClientClass(GetCID()) == Class::Commando){
-        GetCharacter()->GiveWeapon(WEAPON_GRENADE, 10);
-        GetCharacter()->SetWeapon(WEAPON_GRENADE);
-        GetCharacter()->IncreaseArmor(10);
-    } else if (Server()->GetClientClass(GetCID()) == Class::Engineer){
-        GetCharacter()->GiveWeapon(WEAPON_LASER, 10);
-        GetCharacter()->SetWeapon(WEAPON_LASER);
-    }
+	Become(Server()->GetClientClass(GetCID()));
 }
 
 void CPlayer::Become(Class who){
@@ -496,10 +489,14 @@ void CPlayer::Become(Class who){
             GetCharacter()->SetWeapon(WEAPON_GRENADE);
             GetCharacter()->IncreaseArmor(10);
             break;
-        case Class::Engineer:
-            Server()->SetClientClass(GetCID(), Class::Engineer);
-            GetCharacter()->GiveWeapon(WEAPON_LASER, 10);
-            GetCharacter()->SetWeapon(WEAPON_LASER);
-            break;
+		case Class::Engineer:
+			Server()->SetClientClass(GetCID(), Class::Engineer);
+			GetCharacter()->GiveWeapon(WEAPON_LASER, 10);
+			GetCharacter()->SetWeapon(WEAPON_LASER);
+			break;
+		case Class::Hunter:
+			Server()->SetClientClass(GetCID(), Class::Hunter);
+			GetCharacter()->GiveNinja();
+			break;
     }
 }

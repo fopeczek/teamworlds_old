@@ -153,6 +153,8 @@ private:
 	int m_SpectatorID;
 	class CFlag *m_pSpecFlag;
 	bool m_ActiveSpecSwitch;
+
+    friend class CGameControllerZOMB;
 };
 
 #endif

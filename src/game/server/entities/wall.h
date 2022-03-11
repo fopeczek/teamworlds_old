@@ -51,6 +51,7 @@ private:
     int m_Health;
 
     CPickup *m_Health_Interface[m_MAX_Health];
+    CPickup *m_Hud_Interface[3];
 
     //-----------------------for calculations-------------------------------
     static constexpr float radius = 50.f;
