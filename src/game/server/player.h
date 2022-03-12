@@ -5,6 +5,7 @@
 
 #include "alloc.h"
 #include "player_classes.h"
+#include "entities/character.h"
 
 
 enum
@@ -53,6 +54,7 @@ public:
         vec2 PosOfLock;
         bool Jetpack = false;
         bool SuperLaser = false;
+        bool Hookmode = false;
         bool KeepCheat = false;
     };
 
@@ -61,6 +63,8 @@ public:
     bool m_Engineer_Wall_Editing= false;
     int m_Engineer_ActiveWalls= 0;
     static constexpr int m_Engineer_MaxActiveWalls= 5;
+
+    static constexpr int m_Hunter_ShadowCooldown= 2000;
 
     void Become(Class who);
 
@@ -135,11 +139,11 @@ public:
 		int m_Max;
 	} m_Latency;
 
+    CGameContext *GameServer() const { return m_pGameServer; }
 private:
 	CCharacter *m_pCharacter;
 	CGameContext *m_pGameServer;
 
-	CGameContext *GameServer() const { return m_pGameServer; }
 	IServer *Server() const;
 
 	//

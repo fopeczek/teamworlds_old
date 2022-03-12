@@ -19,6 +19,7 @@ public:
         bool Autobox = false;
         bool Jetbox = false;
         bool Ninjabox = false;
+        bool Hookbox = false;
     };
     ServerAvalableCheats ServerCheats;
 

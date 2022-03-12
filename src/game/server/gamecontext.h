@@ -70,6 +70,7 @@ class CGameContext : public IGameServer
     static void ConGodmode(IConsole::IResult *pResult, void *pUserData);
     static void ConAutoFire(IConsole::IResult *pResult, void *pUserData);
     static void ConSandbox(IConsole::IResult *pResult, void *pUserData);
+    static void ConHookmode(IConsole::IResult *pResult, void *pUserData);
     static void ConKill(IConsole::IResult *pResult, void *pUserData);
     static void ConKillAll(IConsole::IResult *pResult, void *pUserData);
     static void ConNoSelfDmg(IConsole::IResult *pResult, void *pUserData);
@@ -83,6 +84,7 @@ class CGameContext : public IGameServer
 //    static void ConGetPos(IConsole::IResult *pResult, void *pUserData);
     static void ConVoteGodmode(IConsole::IResult *pResult, void *pUserData);
     static void ConVoteAutomode(IConsole::IResult *pResult, void *pUserData);
+    static void ConVoteHookmode(IConsole::IResult *pResult, void *pUserData);
     static void ConVoteJetpack(IConsole::IResult *pResult, void *pUserData);
     static void ConVoteNinja(IConsole::IResult *pResult, void *pUserData);
     static void ConKeepCheat(IConsole::IResult *pResult, void *pUserData);

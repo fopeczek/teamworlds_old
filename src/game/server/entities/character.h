@@ -72,7 +72,7 @@ public:
     void LockPos(bool dolock);
 
     bool m_ShadowDimension= false;
-    bool m_ShadowDimensionTick;
+    int m_ShadowDimensionTick=-1;
 
     int m_Health;
     int m_Armor;

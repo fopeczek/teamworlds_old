@@ -24,6 +24,7 @@ public:
 
     void Die(int Killer);
     bool TakeDamage(int Dmg, int From);
+    void HammerHit(int Dmg, CPlayer* player);
 
     void HeIsHealing(CPlayer* player);
 protected:

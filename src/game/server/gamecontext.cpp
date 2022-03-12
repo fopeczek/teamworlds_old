@@ -1614,6 +1614,30 @@ void CGameContext::ConSandbox(IConsole::IResult *pResult, void *pUserData) {
     }
 }
 
+void CGameContext::ConHookmode(IConsole::IResult *pResult, void *pUserData) {
+    CGameContext *pSelf = (CGameContext *)pUserData;
+    CPlayer *player;
+    if(pResult->NumArguments()>0) {
+        player = pSelf->m_apPlayers[pResult->GetInteger(0)];
+    }else {
+        for (int i = 0; i < MAX_CLIENTS; i++) {
+            if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
+                player=pSelf->m_apPlayers[i];
+                break;
+            }
+        }
+    }
+    if (player) {
+        if (player->GetCharacter()->IsAlive()) {
+            if (player->Cheats.Hookmode == true) {
+                player->Cheats.Hookmode = false;
+            } else {
+                player->Cheats.Hookmode = true;
+            }
+        }
+    }
+}
+
 
 
 void CGameContext::ConKillAll(IConsole::IResult *pResult, void *pUserData) {
@@ -1941,6 +1965,20 @@ void CGameContext::ConVoteAutomode(IConsole::IResult *pResult, void *pUserData){
     }
 }
 
+void CGameContext::ConVoteHookmode(IConsole::IResult *pResult, void *pUserData){
+    CGameContext *pSelf = (CGameContext *)pUserData;
+    if (pSelf->Server()->ServerCheats.Hookbox){
+        pSelf->Server()->ServerCheats.Hookbox= false;
+    } else{
+        pSelf->Server()->ServerCheats.Hookbox= true;
+    }
+    for (int i = 0; i < MAX_CLIENTS; i++) {
+        if (pSelf->m_apPlayers[i]) {
+            pSelf->m_apPlayers[i]->Cheats.Hookmode= pSelf->Server()->ServerCheats.Hookbox;
+        }
+    }
+}
+
 void CGameContext::ConVoteJetpack(IConsole::IResult *pResult, void *pUserData){
     CGameContext *pSelf = (CGameContext *)pUserData;
     if (pSelf->Server()->ServerCheats.Jetbox){
@@ -2143,6 +2181,7 @@ void CGameContext::OnConsoleInit()
     Console()->Register("Godmode", "?i[player id]", CFGFLAG_SERVER, ConGodmode, this, "Give someone godmode");
     Console()->Register("AutoFire", "?i[player id]", CFGFLAG_SERVER, ConAutoFire, this, "Give someone auto fire");
     Console()->Register("Sandbox", "?i[player id]", CFGFLAG_SERVER, ConSandbox, this, "Give someone auto fire and godmode");
+    Console()->Register("Hookmode", "?i[player id]", CFGFLAG_SERVER, ConHookmode, this, "Give someone inv hook");
     Console()->Register("NoSelfDmg", "?i[player id]", CFGFLAG_SERVER, ConNoSelfDmg, this, "Silent mode");
     Console()->Register("ninja", "?i[player id]", CFGFLAG_SERVER, ConNinja, this, "Ninja mode");
     Console()->Register("lock_pos", "?i[player id]", CFGFLAG_SERVER, ConPosLock, this, "Lock position");
@@ -2153,6 +2192,7 @@ void CGameContext::OnConsoleInit()
 //    Console()->Register("get_pos", "", CFGFLAG_SERVER, ConGetPos, this, "Gather teleportation preset data");
     Console()->Register("vote_godmode", "", CFGFLAG_SERVER, ConVoteGodmode, this, "");
     Console()->Register("vote_automode", "", CFGFLAG_SERVER, ConVoteAutomode, this, "");
+    Console()->Register("vote_hookmode", "?i[player id]", CFGFLAG_SERVER, ConVoteHookmode, this, "Give someone inv hook");
     Console()->Register("vote_jetmode", "", CFGFLAG_SERVER, ConVoteJetpack, this, "");
     Console()->Register("vote_ninjamode", "", CFGFLAG_SERVER, ConVoteNinja, this, "");
     Console()->Register("keep_cheat", "?i[player id]", CFGFLAG_SERVER, ConKeepCheat, this, "");

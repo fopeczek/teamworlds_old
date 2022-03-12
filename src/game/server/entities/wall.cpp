@@ -138,6 +138,20 @@ void CWall::StartWallEdit(vec2 Dir){
     }
 }
 
+void CWall::HammerHit(int Dmg, CPlayer* player){
+    if (player->GetTeam() != pPlayer->GetTeam()) {
+        if (distance(player->GetCharacter()->GetPos(), m_Pos) <= player->GetCharacter()->GetProximityRadius() * 2.f) {
+            GameServer()->CreateDamage(m_Pos, m_Owner, player->GetCharacter()->GetPos(), Dmg, 0, false, GetMapID());
+            TakeDamage(Dmg, player->GetCID());
+            GameServer()->CreateSound(m_Pos, SOUND_HAMMER_HIT, -1, GetMapID());
+        } else if (distance(player->GetCharacter()->GetPos(), m_From) <= player->GetCharacter()->GetProximityRadius() * 2.f) {
+            GameServer()->CreateDamage(m_From, m_Owner, player->GetCharacter()->GetPos(), Dmg, 0, false, GetMapID());
+            TakeDamage(Dmg, player->GetCID());
+            GameServer()->CreateSound(m_Pos, SOUND_HAMMER_HIT, -1, GetMapID());
+        }
+    }
+}
+
 bool CWall::TakeDamage(int Dmg, int From) {
     if (Dmg>0){
         m_Health-=Dmg;
@@ -164,20 +178,6 @@ bool CWall::TakeDamage(int Dmg, int From) {
 void CWall::Die(int Killer) {
     if (pPlayer) {
         if (pPlayer->GetCharacter()) {
-            new CProjectile(GameWorld(), WEAPON_GRENADE,
-                            pPlayer->GetCID(),
-                            m_Pos,
-                            vec2(0, 0),
-                            0,
-                            g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
-                            WEAPON_GRENADE, GetMapID());
-            new CProjectile(GameWorld(), WEAPON_GRENADE,
-                            pPlayer->GetCID(),
-                            m_From,
-                            vec2(0, 0),
-                            0,
-                            g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
-                            WEAPON_GRENADE, GetMapID());
             if (Killer == -1) {
                 CNetMsg_Sv_Chat chatMsg;
                 chatMsg.m_Mode = CHAT_WHISPER;
@@ -200,6 +200,20 @@ void CWall::Die(int Killer) {
             }
         }
     }
+    new CProjectile(GameWorld(), WEAPON_GRENADE,
+                    m_Owner,
+                    m_Pos,
+                    vec2(0, 0),
+                    0,
+                    g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
+                    WEAPON_GRENADE, GetMapID());
+    new CProjectile(GameWorld(), WEAPON_GRENADE,
+                    m_Owner,
+                    m_From,
+                    vec2(0, 0),
+                    0,
+                    g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
+                    WEAPON_GRENADE, GetMapID());
     Reset();
 }
 

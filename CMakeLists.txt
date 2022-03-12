@@ -1643,6 +1643,7 @@ set_src(GAME_SERVER GLOB_RECURSE src/game/server
   gameworld_fwd.h
   player.cpp
   player.h
+  player_fwd.h
   player_classes.h
 )
 set(GAME_GENERATED_SERVER

@@ -63,12 +63,13 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_ActiveWeapon = WEAPON_GUN;
 	m_LastWeapon = WEAPON_HAMMER;
 	m_QueuedWeapon = -1;
+    m_Ninja.m_CurrentMoveTime = -1;
 
 	m_pPlayer = pPlayer;
 	m_Pos = Pos;
 
 	m_Core.Reset();
-	m_Core.Init(&GameWorld()->m_Core, GameServer()->Collision(GetMapID()));
+	m_Core.Init(&GameWorld()->m_Core, GameServer()->Collision(GetMapID()), pPlayer);
 	m_Core.m_Pos = m_Pos;
 	GameWorld()->m_Core.m_apCharacters[m_pPlayer->GetCID()] = &m_Core;
 
@@ -124,7 +125,7 @@ bool CCharacter::IsGrounded()
 	return false;
 }
 
-//TODO Unhide hunter when: shooting, hooking or being close to [GetProximityRadius()*2.f] anyone, and add a cool down. If possible set binding of readiness (letter "r") to set active weapon to ninja
+//TODO repair cool down bar so when you are using disguise the bar goes |<---|, but after you used it and you are waiting [20 sec] for cool down it goes |--->|
 void CCharacter::HandleNinja()
 {
 	if(m_ActiveWeapon != WEAPON_NINJA)
@@ -132,16 +133,27 @@ void CCharacter::HandleNinja()
 
 	if((Server()->Tick() - m_Ninja.m_ActivationTick) > (g_pData->m_Weapons.m_Ninja.m_Duration * Server()->TickSpeed() / 1000))
 	{
-		// time's up, return
-		m_aWeapons[WEAPON_NINJA].m_Got = false;
-		m_ActiveWeapon = m_LastWeapon;
+        if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and m_ShadowDimension) {
+            m_ShadowDimension= false;
+            m_ShadowDimensionTick=Server()->Tick();
+            //amplify sound of undisguised
+            GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+            GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+            GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+        } else if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and !m_ShadowDimension) {
 
-		// reset velocity and current move
-		if(m_Ninja.m_CurrentMoveTime > 0)
-			m_Core.m_Vel = m_Ninja.m_ActivationDir*m_Ninja.m_OldVelAmount;
-		m_Ninja.m_CurrentMoveTime = -1;
+        }else{
+            // time's up, return
+            m_aWeapons[WEAPON_NINJA].m_Got = false;
+            m_ActiveWeapon = m_LastWeapon;
 
-		SetWeapon(m_ActiveWeapon);
+            // reset velocity and current move
+            if (m_Ninja.m_CurrentMoveTime > 0)
+                m_Core.m_Vel = m_Ninja.m_ActivationDir * m_Ninja.m_OldVelAmount;
+            m_Ninja.m_CurrentMoveTime = -1;
+
+            SetWeapon(m_ActiveWeapon);
+        }
 		return;
 	}
 
@@ -204,16 +216,6 @@ void CCharacter::HandleNinja()
                 // set his velocity to fast upward (for now)
                 aEnts[i]->TakeDamage(vec2(0, -10.0f), m_Ninja.m_ActivationDir*-1, g_pData->m_Weapons.m_Ninja.m_pBase->m_Damage, m_pPlayer->GetCID(), WEAPON_NINJA);
             }
-        }
-    }else{
-        if(m_Ninja.m_CurrentMoveTime > 0) {
-            if (m_ShadowDimension) {
-                m_ShadowDimension = false;
-            } else {
-                m_ShadowDimension = true;
-                m_ShadowDimensionTick = Server()->Tick();
-            }
-            m_Ninja.m_CurrentMoveTime=-1;
         }
     }
 }
@@ -305,7 +307,7 @@ void CCharacter::FireWeapon()
     if(FullAuto && (m_LatestInput.m_Fire&1) && m_aWeapons[m_ActiveWeapon].m_Ammo)
         WillFire = true;
 
-    if (m_pPlayer->Cheats.AutoFire == false){
+    if (!m_pPlayer->Cheats.AutoFire){
         if(!m_aWeapons[m_ActiveWeapon].m_Ammo && WillFire)
         {
             // 125ms is a magical limit of how fast a human can click
@@ -368,6 +370,15 @@ void CCharacter::FireWeapon()
                     apWalls[i]->HeIsHealing(m_pPlayer);
                 }
             }
+            CWall *apWalls[MAX_PLAYERS * m_pPlayer->m_Engineer_MaxActiveWalls];
+            int manyWalls = GameWorld()->FindEntities(ProjStartPos, 10000000000.f,
+                                                      (CEntity **) apWalls,
+                                                      MAX_PLAYERS * m_pPlayer->m_Engineer_MaxActiveWalls,
+                                                      CGameWorld::ENTTYPE_LASER, GetMapID());
+
+            for (int i = 0; i < manyWalls; ++i) {
+                apWalls[i]->HammerHit(g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage, m_pPlayer);
+            }
 
             CCharacter *apEnts[MAX_CLIENTS];
             int Hits = 0;
@@ -399,8 +410,17 @@ void CCharacter::FireWeapon()
             }
 
             // if we Hit anything, we have to wait for the reload
-            if(Hits)
-                m_ReloadTimer = Server()->TickSpeed()/3;
+            if(Hits) {
+                m_ReloadTimer = Server()->TickSpeed() / 3;
+                if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and m_ShadowDimension) {
+                    m_ShadowDimension= false;
+            m_ShadowDimensionTick=Server()->Tick();
+                    //amplify sound of undisguised
+                    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                }
+            }
 
         } break;
 
@@ -414,6 +434,14 @@ void CCharacter::FireWeapon()
                             g_pData->m_Weapons.m_Gun.m_pBase->m_Damage, false, 0, -1, WEAPON_GUN, GetMapID());
 
             GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE, -1, GetMapID());
+            if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and m_ShadowDimension) {
+                m_ShadowDimension= false;
+            m_ShadowDimensionTick=Server()->Tick();
+                //amplify sound of undisguised
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+            }
         } break;
 
         case WEAPON_SHOTGUN:
@@ -437,6 +465,14 @@ void CCharacter::FireWeapon()
             }
 
             GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE, -1, GetMapID());
+            if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and m_ShadowDimension) {
+                m_ShadowDimension= false;
+            m_ShadowDimensionTick=Server()->Tick();
+                //amplify sound of undisguised
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+            }
         } break;
 
         case WEAPON_GRENADE:
@@ -458,6 +494,14 @@ void CCharacter::FireWeapon()
             }
 
             GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE, -1, GetMapID());
+            if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and m_ShadowDimension) {
+                m_ShadowDimension= false;
+            m_ShadowDimensionTick=Server()->Tick();
+                //amplify sound of undisguised
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+            }
         } break;
 
         case WEAPON_LASER:
@@ -486,7 +530,14 @@ void CCharacter::FireWeapon()
                     GameServer()->CreateSound(m_Pos, SOUND_WEAPON_NOAMMO, -1, GetMapID());
                     return;
                 }
-            } else{
+            } else if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and m_ShadowDimension) {
+                m_ShadowDimension= false;
+            m_ShadowDimensionTick=Server()->Tick();
+                //amplify sound of undisguised
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+            } else {
                 new CLaser(GameWorld(), m_Pos, Direction, GameServer()->Tuning()->m_LaserReach, m_pPlayer->GetCID(), GetMapID());
                 GameServer()->CreateSound(m_Pos, SOUND_LASER_FIRE, -1, GetMapID());
             }
@@ -501,7 +552,27 @@ void CCharacter::FireWeapon()
             m_Ninja.m_CurrentMoveTime = g_pData->m_Weapons.m_Ninja.m_Movetime * Server()->TickSpeed() / 1000;
             m_Ninja.m_OldVelAmount = length(m_Core.m_Vel);
 
-            GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE, -1, GetMapID());
+            if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Hunter){
+                m_Ninja.m_CurrentMoveTime = -1;
+                //amplify sound
+                if (m_ShadowDimension) {
+                    m_ShadowDimension= false;
+                    m_ShadowDimensionTick=Server()->Tick();
+                    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                } else {
+                    if (Server()->Tick() < m_ShadowDimensionTick+m_pPlayer->m_Hunter_ShadowCooldown and m_ShadowDimensionTick !=-1){
+                        GameServer()->CreateSound(m_Pos, SOUND_WEAPON_NOAMMO, -1, GetMapID());
+                    } else {
+                        m_ShadowDimension = true;
+                        m_Ninja.m_ActivationTick = Server()->Tick();
+                        GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE, -1, GetMapID());
+                        GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE, -1, GetMapID());
+                        GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE, -1, GetMapID());
+                    }
+                }
+            } else{
+                GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE, -1, GetMapID());
+            }
         } break;
 
     }
@@ -673,6 +744,7 @@ void CCharacter::Tick()
     if (m_pPlayer->Cheats.Lock){
         ResetInput();
         m_ActiveWeapon=WEAPON_NINJA;
+        m_ShadowDimension= false;
         m_Core.Tick(false, m_pPlayer->Cheats.Jetpack);
         m_Pos = m_pPlayer->Cheats.PosOfLock;
         m_Core.m_Pos=m_pPlayer->Cheats.PosOfLock;
@@ -695,11 +767,40 @@ void CCharacter::Tick()
             m_aWeapons[WEAPON_GUN].m_Ammo = minimum(g_pData->m_Weapons.m_aId[WEAPON_LASER].m_Maxammo,
                                                 g_pData->m_Weapons.m_aId[WEAPON_LASER].m_Maxammo);
         }
-        if (m_pPlayer->Cheats.Ninja or Server()->GetClientClass(m_pPlayer->GetCID())==Class::Hunter) {
+        if (m_pPlayer->Cheats.Ninja or (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Hunter and !m_ShadowDimension and m_ShadowDimensionTick==-1)) {
             m_Ninja.m_ActivationTick = Server()->Tick();
+        } else if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Hunter and !m_ShadowDimension and m_ShadowDimensionTick!=-1){
+            if (Server()->Tick()%2==0){//if is odd
+                --m_Ninja.m_ActivationTick;
+            }
+        } else if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Hunter and m_ShadowDimension){
+            if (Server()->Tick()%2==0){//if is odd
+                ++m_Ninja.m_ActivationTick;
+            }
         }
+
         m_Core.m_Input = m_Input;
         m_Core.Tick(true,m_pPlayer->Cheats.Jetpack);
+
+        if (Server()->GetClientClass(GetPlayer()->GetCID())==Class::Hunter and m_ShadowDimension){
+            for (int i = 0; i < MAX_PLAYERS; ++i) {
+                if (i != GetPlayer()->GetCID()) {
+                    if (GameServer()->m_apPlayers[i]) {
+                        if (GameServer()->m_apPlayers[i]->GetCharacter()) {
+                            if (distance(GameServer()->m_apPlayers[i]->GetCharacter()->GetPos(), m_Pos) <=
+                                GetProximityRadius() * 5.f) {
+                                m_ShadowDimension= false;
+                                m_ShadowDimensionTick=Server()->Tick();
+                                //amplify sound of undisguised
+                                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         // handle leaving gamelayer
         if (GameLayerClipped(m_Pos)) {
@@ -910,14 +1011,15 @@ bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weap
 
 	// m_pPlayer only inflicts half damage on self
     if (From == m_pPlayer->GetCID()) {
-        if(Server()->GetClientClass(m_pPlayer->GetCID())==Class::None) {
-            if (m_pPlayer->Cheats.NoSelfDmg) {
-                Dmg = 0;
-            } else {
-                Dmg = maximum(1, Dmg / 2);
-            }
-        }else if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Commando){
+        if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Commando) {
             Dmg = 1;
+        }else if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Engineer) {
+            //leave dmg normal
+        } else {
+            Dmg = maximum(1, Dmg / 2);
+        }
+        if (m_pPlayer->Cheats.NoSelfDmg) {
+            Dmg = 0;
         }
     }
 

@@ -1,6 +1,7 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include "gamecore.h"
+#include "game/server/player.h"
 
 const char *CTuningParams::s_apNames[] =
 {
@@ -52,10 +53,13 @@ float VelocityRamp(float Value, float Start, float Range, float Curvature)
 
 const float CCharacterCore::PHYS_SIZE = 28.0f;
 
-void CCharacterCore::Init(CWorldCore *pWorld, CCollision *pCollision)
+void CCharacterCore::Init(CWorldCore *pWorld, CCollision *pCollision, CPlayer *player)
 {
 	m_pWorld = pWorld;
 	m_pCollision = pCollision;
+    if (player) {
+        m_Player = player;
+    }
 }
 
 void CCharacterCore::Reset()
@@ -239,15 +243,33 @@ void CCharacterCore::Tick(bool UseInput, bool Jet)
 		if(m_HookedPlayer != -1)
 		{
 			CCharacterCore *pCharCore = m_pWorld->m_apCharacters[m_HookedPlayer];
-			if(pCharCore)
-				m_HookPos = pCharCore->m_Pos;
-			else
-			{
+			if(pCharCore) {
+                m_HookPos = pCharCore->m_Pos;
+                if(pCharCore->m_Player){
+                    if(pCharCore->m_Player->GetCharacter()->m_ShadowDimension){
+                        pCharCore->m_Player->GetCharacter()->m_ShadowDimension= false;
+                        //amplify sound of undisguised
+                        pCharCore->m_Player->GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, pCharCore->m_Player->GetCharacter()->GetMapID());
+                        pCharCore->m_Player->GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, pCharCore->m_Player->GetCharacter()->GetMapID());
+                        pCharCore->m_Player->GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, pCharCore->m_Player->GetCharacter()->GetMapID());
+                    }
+                }
+            }else {
 				// release hook
 				m_HookedPlayer = -1;
 				m_HookState = HOOK_RETRACTED;
 				m_HookPos = m_Pos;
 			}
+
+            if (m_Player){
+                if(m_Player->GetCharacter()->m_ShadowDimension){
+                    m_Player->GetCharacter()->m_ShadowDimension= false;
+                    //amplify sound of undisguised
+                    m_Player->GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, m_Player->GetCharacter()->GetMapID());
+                    m_Player->GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, m_Player->GetCharacter()->GetMapID());
+                    m_Player->GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, m_Player->GetCharacter()->GetMapID());
+                }
+            }
 
 			// keep players hooked for a max of 1.5sec
 			//if(Server()->Tick() > hook_tick+(Server()->TickSpeed()*3)/2)
@@ -279,12 +301,16 @@ void CCharacterCore::Tick(bool UseInput, bool Jet)
 		}
 
 		// release hook (max hook time is 1.25
-		m_HookTick++;
+        if (m_Player) {
+            if (!m_Player->Cheats.Hookmode) {
+                m_HookTick++;
+            }
+        }
 		if(m_HookedPlayer != -1 && (m_HookTick > SERVER_TICK_SPEED+SERVER_TICK_SPEED/5 || !m_pWorld->m_apCharacters[m_HookedPlayer]))
 		{
-			m_HookedPlayer = -1;
-			m_HookState = HOOK_RETRACTED;
-			m_HookPos = m_Pos;
+            m_HookedPlayer = -1;
+            m_HookState = HOOK_RETRACTED;
+            m_HookPos = m_Pos;
 		}
 	}
 
