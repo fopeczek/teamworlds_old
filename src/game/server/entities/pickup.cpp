@@ -80,11 +80,21 @@ void CPickup::Tick()
                     }
                     break;
                 case PICKUP_SHOTGUN:
-                    if (pChr->GiveWeapon(WEAPON_SHOTGUN, g_pData->m_Weapons.m_aId[WEAPON_SHOTGUN].m_Maxammo)) {
-                        Picked = true;
-                        GameServer()->CreateSound(m_Pos, SOUND_PICKUP_SHOTGUN, -1, GetMapID());
-                        if (pChr->GetPlayer())
-                            GameServer()->SendWeaponPickup(pChr->GetPlayer()->GetCID(), WEAPON_SHOTGUN);
+                    if (GetMapID()==Server()->LobbyMapID){
+                        CPickup *Hp[1];
+                        int num = GameWorld()->FindEntities(m_Pos, GetProximityRadius()*2.f, (CEntity**)Hp, 1, CGameWorld::ENTTYPE_PICKUP, Server()->LobbyMapID);
+                        if (num > 0 and Hp[0]->m_Type==PICKUP_HEALTH){
+                            //healer
+                        } else {
+                            pChr->GetPlayer()->Become(Class::Spider);
+                        }
+                    } else {
+                        if (pChr->GiveWeapon(WEAPON_SHOTGUN, g_pData->m_Weapons.m_aId[WEAPON_SHOTGUN].m_Maxammo)) {
+                            Picked = true;
+                            GameServer()->CreateSound(m_Pos, SOUND_PICKUP_SHOTGUN, -1, GetMapID());
+                            if (pChr->GetPlayer())
+                                GameServer()->SendWeaponPickup(pChr->GetPlayer()->GetCID(), WEAPON_SHOTGUN);
+                        }
                     }
                     break;
                 case PICKUP_LASER:

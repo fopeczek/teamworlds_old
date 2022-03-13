@@ -190,10 +190,15 @@ void CCharacterCore::Tick(bool UseInput, bool Jet)
 		int Hit = m_pCollision->IntersectLine(m_HookPos, NewPos, &NewPos, 0);
 		if(Hit)
 		{
-			if(Hit&CCollision::COLFLAG_NOHOOK)
-				GoingToRetract = true;
-			else
-				GoingToHitGround = true;
+			if(Hit&CCollision::COLFLAG_NOHOOK) {
+                if (m_Player->GetCharacter()->Server()->GetClientClass(m_Player->GetCID()) != Class::Spider) {
+                    GoingToRetract = true;
+                } else{
+                    GoingToHitGround = true;
+                }
+            }else {
+                GoingToHitGround = true;
+            }
 		}
 
 		// Check against other players first

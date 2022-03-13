@@ -125,7 +125,7 @@ bool CCharacter::IsGrounded()
 	return false;
 }
 
-//TODO repair cool down bar so when you are using disguise the bar goes |<---|, but after you used it and you are waiting [20 sec] for cool down it goes |--->|
+
 void CCharacter::HandleNinja()
 {
 	if(m_ActiveWeapon != WEAPON_NINJA)

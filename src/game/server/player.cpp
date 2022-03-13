@@ -494,9 +494,12 @@ void CPlayer::Become(Class who){
 			GetCharacter()->GiveWeapon(WEAPON_LASER, 10);
 			GetCharacter()->SetWeapon(WEAPON_LASER);
 			break;
-		case Class::Hunter:
-			Server()->SetClientClass(GetCID(), Class::Hunter);
-			GetCharacter()->GiveNinja();
-			break;
+        case Class::Hunter:
+            Server()->SetClientClass(GetCID(), Class::Hunter);
+            GetCharacter()->GiveNinja();
+            break;
+        case Class::Spider:
+            Server()->SetClientClass(GetCID(), Class::Spider);
+            break;
     }
 }
