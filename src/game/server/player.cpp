@@ -483,8 +483,8 @@ void CPlayer::TryRespawn()
 
 void CPlayer::Become(Class who){
     switch (who) {
-        case Class::Commando:
-            Server()->SetClientClass(GetCID(), Class::Commando);
+        case Class::Scout:
+            Server()->SetClientClass(GetCID(), Class::Scout);
             GetCharacter()->GiveWeapon(WEAPON_GRENADE, 10);
             GetCharacter()->SetWeapon(WEAPON_GRENADE);
             GetCharacter()->IncreaseArmor(10);

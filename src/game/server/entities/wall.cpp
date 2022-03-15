@@ -10,7 +10,7 @@
 #include "projectile.h"
 #include "pickup.h"
 
-CWall::CWall(CGameWorld *pGameWorld, int Owner, int MapID) :  CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER, vec2(0, 0), MapID)
+CWall::CWall(CGameWorld *pGameWorld, int Owner, int MapID, bool SpiderWeb) :  CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER, vec2(0, 0), MapID)
 {
     m_Owner = Owner;
     m_EvalTick = 0;
@@ -19,8 +19,15 @@ CWall::CWall(CGameWorld *pGameWorld, int Owner, int MapID) :  CEntity(pGameWorld
     m_Done= false;
     m_Delay_fac = 1000.0f;
     m_Health=0;
-    for (int i = 0; i<m_MAX_Health; i++){
-        m_Health_Interface[i] = nullptr;
+    m_SpiderWeb=SpiderWeb;
+    if (SpiderWeb){
+        for (int i = 0; i < m_MAX_SpiderWeb_Health; i++) {
+            m_Health_Interface[i] = nullptr;
+        }
+    }else {
+        for (int i = 0; i < m_MAX_Health; i++) {
+            m_Health_Interface[i] = nullptr;
+        }
     }
     m_Pos=vec2 (0,0);
 }
@@ -59,17 +66,30 @@ void CWall::HeIsHealing(CPlayer* player)
                 GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH, -1, GetMapID());
             }
         }
+    } else if (Server()->GetClientClass(player->GetCID()) == Class::Spider and m_SpiderWeb){
+        if (distance(player->GetCharacter()->GetPos(), m_Pos) <= player->GetCharacter()->GetProximityRadius()*1.5f or distance(player->GetCharacter()->GetPos(), m_From) <= player->GetCharacter()->GetProximityRadius()*1.5f){
+            if (m_Health <m_MAX_SpiderWeb_Health){
+                m_Health += 1;
+                m_Health = clamp(m_Health, 0, m_MAX_SpiderWeb_Health);
+
+                for (int i=0;i<m_Health; i++){
+                    if (!m_Health_Interface[i]){
+                        m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH, Calc_hp_pos(m_HPTick/m_hp_interface_delay), GetMapID(), false);
+                    }
+                }
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH, -1, GetMapID());
+            }
+        }
     }
 }
 
 bool CWall::EndWallEdit(int ammo){
-
     m_From = pPlayer->GetCharacter()->GetPos();
     m_From = Clamp_vec(m_Pos, m_From, m_laser_range);
 
     GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, m_From, 0x0, &m_From);
 
-    if (distance(m_Pos,m_From) >= radius*2) {
+    if (distance(m_Pos, m_From) >= radius * 2) {
         m_Delay_fac = 10000.0f;
 
         m_From = pPlayer->GetCharacter()->GetPos();
@@ -110,11 +130,14 @@ bool CWall::EndWallEdit(int ammo){
         }
 
         //setup hud interface
-        if (str_comp(GameServer()->GameType(), "DM")!=0 and str_comp(GameServer()->GameType(), "LMS")!=0) {
-            vec2 middle((m_Pos.x+m_From.x)/2,(m_Pos.y+m_From.y)/2);
-            m_Hud_Interface [0] = new CPickup(GameWorld(), PICKUP_ARMOR, middle, GetMapID(), false, pPlayer->GetTeam());
-            m_Hud_Interface [1] = new CPickup(GameWorld(), PICKUP_ARMOR, m_From, GetMapID(), false, pPlayer->GetTeam());
-            m_Hud_Interface [2] = new CPickup(GameWorld(), PICKUP_ARMOR, m_Pos, GetMapID(), false, pPlayer->GetTeam());
+        if (str_comp(GameServer()->GameType(), "DM") != 0 and str_comp(GameServer()->GameType(), "LMS") != 0) {
+            vec2 middle((m_Pos.x + m_From.x) / 2, (m_Pos.y + m_From.y) / 2);
+            m_Hud_Interface[0] = new CPickup(GameWorld(), PICKUP_ARMOR, middle, GetMapID(), false,
+                                             pPlayer->GetTeam());
+            m_Hud_Interface[1] = new CPickup(GameWorld(), PICKUP_ARMOR, m_From, GetMapID(), false,
+                                             pPlayer->GetTeam());
+            m_Hud_Interface[2] = new CPickup(GameWorld(), PICKUP_ARMOR, m_Pos, GetMapID(), false,
+                                             pPlayer->GetTeam());
         }
 
         m_Done = true;
@@ -135,6 +158,40 @@ void CWall::StartWallEdit(vec2 Dir){
         GameServer()->Collision(GetMapID())->IntersectLine(m_From, m_Pos, 0x0, &m_Pos);
         m_EvalTick = Server()->Tick();
         Created = true;
+    }
+}
+
+void CWall::SpiderWeb(vec2 Dir){
+
+    m_Dir = Dir;
+    GameWorld()->InsertEntity(this);
+    m_From = pPlayer->GetCharacter()->GetPos();
+    m_Pos = m_From + m_Dir * m_laser_range;
+    GameServer()->Collision(GetMapID())->IntersectLine(m_From, m_Pos, 0x0, &m_Pos);
+    m_Pos = Clamp_vec(m_From, m_Pos, m_SpiderWeb_range);
+
+    if (distance(m_Pos, m_From) >= radius * 2) {
+        m_Delay_fac = 10000.0f;
+
+        m_From = pPlayer->GetCharacter()->GetPos();
+        m_From = Clamp_vec(m_Pos, m_From, m_laser_range);
+
+        GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, m_From, 0x0, &m_From);
+
+        m_Health = m_MAX_SpiderWeb_Health;
+
+        //setup hud interface
+        if (str_comp(GameServer()->GameType(), "DM") != 0 and str_comp(GameServer()->GameType(), "LMS") != 0) {
+            vec2 middle((m_Pos.x + m_From.x) / 2, (m_Pos.y + m_From.y) / 2);
+            m_Hud_Interface[0] = new CPickup(GameWorld(), PICKUP_ARMOR, middle, GetMapID(), false,
+                                             pPlayer->GetTeam());
+            m_Hud_Interface[1] = new CPickup(GameWorld(), PICKUP_ARMOR, m_From, GetMapID(), false,
+                                             pPlayer->GetTeam());
+            m_Hud_Interface[2] = new CPickup(GameWorld(), PICKUP_ARMOR, m_Pos, GetMapID(), false,
+                                             pPlayer->GetTeam());
+        }
+
+        m_Done = true;
     }
 }
 
@@ -159,11 +216,13 @@ bool CWall::TakeDamage(int Dmg, int From) {
 
     m_Health = clamp(m_Health, 0, m_MAX_Health);
 
-    for (int i=m_Health+1;i<=m_MAX_Health; i++){
-        if (m_Health<m_MAX_Health) {
-            if (m_Health_Interface[i - 1]) {
-                m_Health_Interface[i - 1]->Destroy();
-                m_Health_Interface[i - 1] = nullptr;
+    if (!m_SpiderWeb) {
+        for (int i = m_Health + 1; i <= m_MAX_Health; i++) {
+            if (m_Health < m_MAX_Health) {
+                if (m_Health_Interface[i - 1]) {
+                    m_Health_Interface[i - 1]->Destroy();
+                    m_Health_Interface[i - 1] = nullptr;
+                }
             }
         }
     }
@@ -176,105 +235,113 @@ bool CWall::TakeDamage(int Dmg, int From) {
 }
 
 void CWall::Die(int Killer) {
-    if (pPlayer) {
-        if (pPlayer->GetCharacter()) {
-            if (Killer == -1) {
-                CNetMsg_Sv_Chat chatMsg;
-                chatMsg.m_Mode = CHAT_WHISPER;
-                chatMsg.m_ClientID = m_Owner;
-                chatMsg.m_TargetID = m_Owner;
-                chatMsg.m_pMessage = "Wall was destroyed by zombie";
-                Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_Owner);
-            } else if (Killer == -2) {
+    if (!m_SpiderWeb) {
+        if (pPlayer) {
+            if (pPlayer->GetCharacter()) {
+                if (Killer == -1) {
+                    CNetMsg_Sv_Chat chatMsg;
+                    chatMsg.m_Mode = CHAT_WHISPER;
+                    chatMsg.m_ClientID = m_Owner;
+                    chatMsg.m_TargetID = m_Owner;
+                    chatMsg.m_pMessage = "Wall was destroyed by zombie";
+                    Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_Owner);
+                } else if (Killer == -2) {
 
-            } else {
-                CNetMsg_Sv_Chat chatMsg;
-                chatMsg.m_Mode = CHAT_WHISPER;
-                chatMsg.m_ClientID = m_Owner;
-                chatMsg.m_TargetID = m_Owner;
-                char WallMsg[128];
-                str_format(WallMsg, sizeof(WallMsg), "Wall was destroyed by %s", Server()->ClientName(Killer));
-                chatMsg.m_pMessage = WallMsg;
-                Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_Owner);
-                GameServer()->m_apPlayers[Killer]->m_Score += m_wall_score;
+                } else {
+                    CNetMsg_Sv_Chat chatMsg;
+                    chatMsg.m_Mode = CHAT_WHISPER;
+                    chatMsg.m_ClientID = m_Owner;
+                    chatMsg.m_TargetID = m_Owner;
+                    char WallMsg[128];
+                    str_format(WallMsg, sizeof(WallMsg), "Wall was destroyed by %s", Server()->ClientName(Killer));
+                    chatMsg.m_pMessage = WallMsg;
+                    Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_Owner);
+                    GameServer()->m_apPlayers[Killer]->m_Score += m_wall_score;
+                }
             }
         }
+        new CProjectile(GameWorld(), WEAPON_GRENADE,
+                        m_Owner,
+                        m_Pos,
+                        vec2(0, 0),
+                        0,
+                        g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
+                        WEAPON_GRENADE, GetMapID());
+        new CProjectile(GameWorld(), WEAPON_GRENADE,
+                        m_Owner,
+                        m_From,
+                        vec2(0, 0),
+                        0,
+                        g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
+                        WEAPON_GRENADE, GetMapID());
     }
-    new CProjectile(GameWorld(), WEAPON_GRENADE,
-                    m_Owner,
-                    m_Pos,
-                    vec2(0, 0),
-                    0,
-                    g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
-                    WEAPON_GRENADE, GetMapID());
-    new CProjectile(GameWorld(), WEAPON_GRENADE,
-                    m_Owner,
-                    m_From,
-                    vec2(0, 0),
-                    0,
-                    g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
-                    WEAPON_GRENADE, GetMapID());
     Reset();
 }
 
 void CWall::CheckForBulletCollision(){
-    CProjectile *pAttackBullet = (CProjectile *) GameWorld()->FindFirst(GameWorld()->ENTTYPE_PROJECTILE);
-    if (pAttackBullet){
-        for (; pAttackBullet; pAttackBullet = (CProjectile *)pAttackBullet->TypeNext()){
-            vec2 At;
-            if (GameWorld()->IntersectBullet(m_Pos, m_From, m_collision_range, At, pAttackBullet)){
+    if (!m_SpiderWeb) {
+        CProjectile *pAttackBullet = (CProjectile *) GameWorld()->FindFirst(GameWorld()->ENTTYPE_PROJECTILE);
+        if (pAttackBullet) {
+            for (; pAttackBullet; pAttackBullet = (CProjectile *) pAttackBullet->TypeNext()) {
+                vec2 At;
+                if (GameWorld()->IntersectBullet(m_Pos, m_From, m_collision_range, At, pAttackBullet)) {
 
-                if (GameServer()->m_apPlayers[pAttackBullet->GetOwner()]->GetTeam() != GameServer()->m_apPlayers[m_Owner]->GetTeam()){
+                    if (GameServer()->m_apPlayers[pAttackBullet->GetOwner()]->GetTeam() !=
+                        GameServer()->m_apPlayers[m_Owner]->GetTeam()) {
 
-                    float Ct = (Server()->Tick()-pAttackBullet->GetStartTick())/(float)Server()->TickSpeed();
+                        float Ct = (Server()->Tick() - pAttackBullet->GetStartTick()) / (float) Server()->TickSpeed();
 
-                    if (distance(pAttackBullet->GetPos(Ct), m_Pos) <= m_deconstruct_range){
-                        int Dmg;
-                        if (pAttackBullet->GetExposive()){
-                            Dmg = 2;
-                        }else{
-                            Dmg = 1;
+                        if (distance(pAttackBullet->GetPos(Ct), m_Pos) <= m_deconstruct_range) {
+                            int Dmg;
+                            if (pAttackBullet->GetExposive()) {
+                                Dmg = 2;
+                            } else {
+                                Dmg = 1;
+                            }
+                            Dmg *= 2;
+                            if (TakeDamage(Dmg, pAttackBullet->GetOwner())) {
+                                pAttackBullet->Wall_Coll = true;
+                                pAttackBullet->Tick();
+                                return;
+                            }
+                            GameServer()->CreateDamage(m_Pos, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false,
+                                                       GetMapID());
+                        } else if (distance(pAttackBullet->GetPos(Ct), m_From) <= m_deconstruct_range) {
+                            int Dmg;
+                            if (pAttackBullet->GetExposive()) {
+                                Dmg = 2;
+                            } else {
+                                Dmg = 1;
+                            }
+                            Dmg *= 2;
+                            if (TakeDamage(Dmg, pAttackBullet->GetOwner())) {
+                                pAttackBullet->Wall_Coll = true;
+                                pAttackBullet->Tick();
+                                return;
+                            }
+                            GameServer()->CreateDamage(m_From, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false,
+                                                       GetMapID());
+                        } else {
+                            int Dmg;
+                            if (pAttackBullet->GetExposive()) {
+                                Dmg = 2;
+                            } else {
+                                Dmg = 1;
+                            }
+                            if (TakeDamage(Dmg, pAttackBullet->GetOwner())) {
+                                pAttackBullet->Wall_Coll = true;
+                                pAttackBullet->Tick();
+                                return;
+                            }
+                            GameServer()->CreateDamage(At, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false,
+                                                       GetMapID());
                         }
-                        Dmg *=2;
-                        if (TakeDamage(Dmg, pAttackBullet->GetOwner())){
-                            pAttackBullet->Wall_Coll= true;
-                            pAttackBullet->Tick();
-                            return;
-                        }
-                        GameServer()->CreateDamage(m_Pos, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false, GetMapID());
-                    } else if (distance(pAttackBullet->GetPos(Ct), m_From) <= m_deconstruct_range){
-                        int Dmg;
-                        if (pAttackBullet->GetExposive()){
-                            Dmg = 2;
-                        }else{
-                            Dmg = 1;
-                        }
-                        Dmg *=2;
-                        if (TakeDamage(Dmg, pAttackBullet->GetOwner())){
-                            pAttackBullet->Wall_Coll= true;
-                            pAttackBullet->Tick();
-                            return;
-                        }
-                        GameServer()->CreateDamage(m_From, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false, GetMapID());
-                    } else {
-                        int Dmg;
-                        if (pAttackBullet->GetExposive()){
-                            Dmg = 2;
-                        }else{
-                            Dmg = 1;
-                        }
-                        if (TakeDamage(Dmg, pAttackBullet->GetOwner())){
-                            pAttackBullet->Wall_Coll= true;
-                            pAttackBullet->Tick();
-                            return;
-                        }
-                        GameServer()->CreateDamage(At, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false, GetMapID());
+                        pAttackBullet->Wall_Coll = true;
+                        pAttackBullet->Tick();
                     }
-                    pAttackBullet->Wall_Coll= true;
-                    pAttackBullet->Tick();
-                }
-                if (pAttackBullet==(CProjectile *)pAttackBullet->TypeNext()){
-                    break;
+                    if (pAttackBullet == (CProjectile *) pAttackBullet->TypeNext()) {
+                        break;
+                    }
                 }
             }
         }
@@ -282,21 +349,49 @@ void CWall::CheckForBulletCollision(){
 }
 
 void CWall::CheckForBullets() {
-    CProjectile *pPosBullet = (CProjectile *) GameWorld()->ClosestEntity(m_Pos, m_deconstruct_range, GameWorld()->ENTTYPE_PROJECTILE, this, GetMapID());
-    if (pPosBullet){
-        if(pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon()==WEAPON_GUN){
-            pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER,  m_Health);
-            pPosBullet->Destroy();
-            Reset();
+    if (!m_SpiderWeb) {
+        CProjectile *pPosBullet = (CProjectile *) GameWorld()->ClosestEntity(m_Pos, m_deconstruct_range,
+                                                                             GameWorld()->ENTTYPE_PROJECTILE, this,
+                                                                             GetMapID());
+        if (pPosBullet) {
+            if (pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon() == WEAPON_GUN) {
+                pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, m_Health);
+                pPosBullet->Destroy();
+                Reset();
+            }
         }
-    }
 
-    CProjectile *pFromBullet = (CProjectile *) GameWorld()->ClosestEntity(m_From, m_deconstruct_range, GameWorld()->ENTTYPE_PROJECTILE, this, GetMapID());
-    if (pFromBullet){
-        if(pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon()==WEAPON_GUN){
-            pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, m_Health);
-            pFromBullet->Destroy();
-            Reset();
+        CProjectile *pFromBullet = (CProjectile *) GameWorld()->ClosestEntity(m_From, m_deconstruct_range,
+                                                                              GameWorld()->ENTTYPE_PROJECTILE, this,
+                                                                              GetMapID());
+        if (pFromBullet) {
+            if (pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon() == WEAPON_GUN) {
+                pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, m_Health);
+                pFromBullet->Destroy();
+                Reset();
+            }
+        }
+    } else{ //TODO iterate thru other walls and delete them
+        CProjectile *pPosBullet = (CProjectile *) GameWorld()->ClosestEntity(m_Pos, m_deconstruct_range,
+                                                                             GameWorld()->ENTTYPE_PROJECTILE, this,
+                                                                             GetMapID());
+        if (pPosBullet) {
+            if (pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon() == WEAPON_GUN) {
+                pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, pPlayer->GetCharacter()->m_aWeapons[pPlayer->GetCharacter()->m_ActiveWeapon].m_Ammo+m_Health);
+                pPosBullet->Destroy();
+                Reset();
+            }
+        }
+
+        CProjectile *pFromBullet = (CProjectile *) GameWorld()->ClosestEntity(m_From, m_deconstruct_range,
+                                                                              GameWorld()->ENTTYPE_PROJECTILE, this,
+                                                                              GetMapID());
+        if (pFromBullet) {
+            if (pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon() == WEAPON_GUN) {
+                pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, pPlayer->GetCharacter()->m_aWeapons[pPlayer->GetCharacter()->m_ActiveWeapon].m_Ammo+m_Health);
+                pFromBullet->Destroy();
+                Reset();
+            }
         }
     }
 }
@@ -401,7 +496,8 @@ void CWall::Tick() {
                 HitCharacter();
                 CheckForBullets();
                 CheckForBulletCollision();
-                UpdateHealthInterface();
+                if (!m_SpiderWeb)
+                    UpdateHealthInterface();
             }
         } else{
             Die(-2);

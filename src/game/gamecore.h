@@ -8,7 +8,7 @@
 
 #include <math.h>
 #include "collision.h"
-#include "game/server/player_fwd.h"
+#include "game/server/player_classes.h"
 #include <engine/shared/protocol.h>
 #include <generated/protocol.h>
 
@@ -145,9 +145,10 @@ public:
 
 class CCharacterCore
 {
-	CWorldCore *m_pWorld;
+    CWorldCore *m_pWorld;
 	CCollision *m_pCollision;
-    CPlayer *m_Player;
+
+    bool m_pRetval= false;
 public:
 	static const float PHYS_SIZE;
 	vec2 m_Pos;
@@ -172,9 +173,9 @@ public:
 
 	int m_TriggeredEvents;
 
-	void Init(CWorldCore *pWorld, CCollision *pCollision, CPlayer *player= nullptr);
+	void Init(CWorldCore *pWorld, CCollision *pCollision);
 	void Reset();
-	void Tick(bool UseInput, bool Jet=false);
+	bool Tick(bool UseInput, bool Jet=false, Class hisClass=Class::None, bool actShadow=false, bool hookmode=false);
 	void Move();
 
 	void AddDragVelocity();

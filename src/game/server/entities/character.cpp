@@ -69,7 +69,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_Pos = Pos;
 
 	m_Core.Reset();
-	m_Core.Init(&GameWorld()->m_Core, GameServer()->Collision(GetMapID()), pPlayer);
+	m_Core.Init(&GameWorld()->m_Core, GameServer()->Collision(GetMapID()));
 	m_Core.m_Pos = m_Pos;
 	GameWorld()->m_Core.m_apCharacters[m_pPlayer->GetCID()] = &m_Core;
 
@@ -436,7 +436,7 @@ void CCharacter::FireWeapon()
             GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE, -1, GetMapID());
             if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and m_ShadowDimension) {
                 m_ShadowDimension= false;
-            m_ShadowDimensionTick=Server()->Tick();
+                m_ShadowDimensionTick=Server()->Tick();
                 //amplify sound of undisguised
                 GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
                 GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
@@ -456,18 +456,27 @@ void CCharacter::FireWeapon()
                 a += Spreading[i+2];
                 float v = 1-(absolute(i)/(float)ShotSpread);
                 float Speed = mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.0f, v);
-                new CProjectile(GameWorld(), WEAPON_SHOTGUN,
-                                m_pPlayer->GetCID(),
-                                ProjStartPos,
-                                vec2(cosf(a), sinf(a))*Speed,
-                                (int)(Server()->TickSpeed()*GameServer()->Tuning()->m_ShotgunLifetime),
-                                g_pData->m_Weapons.m_Shotgun.m_pBase->m_Damage, false, 0, -1, WEAPON_SHOTGUN, GetMapID());
+                if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Spider){
+                    m_Wall->SpiderWeb(vec2(cosf(a), sinf(a))*Speed);
+                    m_Wall = new CWall(GameWorld(), m_pPlayer->GetCID(), GetMapID());
+                } else {
+                    new CProjectile(GameWorld(), WEAPON_SHOTGUN,
+                                    m_pPlayer->GetCID(),
+                                    ProjStartPos,
+                                    vec2(cosf(a), sinf(a)) * Speed,
+                                    (int) (Server()->TickSpeed() * GameServer()->Tuning()->m_ShotgunLifetime),
+                                    g_pData->m_Weapons.m_Shotgun.m_pBase->m_Damage, false, 0, -1, WEAPON_SHOTGUN,
+                                    GetMapID());
+                }
             }
 
+            if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Spider) {
+                m_aWeapons[m_ActiveWeapon].m_Ammo-=4;//later it will still take 1 so in the end it will take 5
+            }
             GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE, -1, GetMapID());
             if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and m_ShadowDimension) {
                 m_ShadowDimension= false;
-            m_ShadowDimensionTick=Server()->Tick();
+                m_ShadowDimensionTick=Server()->Tick();
                 //amplify sound of undisguised
                 GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
                 GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
@@ -477,13 +486,13 @@ void CCharacter::FireWeapon()
 
         case WEAPON_GRENADE:
         {
-            if (Server()->GetClientClass(GetPlayer()->GetCID())==Class::Commando){
+            if (Server()->GetClientClass(GetPlayer()->GetCID())==Class::Scout){
                 new CProjectile(GameWorld(), WEAPON_GRENADE,
                                 m_pPlayer->GetCID(),
                                 ProjStartPos,
                                 Direction,
                                 (int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime),
-                                g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE, GetMapID());
+                                g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage/2, true, 20, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE, GetMapID());
             }else{
                 new CProjectile(GameWorld(), WEAPON_GRENADE,
                                 m_pPlayer->GetCID(),
@@ -780,7 +789,7 @@ void CCharacter::Tick()
         }
 
         m_Core.m_Input = m_Input;
-        m_Core.Tick(true,m_pPlayer->Cheats.Jetpack);
+        m_Core.Tick(true,m_pPlayer->Cheats.Jetpack, Server()->GetClientClass(m_pPlayer->GetCID()), m_ShadowDimension, m_pPlayer->Cheats.Hookmode);
 
         if (Server()->GetClientClass(GetPlayer()->GetCID())==Class::Hunter and m_ShadowDimension){
             for (int i = 0; i < MAX_PLAYERS; ++i) {
@@ -1011,7 +1020,7 @@ bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weap
 
 	// m_pPlayer only inflicts half damage on self
     if (From == m_pPlayer->GetCID()) {
-        if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Commando) {
+        if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Scout) {
             Dmg = 1;
         }else if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Engineer) {
             //leave dmg normal

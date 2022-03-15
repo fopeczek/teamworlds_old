@@ -69,7 +69,7 @@ void CPickup::Tick()
 
                 case PICKUP_GRENADE:
                     if (GetMapID()==Server()->LobbyMapID){
-                        pChr->GetPlayer()->Become(Class::Commando);
+                        pChr->GetPlayer()->Become(Class::Scout);
                     } else {
                         if (pChr->GiveWeapon(WEAPON_GRENADE, g_pData->m_Weapons.m_aId[WEAPON_GRENADE].m_Maxammo)) {
                             Picked = true;

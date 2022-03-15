@@ -84,9 +84,10 @@ void CProjectile::Tick()
 		if(m_LifeSpan >= 0 || m_Weapon == WEAPON_GRENADE)
 			GameServer()->CreateSound(CurPos, m_SoundImpact, -1, GetMapID());
 
-		if(m_Explosive)
-			GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, m_Damage, GetMapID());
-
+		if(m_Explosive and m_Force!=0)
+			GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, m_Damage, GetMapID(), m_Force);
+        else if (m_Explosive)
+            GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, m_Damage, GetMapID());
 		else if(TargetChr)
 			TargetChr->TakeDamage(m_Direction * maximum(0.001f, m_Force), m_Direction*-1, m_Damage, m_Owner, m_Weapon);
 

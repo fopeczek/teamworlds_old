@@ -1,7 +1,11 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include "gamecore.h"
+#include "game/server/player_classes.h"
+
+#ifdef BUILD_TARGET_TEEWORLDS_SRV
 #include "game/server/player.h"
+#endif
 
 const char *CTuningParams::s_apNames[] =
 {
@@ -53,13 +57,10 @@ float VelocityRamp(float Value, float Start, float Range, float Curvature)
 
 const float CCharacterCore::PHYS_SIZE = 28.0f;
 
-void CCharacterCore::Init(CWorldCore *pWorld, CCollision *pCollision, CPlayer *player)
+void CCharacterCore::Init(CWorldCore *pWorld, CCollision *pCollision)
 {
 	m_pWorld = pWorld;
 	m_pCollision = pCollision;
-    if (player) {
-        m_Player = player;
-    }
 }
 
 void CCharacterCore::Reset()
@@ -77,8 +78,13 @@ void CCharacterCore::Reset()
 	m_Death = false;
 }
 
-void CCharacterCore::Tick(bool UseInput, bool Jet)
+bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShadow, bool hookmode)
 {
+    bool retval = false;
+    if (m_pRetval){
+        retval= true;
+        m_pRetval= false;
+    }
 	m_TriggeredEvents = 0;
 
 	// get ground state
@@ -115,7 +121,7 @@ void CCharacterCore::Tick(bool UseInput, bool Jet)
 				{
 					m_TriggeredEvents |= COREEVENTFLAG_AIR_JUMP;
 					m_Vel.y = -m_pWorld->m_Tuning.m_AirJumpImpulse;
-                    if (Jet== false){
+                    if (!Jet){
                         m_Jumped |= 3;
                     }
 				}
@@ -191,7 +197,7 @@ void CCharacterCore::Tick(bool UseInput, bool Jet)
 		if(Hit)
 		{
 			if(Hit&CCollision::COLFLAG_NOHOOK) {
-                if (m_Player->GetCharacter()->Server()->GetClientClass(m_Player->GetCID()) != Class::Spider) {
+                if (hisClass != Class::Spider) {//make as jetpack (add a fun param)
                     GoingToRetract = true;
                 } else{
                     GoingToHitGround = true;
@@ -250,15 +256,7 @@ void CCharacterCore::Tick(bool UseInput, bool Jet)
 			CCharacterCore *pCharCore = m_pWorld->m_apCharacters[m_HookedPlayer];
 			if(pCharCore) {
                 m_HookPos = pCharCore->m_Pos;
-                if(pCharCore->m_Player){
-                    if(pCharCore->m_Player->GetCharacter()->m_ShadowDimension){
-                        pCharCore->m_Player->GetCharacter()->m_ShadowDimension= false;
-                        //amplify sound of undisguised
-                        pCharCore->m_Player->GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, pCharCore->m_Player->GetCharacter()->GetMapID());
-                        pCharCore->m_Player->GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, pCharCore->m_Player->GetCharacter()->GetMapID());
-                        pCharCore->m_Player->GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, pCharCore->m_Player->GetCharacter()->GetMapID());
-                    }
-                }
+                pCharCore->m_pRetval=true;
             }else {
 				// release hook
 				m_HookedPlayer = -1;
@@ -266,14 +264,8 @@ void CCharacterCore::Tick(bool UseInput, bool Jet)
 				m_HookPos = m_Pos;
 			}
 
-            if (m_Player){
-                if(m_Player->GetCharacter()->m_ShadowDimension){
-                    m_Player->GetCharacter()->m_ShadowDimension= false;
-                    //amplify sound of undisguised
-                    m_Player->GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, m_Player->GetCharacter()->GetMapID());
-                    m_Player->GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, m_Player->GetCharacter()->GetMapID());
-                    m_Player->GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, m_Player->GetCharacter()->GetMapID());
-                }
+            if(actShadow){
+                retval=true;
             }
 
 			// keep players hooked for a max of 1.5sec
@@ -306,8 +298,8 @@ void CCharacterCore::Tick(bool UseInput, bool Jet)
 		}
 
 		// release hook (max hook time is 1.25
-        if (m_Player) {
-            if (!m_Player->Cheats.Hookmode) {
+        if (!hookmode) {// make as jetpack (add a fun param)
+            if(hisClass!=Class::Spider) {
                 m_HookTick++;
             }
         }
@@ -368,6 +360,8 @@ void CCharacterCore::Tick(bool UseInput, bool Jet)
 	// clamp the velocity to something sane
 	if(length(m_Vel) > 6000)
 		m_Vel = normalize(m_Vel) * 6000;
+
+    return retval;
 }
 
 void CCharacterCore::AddDragVelocity()

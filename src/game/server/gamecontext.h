@@ -11,6 +11,7 @@
 #include <game/layers.h>
 #include <game/voting.h>
 #include <vector>
+#include <generated/server_data.h>
 
 #include "eventhandler.h"
 #include "gameworld.h"
@@ -167,7 +168,7 @@ public:
 
 	// helper functions
 	void CreateDamage(vec2 Pos, int Id, vec2 Source, int HealthAmount, int ArmorAmount, bool Self, int MapID);
-	void CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamage, int MapID);
+	void CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamage, int MapID, float MaxForce = g_pData->m_Explosion.m_MaxForce);
 	void CreateHammerHit(vec2 Pos, int MapID);
 	void CreatePlayerSpawn(vec2 Pos, int MapID);
 	void CreateDeath(vec2 Pos, int Who, int MapID);
