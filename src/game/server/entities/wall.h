@@ -18,7 +18,12 @@ public:
 	virtual void Snap(int SnappingClient);
     void StartWallEdit(vec2 Dir);
     bool EndWallEdit(int ammo);
-    void SpiderWeb(vec2 Dir);
+
+    bool FirstTryToFortify(vec2 Dir);
+    bool SpiderWeb(vec2 Dir);
+    void SpiderWebFortify();
+
+    vec2 CheckForIntersection(vec2 st_pos1, vec2 st_pos2, vec2 sec_pos1, vec2 sec_pos2);
     vec2 Clamp_vec(vec2 From, vec2 To, float clamp);
     bool Created;
     int m_Owner;
@@ -43,17 +48,26 @@ private:
     static constexpr int m_wall_score = 2;
     static constexpr int m_MAX_Health = 10;
     static constexpr int m_MAX_SpiderWeb_Health = 1;
+    static constexpr int m_MAX_FortifiedSpiderWeb_Health = 2;
+    static constexpr float m_WebHitDelay = 1.5f;
+    static constexpr int m_WebMaxHits = 3;
     static constexpr float m_SpiderWeb_range = 500.f;
 
     CPlayer *pPlayer;
     vec2 m_From;
     vec2 m_Dir;
     int m_EvalTick;
+    int m_SpiderWebTick;
+    int m_LastHitTick;
     int m_HPTick;
     bool m_Done;
+    bool m_Fortified;
     float m_Delay_fac;
     int m_Health;
+    int m_Hited;
     bool m_SpiderWeb;
+    bool m_WaitingToConfirm= false;
+    int m_ConfirmTick;
 
     CPickup *m_Health_Interface[m_MAX_Health];
     CPickup *m_Hud_Interface[3];

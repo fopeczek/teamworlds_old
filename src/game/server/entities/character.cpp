@@ -82,7 +82,12 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 
 	GameServer()->m_pController->OnCharacterSpawn(this);
 
-    m_Wall = new CWall (GameWorld(), m_pPlayer->GetCID(), GetMapID());
+    if (Server()->GetClientClass(GetPlayer()->GetCID())==Class::Spider){
+        m_Wall = new CWall (GameWorld(), m_pPlayer->GetCID(), Server()->MainMapID, true);
+    } else{
+        m_Wall = new CWall (GameWorld(), m_pPlayer->GetCID(), Server()->MainMapID);
+    }
+
 
 	return true;
 }
@@ -359,24 +364,14 @@ void CCharacter::FireWeapon()
             m_NumObjectsHit = 0;
             GameServer()->CreateSound(m_Pos, SOUND_HAMMER_FIRE, -1, GetMapID());
 
-            if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Engineer) {
-                CWall *apWalls[MAX_PLAYERS * m_pPlayer->m_Engineer_MaxActiveWalls];
-                int manyWalls = GameWorld()->FindEntities(ProjStartPos, 10000000000.f,
-                                                          (CEntity **) apWalls,
-                                                          MAX_PLAYERS * m_pPlayer->m_Engineer_MaxActiveWalls,
-                                                          CGameWorld::ENTTYPE_LASER, GetMapID());
-
-                for (int i = 0; i < manyWalls; ++i) {
-                    apWalls[i]->HeIsHealing(m_pPlayer);
-                }
-            }
-            CWall *apWalls[MAX_PLAYERS * m_pPlayer->m_Engineer_MaxActiveWalls];
+            CWall *apWalls[MAX_PLAYERS * m_pPlayer->m_Engineer_MaxActiveWalls+MAX_PLAYERS * m_pPlayer->m_Spider_MaxActiveWebs];
             int manyWalls = GameWorld()->FindEntities(ProjStartPos, 10000000000.f,
                                                       (CEntity **) apWalls,
-                                                      MAX_PLAYERS * m_pPlayer->m_Engineer_MaxActiveWalls,
+                                                      MAX_PLAYERS * m_pPlayer->m_Engineer_MaxActiveWalls+MAX_PLAYERS * m_pPlayer->m_Spider_MaxActiveWebs,
                                                       CGameWorld::ENTTYPE_LASER, GetMapID());
 
             for (int i = 0; i < manyWalls; ++i) {
+                apWalls[i]->HeIsHealing(m_pPlayer);
                 apWalls[i]->HammerHit(g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage, m_pPlayer);
             }
 
@@ -449,17 +444,42 @@ void CCharacter::FireWeapon()
 
             int ShotSpread = 2;
 
-            for(int i = -ShotSpread; i <= ShotSpread; ++i)
-            {
-                float Spreading[] = {-0.185f, -0.070f, 0, 0.070f, 0.185f};
-                float a = angle(Direction);
-                a += Spreading[i+2];
-                float v = 1-(absolute(i)/(float)ShotSpread);
-                float Speed = mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.0f, v);
-                if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Spider){
-                    m_Wall->SpiderWeb(vec2(cosf(a), sinf(a))*Speed);
-                    m_Wall = new CWall(GameWorld(), m_pPlayer->GetCID(), GetMapID());
-                } else {
+            if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Spider){
+                if (!m_Wall->FirstTryToFortify(Direction)) {
+                    if (m_pPlayer->m_Spider_ActiveWebs<m_pPlayer->m_Spider_MaxActiveWebs) {
+                        if (m_Wall->SpiderWeb(Direction)) {
+                            m_Wall = new CWall(GameWorld(), m_pPlayer->GetCID(), GetMapID(), true);
+                            for (int i = -ShotSpread; i <= ShotSpread; ++i) {
+                                //                  middle  | middle right   |   middle left       | right end   | left end
+                                float Spreading[] = {0, 0.070f * 3.5f, -0.070f * 3.5f, 0.185f * 3.5f, -0.185f * 3.5f};
+                                float a = angle(Direction);
+                                a += Spreading[i + 2];
+                                float v = 1 - (absolute(i) / (float) ShotSpread);
+                                float Speed = mix((float) GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.0f, v);
+
+                                if (i != -2) {
+                                    if (m_pPlayer->m_Spider_ActiveWebs<m_pPlayer->m_Spider_MaxActiveWebs) {
+                                        if (m_Wall->SpiderWeb(vec2(cosf(a), sinf(a)) * Speed)) {
+                                            m_Wall = new CWall(GameWorld(), m_pPlayer->GetCID(), GetMapID(), true);
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            GameServer()->CreateSound(m_Pos, SOUND_WEAPON_NOAMMO, -1, GetMapID());
+                        }
+                    } else {
+                        GameServer()->CreateSound(m_Pos, SOUND_WEAPON_NOAMMO, -1, GetMapID());
+                    }
+                }
+            } else if (Server()->GetClientClass(m_pPlayer->GetCID())!=Class::Spider) {
+
+                for (int i = -ShotSpread; i <= ShotSpread; ++i) {
+                    float Spreading[] = {-0.185f, -0.070f, 0, 0.070f, 0.185f};
+                    float a = angle(Direction);
+                    a += Spreading[i + 2];
+                    float v = 1 - (absolute(i) / (float) ShotSpread);
+                    float Speed = mix((float) GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.0f, v);
                     new CProjectile(GameWorld(), WEAPON_SHOTGUN,
                                     m_pPlayer->GetCID(),
                                     ProjStartPos,
@@ -468,12 +488,8 @@ void CCharacter::FireWeapon()
                                     g_pData->m_Weapons.m_Shotgun.m_pBase->m_Damage, false, 0, -1, WEAPON_SHOTGUN,
                                     GetMapID());
                 }
+                GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE, -1, GetMapID());
             }
-
-            if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Spider) {
-                m_aWeapons[m_ActiveWeapon].m_Ammo-=4;//later it will still take 1 so in the end it will take 5
-            }
-            GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE, -1, GetMapID());
             if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and m_ShadowDimension) {
                 m_ShadowDimension= false;
                 m_ShadowDimensionTick=Server()->Tick();
@@ -520,7 +536,6 @@ void CCharacter::FireWeapon()
                     if (m_pPlayer->m_Engineer_Wall_Editing) {
                         if (m_Wall->EndWallEdit(m_aWeapons[m_ActiveWeapon].m_Ammo)) {
                             m_pPlayer->m_Engineer_ActiveWalls++;
-                            Server()->ActActiveWalls++;
                             m_pPlayer->m_Engineer_Wall_Editing = false;
                             m_aWeapons[m_ActiveWeapon].m_Ammo = 0;
                             m_Wall = new CWall(GameWorld(), m_pPlayer->GetCID(), GetMapID());
@@ -597,6 +612,11 @@ void CCharacter::FireWeapon()
     if (m_aWeapons[m_ActiveWeapon].m_Ammo > 0) { // -1 == unlimited
         if (Server()->GetClientClass(GetPlayer()->GetCID())== Class::Engineer){
             if (m_ActiveWeapon == WEAPON_LASER){
+                return;
+            }
+        }
+        if (Server()->GetClientClass(GetPlayer()->GetCID())== Class::Spider){
+            if (m_ActiveWeapon == WEAPON_SHOTGUN){
                 return;
             }
         }
@@ -789,7 +809,7 @@ void CCharacter::Tick()
         }
 
         m_Core.m_Input = m_Input;
-        m_Core.Tick(true,m_pPlayer->Cheats.Jetpack, Server()->GetClientClass(m_pPlayer->GetCID()), m_ShadowDimension, m_pPlayer->Cheats.Hookmode);
+        m_Core.Tick(true,m_pPlayer->Cheats.Jetpack, Server()->GetClientClass(m_pPlayer->GetCID()), m_ShadowDimension, m_pPlayer->Cheats.Hookmode, GetMapID());
 
         if (Server()->GetClientClass(GetPlayer()->GetCID())==Class::Hunter and m_ShadowDimension){
             for (int i = 0; i < MAX_PLAYERS; ++i) {
@@ -1108,7 +1128,7 @@ void CCharacter::Snap(int SnappingClient)
     if(GameServer()->Server()->ClientMapID(SnappingClient) != GetMapID())
         return;
 
-    if(SnappingClient!=m_pPlayer->GetCID() and m_ShadowDimension){
+    if(SnappingClient!=m_pPlayer->GetCID() and m_ShadowDimension and !GameServer()->GetPlayerChar(SnappingClient)->m_ShadowDimension){
         return;
     }
 

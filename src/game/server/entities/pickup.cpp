@@ -81,10 +81,16 @@ void CPickup::Tick()
                     break;
                 case PICKUP_SHOTGUN:
                     if (GetMapID()==Server()->LobbyMapID){
-                        CPickup *Hp[1];
-                        int num = GameWorld()->FindEntities(m_Pos, GetProximityRadius()*2.f, (CEntity**)Hp, 1, CGameWorld::ENTTYPE_PICKUP, Server()->LobbyMapID);
-                        if (num > 0 and Hp[0]->m_Type==PICKUP_HEALTH){
-                            //healer
+                        CPickup *Hp[2];
+                        int num = GameWorld()->FindEntities(m_Pos, GetProximityRadius()*2.f, (CEntity**)Hp, 2, CGameWorld::ENTTYPE_PICKUP, Server()->LobbyMapID);
+                        if (num > 1){
+                            for (int i=0; i<2; i++) {
+                                if (Hp[i]->m_Type == PICKUP_HEALTH) {
+                                    pChr->GetPlayer()->Become(Class::Medic);
+                                } else if (Hp[i]->m_Type == PICKUP_ARMOR) {
+                                    pChr->GetPlayer()->Become(Class::Armorer);
+                                }
+                            }
                         } else {
                             pChr->GetPlayer()->Become(Class::Spider);
                         }

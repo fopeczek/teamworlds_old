@@ -2144,6 +2144,7 @@ void CGameContext::SetupVoting(void *pUserData) {
     addVote("Toggle full auto fire", "vote_automode",pUserData);
     addVote("Toggle jetpack", "vote_jetmode",pUserData);
     addVote("Toggle ninja", "vote_ninjamode",pUserData);
+    addVote("Toggle infinite hook", "vote_hookmode",pUserData);
     addVote("Toggle AFK", "allowAFK",pUserData);
     addVote("Return to vanilla", "vanilla",pUserData);
     addVote("Shuffle teams", "shuffle_teams",pUserData);

@@ -487,7 +487,6 @@ void CPlayer::Become(Class who){
             Server()->SetClientClass(GetCID(), Class::Scout);
             GetCharacter()->GiveWeapon(WEAPON_GRENADE, 10);
             GetCharacter()->SetWeapon(WEAPON_GRENADE);
-            GetCharacter()->IncreaseArmor(10);
             break;
 		case Class::Engineer:
 			Server()->SetClientClass(GetCID(), Class::Engineer);
@@ -500,6 +499,15 @@ void CPlayer::Become(Class who){
             break;
         case Class::Spider:
             Server()->SetClientClass(GetCID(), Class::Spider);
+            break;
+        case Class::Medic:
+            Server()->SetClientClass(GetCID(), Class::Medic);
+            break;
+        case Class::Armorer:
+            Server()->SetClientClass(GetCID(), Class::Armorer);
+            break;
+        case Class::Tank:
+            Server()->SetClientClass(GetCID(), Class::Tank);
             break;
     }
 }

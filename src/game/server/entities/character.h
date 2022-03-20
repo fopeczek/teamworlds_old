@@ -95,6 +95,9 @@ public:
         bool m_Got;
 
     } m_aWeapons[NUM_WEAPONS];
+
+    // the player core for the physics
+    CCharacterCore m_Core;
 private:
 	// player controlling this character
 	class CPlayer *m_pPlayer;
@@ -131,9 +134,6 @@ private:
 
 
 	int m_TriggeredEvents;
-
-	// the player core for the physics
-	CCharacterCore m_Core;
 
 	// info for dead reckoning
 	int m_ReckoningTick; // tick that we are performing dead reckoning From

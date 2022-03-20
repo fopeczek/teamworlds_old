@@ -78,7 +78,7 @@ void CCharacterCore::Reset()
 	m_Death = false;
 }
 
-bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShadow, bool hookmode)
+bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShadow, bool hookmode, int MapID)
 {
     bool retval = false;
     if (m_pRetval){
@@ -197,7 +197,7 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 		if(Hit)
 		{
 			if(Hit&CCollision::COLFLAG_NOHOOK) {
-                if (hisClass != Class::Spider) {//make as jetpack (add a fun param)
+                if (hisClass != Class::Spider) {
                     GoingToRetract = true;
                 } else{
                     GoingToHitGround = true;
@@ -208,7 +208,7 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 		}
 
 		// Check against other players first
-		if(m_pWorld && m_pWorld->m_Tuning.m_PlayerHooking)
+		if(m_pWorld && m_pWorld->m_Tuning.m_PlayerHooking and MapID!=1)//Lobby map id = 1
 		{
 			float Distance = 0.0f;
 			for(int i = 0; i < MAX_CLIENTS; i++)
@@ -341,7 +341,7 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 			}
 
 			// handle hook influence
-			if(m_HookedPlayer == i && m_pWorld->m_Tuning.m_PlayerHooking)
+			if(m_HookedPlayer == i && m_pWorld->m_Tuning.m_PlayerHooking and MapID!=1)//Lobby map id = 1
 			{
 				if(Distance > PHYS_SIZE*1.50f) // TODO: fix tweakable variable
 				{

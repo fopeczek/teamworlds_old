@@ -175,7 +175,7 @@ public:
 
 	void Init(CWorldCore *pWorld, CCollision *pCollision);
 	void Reset();
-	bool Tick(bool UseInput, bool Jet=false, Class hisClass=Class::None, bool actShadow=false, bool hookmode=false);
+	bool Tick(bool UseInput, bool Jet=false, Class hisClass=Class::None, bool actShadow=false, bool hookmode=false, int MapID = 0);//Main map id = 0
 	void Move();
 
 	void AddDragVelocity();
