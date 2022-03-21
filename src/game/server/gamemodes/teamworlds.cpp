@@ -8,7 +8,7 @@
 #include <game/server/entities/flag.h>
 #include <game/server/gamecontext.h>
 #include <game/server/player.h>
-#include "ctf-class.h"
+#include "teamworlds.h"
 
 CGameControllerCTFC::CGameControllerCTFC(CGameContext *pGameServer)
 : IGameController(pGameServer)
@@ -16,7 +16,7 @@ CGameControllerCTFC::CGameControllerCTFC(CGameContext *pGameServer)
 	// game
 	m_apFlags[0] = 0;
 	m_apFlags[1] = 0;
-	m_pGameType = "CLASS";
+	m_pGameType = "TeamUp";
 	m_GameFlags = GAMEFLAG_TEAMS|GAMEFLAG_FLAGS;
 }
 

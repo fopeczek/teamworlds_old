@@ -22,7 +22,7 @@
 #include "gamemodes/tdm.h"
 #include "gamecontext.h"
 #include "player.h"
-#include "game/server/gamemodes/ctf-class.h"
+#include "game/server/gamemodes/teamworlds.h"
 
 enum
 {

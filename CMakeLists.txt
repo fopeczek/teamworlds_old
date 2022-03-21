@@ -1622,8 +1622,8 @@ set_src(GAME_SERVER GLOB_RECURSE src/game/server
   gamecontext.h
   gamecontroller.cpp
   gamecontroller.h
-  gamemodes/ctf-class.cpp
-  gamemodes/ctf-class.h
+  gamemodes/teamworlds.cpp
+  gamemodes/teamworlds.h
   gamemodes/ctf.cpp
   gamemodes/ctf.h
   gamemodes/dm.cpp
