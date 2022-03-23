@@ -967,6 +967,9 @@ void CCharacter::Die(int Killer, int Weapon)
 
         m_pPlayer->m_Engineer_Wall_Editing=false;
         m_pPlayer->m_Engineer_ActiveWalls=0;
+        m_pPlayer->m_Spider_ActiveWebs=0;
+        m_ShadowDimension= false;
+        m_ShadowDimensionTick=-1;
         // we got to wait 0.5 secs before respawning
         m_Alive = false;
         m_pPlayer->m_RespawnTick = Server()->Tick() + Server()->TickSpeed() / 2;

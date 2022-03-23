@@ -450,22 +450,22 @@ void CWall::Die(int Killer) {
                     Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_Owner);
                     GameServer()->m_apPlayers[Killer]->m_Score += m_wall_score;
                 }
+                new CProjectile(GameWorld(), WEAPON_GRENADE,
+                                m_Owner,
+                                m_Pos,
+                                vec2(0, 0),
+                                0,
+                                g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
+                                WEAPON_GRENADE, GetMapID());
+                new CProjectile(GameWorld(), WEAPON_GRENADE,
+                                m_Owner,
+                                m_From,
+                                vec2(0, 0),
+                                0,
+                                g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
+                                WEAPON_GRENADE, GetMapID());
             }
         }
-        new CProjectile(GameWorld(), WEAPON_GRENADE,
-                        m_Owner,
-                        m_Pos,
-                        vec2(0, 0),
-                        0,
-                        g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
-                        WEAPON_GRENADE, GetMapID());
-        new CProjectile(GameWorld(), WEAPON_GRENADE,
-                        m_Owner,
-                        m_From,
-                        vec2(0, 0),
-                        0,
-                        g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE,
-                        WEAPON_GRENADE, GetMapID());
     }
     Reset();
 }
@@ -545,9 +545,14 @@ void CWall::CheckForBullets() {
                                                                              GetMapID());
         if (pPosBullet) {
             if (pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon() == WEAPON_GUN) {
-                pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, m_Health);
+                if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo + m_Health)<=10 or m_WaitingToConfirm){
+                    pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, m_Health);
+                    Reset();
+                } else{
+                    m_WaitingToConfirm= true;
+                    m_ConfirmTick= Server()->Tick();
+                }
                 pPosBullet->Destroy();
-                Reset();
             }
         }
 
@@ -556,9 +561,14 @@ void CWall::CheckForBullets() {
                                                                               GetMapID());
         if (pFromBullet) {
             if (pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon() == WEAPON_GUN) {
-                pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, m_Health);
+                if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo + m_Health)<=10 or m_WaitingToConfirm){
+                    pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, m_Health);
+                    Reset();
+                } else{
+                    m_WaitingToConfirm= true;
+                    m_ConfirmTick= Server()->Tick();
+                }
                 pFromBullet->Destroy();
-                Reset();
             }
         }
     } else{
