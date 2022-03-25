@@ -49,7 +49,7 @@ private:
     static constexpr int m_MAX_Health = 10;
     static constexpr int m_MAX_SpiderWeb_Health = 1;
     static constexpr int m_MAX_FortifiedSpiderWeb_Health = 2;
-    static constexpr float m_WebHitDelay = 1.5f;
+    static constexpr float m_WebHitDelay = 4.f;
     static constexpr int m_WebMaxHits = 3;
     static constexpr float m_SpiderWeb_range = 500.f;
 

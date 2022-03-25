@@ -1,6 +1,7 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <generated/server_data.h>
+#include "game/server/gamecontroller.h"
 #include <game/server/gamecontext.h>
 #include <cassert>
 #include <numeric>
@@ -40,22 +41,18 @@ CWall::CWall(CGameWorld *pGameWorld, int Owner, int MapID, bool SpiderWeb) :  CE
 bool CWall::HitCharacter()
 {
     if (m_SpiderWeb){
-        if (Server()->Tick() > m_LastHitTick + (Server()->TickSpeed() * m_WebHitDelay)) {
-            vec2 At;
-            CCharacter *pOwnerChar = GameServer()->GetPlayerChar(m_Owner);
+        vec2 At;
+        CCharacter *pOwnerChar = GameServer()->GetPlayerChar(m_Owner);
 
-            CCharacter *pHit = GameWorld()->IntersectCharacter(m_Pos, m_From, 0.f, At, pOwnerChar);
-            if (!pHit)
-                return false;
-            if (pHit->GetPlayer()->GetTeam() == pPlayer->GetTeam())
-                return false;
+        CCharacter *pHit = GameWorld()->IntersectCharacter(m_Pos, m_From, 0.f, At, pOwnerChar);
+        if (!pHit)
+            return false;
+        if (pHit->GetPlayer()->GetTeam() == pPlayer->GetTeam())
+            return false;
 
-            pHit->TakeDamage(vec2(0.f, 0.f), normalize(m_Pos - m_From),
-                             1,
-                             m_Owner, WEAPON_LASER);
-
-            pHit->m_Core.m_Vel.x = clamp(pHit->m_Core.m_Vel.x, -10.f, 10.f);
-            pHit->m_Core.m_Vel.y = clamp(pHit->m_Core.m_Vel.y, -10.f, 10.f);
+        pHit->m_Core.m_Vel.x = clamp(pHit->m_Core.m_Vel.x, -5.f, 5.f);
+        pHit->m_Core.m_Vel.y = clamp(pHit->m_Core.m_Vel.y, -5.f, 5.f);
+        if (Server()->Tick() >= m_LastHitTick + (Server()->TickSpeed() * m_WebHitDelay)) {
 
             if (Server()->Tick() > m_LastHitTick+ (Server()->TickSpeed()*10)){
                 m_Hited=0;
@@ -272,8 +269,8 @@ void CWall::StartWallEdit(vec2 Dir){
 
 bool CWall::FirstTryToFortify(vec2 Dir){
     bool b = false;
-    CWall* spiderWebs [MAX_PLAYERS*5];
-    int manyWebs = GameWorld()->FindEntities(pPlayer->GetCharacter()->GetPos(), m_laser_range, (CEntity**)spiderWebs, MAX_PLAYERS*5, GameWorld()->ENTTYPE_LASER, GetMapID());
+    CWall* spiderWebs [MAX_PLAYERS*pPlayer->m_Spider_MaxActiveWebs];
+    int manyWebs = GameWorld()->FindEntities(pPlayer->GetCharacter()->GetPos(), m_laser_range, (CEntity**)spiderWebs, MAX_PLAYERS*pPlayer->m_Spider_MaxActiveWebs, GameWorld()->ENTTYPE_LASER, GetMapID());
     if (manyWebs>0) {
         for (int i = 0; i < manyWebs; i++) {
             if (spiderWebs[i]) {
@@ -450,6 +447,8 @@ void CWall::Die(int Killer) {
                     Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_Owner);
                     GameServer()->m_apPlayers[Killer]->m_Score += m_wall_score;
                 }
+            }
+            if (Killer != -2) {
                 new CProjectile(GameWorld(), WEAPON_GRENADE,
                                 m_Owner,
                                 m_Pos,
@@ -652,10 +651,21 @@ void CWall::UpdateHealthInterface(){
 
 void CWall::Reset()
 {
-    for (int i = 0; i<m_MAX_Health; i++){
-        if (m_Health_Interface[i]) {
-            m_Health_Interface[i]->Destroy();
-            m_Health_Interface[i] = nullptr;
+    if (!m_SpiderWeb) {
+        for (int i = 0; i < m_MAX_Health; i++) {
+            if (m_Health_Interface[i]) {
+                m_Health_Interface[i]->Destroy();
+                m_Health_Interface[i] = nullptr;
+            }
+        }
+    }else {
+        if (m_Fortified) {
+            for (int i = 0; i < m_MAX_FortifiedSpiderWeb_Health; i++) {
+                if (m_Health_Interface[i]) {
+                    m_Health_Interface[i]->Destroy();
+                    m_Health_Interface[i] = nullptr;
+                }
+            }
         }
     }
     for (int i = 0; i<3; i++){
@@ -721,6 +731,9 @@ vec2 CWall::Clamp_vec(vec2 From, vec2 To, float clamp){
 }
 
 void CWall::Tick() {
+    if (GameServer()->GameTypeType()->m_GameState==GameServer()->GameTypeType()->EGameState::IGS_END_MATCH){
+        Reset();
+    }
     if (Server()->Tick() > m_EvalTick + (Server()->TickSpeed() * GameServer()->Tuning()->m_LaserBounceDelay) / m_Delay_fac){
         if(pPlayer->GetCharacter()) {
             if (pPlayer->GetCharacter()->GetActiveWeapon()!=WEAPON_LASER and !m_Done){
@@ -767,7 +780,11 @@ void CWall::Tick() {
                 }
             }
         } else{
-            Die(-2);
+            if (pPlayer){
+                Die(m_Owner);
+            } else {
+                Die(-2);
+            }
         }
     }
 }

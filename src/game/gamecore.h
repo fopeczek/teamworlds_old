@@ -169,11 +169,13 @@ public:
 
 	bool m_Death;
 
+    int m_Team;
+
 	CNetObj_PlayerInput m_Input;
 
 	int m_TriggeredEvents;
 
-	void Init(CWorldCore *pWorld, CCollision *pCollision);
+	void Init(CWorldCore *pWorld, CCollision *pCollision, int Team = -1);
 	void Reset();
 	bool Tick(bool UseInput, bool Jet=false, Class hisClass=Class::None, bool actShadow=false, bool hookmode=false, int MapID = 0);//Main map id = 0
 	void Move();

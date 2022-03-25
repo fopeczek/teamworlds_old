@@ -14,3 +14,4 @@ enum class Class {
     Necromancer//note:Offensive/Defensive|HARD to implement! TODO can summon offensive zombies and defensive ones, he is weak, after killing anyone he automatically summons free zombie private guard ! HARD TO IMPLEMENT !
     // TODO !MAYBE! add another class
 };
+//TODO bugs: scout doesn't give enough knock back to other players, web hitting timer is not working in built version

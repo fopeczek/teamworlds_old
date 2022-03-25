@@ -147,7 +147,7 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamag
 	for(int i = 0; i < Num; i++)
 	{
 		vec2 Diff = apEnts[i]->GetPos() - Pos;
-		vec2 Force(0, MaxForce);
+		vec2 Force(MaxForce, MaxForce);
 		float l = length(Diff);
 		if(l)
 			Force = normalize(Diff) * MaxForce;
@@ -2369,6 +2369,10 @@ bool CGameContext::IsClientPlayer(int ClientID) const
 bool CGameContext::IsClientSpectator(int ClientID) const
 {
 	return m_apPlayers[ClientID] && m_apPlayers[ClientID]->GetTeam() == TEAM_SPECTATORS;
+}
+
+IGameController* CGameContext::GameTypeType() {
+    return m_pController;
 }
 
 const char *CGameContext::GameType() const { return m_pController && m_pController->GetGameType() ? m_pController->GetGameType() : ""; }

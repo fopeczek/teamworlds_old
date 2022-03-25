@@ -69,7 +69,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_Pos = Pos;
 
 	m_Core.Reset();
-	m_Core.Init(&GameWorld()->m_Core, GameServer()->Collision(GetMapID()));
+	m_Core.Init(&GameWorld()->m_Core, GameServer()->Collision(GetMapID()), m_pPlayer->GetTeam());
 	m_Core.m_Pos = m_Pos;
 	GameWorld()->m_Core.m_apCharacters[m_pPlayer->GetCID()] = &m_Core;
 
@@ -809,21 +809,32 @@ void CCharacter::Tick()
         }
 
         m_Core.m_Input = m_Input;
-        m_Core.Tick(true,m_pPlayer->Cheats.Jetpack, Server()->GetClientClass(m_pPlayer->GetCID()), m_ShadowDimension, m_pPlayer->Cheats.Hookmode, GetMapID());
+        if (m_Core.Tick(true,m_pPlayer->Cheats.Jetpack, Server()->GetClientClass(m_pPlayer->GetCID()), m_ShadowDimension, m_pPlayer->Cheats.Hookmode, GetMapID())){
+            if (Server()->GetClientClass(GetPlayer()->GetCID())==Class::Hunter and m_ShadowDimension){
+                m_ShadowDimension= false;
+                m_ShadowDimensionTick=Server()->Tick();
+                //amplify sound of undisguised
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+            }
+        }
 
         if (Server()->GetClientClass(GetPlayer()->GetCID())==Class::Hunter and m_ShadowDimension){
             for (int i = 0; i < MAX_PLAYERS; ++i) {
                 if (i != GetPlayer()->GetCID()) {
                     if (GameServer()->m_apPlayers[i]) {
                         if (GameServer()->m_apPlayers[i]->GetCharacter()) {
-                            if (distance(GameServer()->m_apPlayers[i]->GetCharacter()->GetPos(), m_Pos) <=
-                                GetProximityRadius() * 5.f) {
-                                m_ShadowDimension= false;
-                                m_ShadowDimensionTick=Server()->Tick();
-                                //amplify sound of undisguised
-                                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                            if (GameServer()->m_apPlayers[i]->GetTeam()!=m_pPlayer->GetTeam()) {
+                                if (distance(GameServer()->m_apPlayers[i]->GetCharacter()->GetPos(), m_Pos) <=
+                                    GetProximityRadius() * 5.f) {
+                                    m_ShadowDimension = false;
+                                    m_ShadowDimensionTick = Server()->Tick();
+                                    //amplify sound of undisguised
+                                    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                                    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                                    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                                }
                             }
                         }
                     }
@@ -850,7 +861,7 @@ void CCharacter::TickDefered()
 	// advance the dummy
 	{
 		CWorldCore TempWorld;
-		m_ReckoningCore.Init(&TempWorld, GameServer()->Collision(GetMapID()));
+		m_ReckoningCore.Init(&TempWorld, GameServer()->Collision(GetMapID()), m_pPlayer->GetTeam());
 		m_ReckoningCore.Tick(false);
 		m_ReckoningCore.Move();
 		m_ReckoningCore.Quantize();
@@ -1131,8 +1142,12 @@ void CCharacter::Snap(int SnappingClient)
     if(GameServer()->Server()->ClientMapID(SnappingClient) != GetMapID())
         return;
 
-    if(SnappingClient!=m_pPlayer->GetCID() and m_ShadowDimension and !GameServer()->GetPlayerChar(SnappingClient)->m_ShadowDimension){
-        return;
+    if(SnappingClient!=m_pPlayer->GetCID() and m_ShadowDimension and GameServer()->GetClientTeam(SnappingClient)!=GetPlayer()->GetTeam()){
+        if (GameServer()->GetPlayerChar(SnappingClient)) {
+            if (!GameServer()->GetPlayerChar(SnappingClient)->m_ShadowDimension) {
+                return;
+            }
+        }
     }
 
 	if(NetworkClipped(SnappingClient))

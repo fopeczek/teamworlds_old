@@ -57,10 +57,11 @@ float VelocityRamp(float Value, float Start, float Range, float Curvature)
 
 const float CCharacterCore::PHYS_SIZE = 28.0f;
 
-void CCharacterCore::Init(CWorldCore *pWorld, CCollision *pCollision)
+void CCharacterCore::Init(CWorldCore *pWorld, CCollision *pCollision, int Team)
 {
 	m_pWorld = pWorld;
 	m_pCollision = pCollision;
+    m_Team=Team;
 }
 
 void CCharacterCore::Reset()
@@ -80,9 +81,11 @@ void CCharacterCore::Reset()
 
 bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShadow, bool hookmode, int MapID)
 {
-    bool retval = false;
+    bool reveal = false;
     if (m_pRetval){
-        retval= true;
+        if (actShadow) {
+            reveal = true;
+        }
         m_pRetval= false;
     }
 	m_TriggeredEvents = 0;
@@ -256,17 +259,18 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 			CCharacterCore *pCharCore = m_pWorld->m_apCharacters[m_HookedPlayer];
 			if(pCharCore) {
                 m_HookPos = pCharCore->m_Pos;
-                pCharCore->m_pRetval=true;
+                if (pCharCore->m_Team!=m_Team) {
+                    pCharCore->m_pRetval = true;
+                    if (actShadow) {
+                        reveal = true;
+                    }
+                }
             }else {
 				// release hook
 				m_HookedPlayer = -1;
 				m_HookState = HOOK_RETRACTED;
 				m_HookPos = m_Pos;
 			}
-
-            if(actShadow){
-                retval=true;
-            }
 
 			// keep players hooked for a max of 1.5sec
 			//if(Server()->Tick() > hook_tick+(Server()->TickSpeed()*3)/2)
@@ -361,7 +365,7 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 	if(length(m_Vel) > 6000)
 		m_Vel = normalize(m_Vel) * 6000;
 
-    return retval;
+    return reveal;
 }
 
 void CCharacterCore::AddDragVelocity()

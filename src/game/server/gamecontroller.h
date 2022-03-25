@@ -41,29 +41,12 @@ class IGameController
 	void CheckTeamBalance();
 	void DoTeamBalance();
 
-	// game
-	enum EGameState
-	{
-		// internal game states
-		IGS_WARMUP_GAME,		// warmup started by game because there're not enough players (infinite)
-		IGS_WARMUP_USER,		// warmup started by user action via rcon or new match (infinite or timer)
-
-		IGS_START_COUNTDOWN,	// start countown to unpause the game or start match/round (tick timer)
-
-		IGS_GAME_PAUSED,		// game paused (infinite or tick timer)
-		IGS_GAME_RUNNING,		// game running (infinite)
-
-		IGS_END_MATCH,			// match is over (tick timer)
-		IGS_END_ROUND,			// round is over (tick timer)
- 	};
-	EGameState m_GameState;
 	int m_GameStateTimer;
 
 	virtual bool DoWincheckMatch();		// returns true when the match is over
 	virtual void DoWincheckRound() {}
 	bool HasEnoughPlayers() const { return (IsTeamplay() && m_aTeamSize[TEAM_RED] > 0 && m_aTeamSize[TEAM_BLUE] > 0) || (!IsTeamplay() && m_aTeamSize[TEAM_RED] > 1); }
 	void ResetGame();
-	void SetGameState(EGameState GameState, int Timer=0);
 	void StartMatch();
 	void StartRound();
 
@@ -140,6 +123,28 @@ protected:
 	} m_GameInfo;
 
 	void UpdateGameInfo(int ClientID);
+
+public:
+
+    // game
+    enum EGameState
+    {
+        // internal game states
+        IGS_WARMUP_GAME,		// warmup started by game because there're not enough players (infinite)
+        IGS_WARMUP_USER,		// warmup started by user action via rcon or new match (infinite or timer)
+
+        IGS_START_COUNTDOWN,	// start countown to unpause the game or start match/round (tick timer)
+
+        IGS_GAME_PAUSED,		// game paused (infinite or tick timer)
+        IGS_GAME_RUNNING,		// game running (infinite)
+
+        IGS_END_MATCH,			// match is over (tick timer)
+        IGS_END_ROUND,			// round is over (tick timer)
+    };
+    EGameState m_GameState;
+
+private:
+    void SetGameState(EGameState GameState, int Timer=0);
 
 public:
 	IGameController(class CGameContext *pGameServer);
