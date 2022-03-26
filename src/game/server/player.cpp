@@ -209,9 +209,9 @@ void CPlayer::Snap(int SnappingClient)
 void CPlayer::OnDisconnect()
 {
     if (m_pCharacter) {
-        CWall *Walls[MAX_PLAYERS * m_Engineer_MaxActiveWalls];
+        CWall *Walls[MAX_PLAYERS * m_Engineer_MaxActiveWalls + MAX_PLAYERS * m_Spider_MaxActiveWebs];
         int WallsNum = m_pCharacter->GameWorld()->FindEntities(m_pCharacter->GetPos(), 1000000000.f, (CEntity **) Walls,
-                                                               MAX_PLAYERS * m_Engineer_MaxActiveWalls,
+                                                               MAX_PLAYERS * m_Engineer_MaxActiveWalls + MAX_PLAYERS * m_Spider_MaxActiveWebs,
                                                                m_pCharacter->GameWorld()->ENTTYPE_LASER,
                                                                m_pCharacter->GetMapID());
         if (WallsNum > 0) {

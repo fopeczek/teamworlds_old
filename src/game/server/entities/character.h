@@ -98,11 +98,11 @@ public:
 
     // the player core for the physics
     CCharacterCore m_Core;
+
+    class CWall *m_Wall;
 private:
 	// player controlling this character
 	class CPlayer *m_pPlayer;
-
-    class CWall *m_Wall;
 
 	bool m_Alive;
 

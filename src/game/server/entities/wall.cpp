@@ -436,7 +436,7 @@ void CWall::Die(int Killer) {
                     Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, m_Owner);
                 } else if (Killer == -2) {
 
-                } else {
+                } else if (Killer != m_Owner) {
                     CNetMsg_Sv_Chat chatMsg;
                     chatMsg.m_Mode = CHAT_WHISPER;
                     chatMsg.m_ClientID = m_Owner;
@@ -780,9 +780,7 @@ void CWall::Tick() {
                 }
             }
         } else{
-            if (pPlayer){
-                Die(m_Owner);
-            } else {
+            if (!pPlayer){
                 Die(-2);
             }
         }

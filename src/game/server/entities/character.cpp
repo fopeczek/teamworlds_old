@@ -976,6 +976,20 @@ void CCharacter::Die(int Killer, int Weapon)
 {
     if (m_pPlayer->Cheats.Godmode== false) {
 
+        CWall *Walls[MAX_PLAYERS * m_pPlayer->m_Engineer_MaxActiveWalls + MAX_PLAYERS * m_pPlayer->m_Spider_MaxActiveWebs];
+        int WallsNum = GameWorld()->FindEntities(GetPos(), 1000000000.f, (CEntity **) Walls,
+                                                               MAX_PLAYERS * m_pPlayer->m_Engineer_MaxActiveWalls + MAX_PLAYERS * m_pPlayer->m_Spider_MaxActiveWebs,
+                                                               GameWorld()->ENTTYPE_LASER,
+                                                               GetMapID());
+        if (WallsNum > 0) {
+            for (int i = 0; i < WallsNum; i++) {
+                if (Walls[i]) {
+                    if (Walls[i]->m_Owner == m_pPlayer->GetCID()) {
+                        Walls[i]->Die(m_pPlayer->GetCID());
+                    }
+                }
+            }
+        }
         m_pPlayer->m_Engineer_Wall_Editing=false;
         m_pPlayer->m_Engineer_ActiveWalls=0;
         m_pPlayer->m_Spider_ActiveWebs=0;
