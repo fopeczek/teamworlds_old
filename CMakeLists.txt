@@ -900,7 +900,8 @@ set(EXPECTED_DATA
   game.png
   github/lobby.png
   github/lobby_and_weapons.png
-  github/server.png
+        github/server.png
+        github/Git_readme.mp4
   languages/belarusian.json
   languages/bosnian.json
   languages/brazilian_portuguese.json

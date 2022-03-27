@@ -56,7 +56,7 @@ IGameController::IGameController(CGameContext *pGameServer)
 //activity
 void IGameController::DoActivityCheck()
 {
-    if (Server()->AFK) {
+    if (!Server()->AFK) {
         if (Config()->m_SvInactiveKickTime == 0)
             return;
 
@@ -641,6 +641,19 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 			m_SuddenDeath = 0;
 			GameServer()->m_World.m_Paused = true;
 		}
+            int only;
+            int howMany;
+        for (int i = 0; i<MAX_PLAYERS; i++) {
+            if (Server()->ClientIngame(i)){
+                if (howMany<2){
+                    only=i;
+                    howMany++;
+                } else {
+                    return;
+                }
+            }
+        }
+        GameServer()->SendBroadcast("You have won, but you are still alone though", 0);
 	}
 }
 

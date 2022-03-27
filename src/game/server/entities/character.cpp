@@ -99,7 +99,6 @@ CCharacter::~CCharacter(){
 void CCharacter::Destroy()
 {
     if (m_Wall) {
-        delete m_Wall;
         m_Wall = nullptr;
     }
 	GameWorld()->m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
@@ -534,10 +533,16 @@ void CCharacter::FireWeapon()
             if (Server()->GetClientClass(GetPlayer()->GetCID())==Class::Engineer) {
                 if(m_pPlayer->m_Engineer_ActiveWalls < m_pPlayer->m_Engineer_MaxActiveWalls or m_pPlayer->Cheats.Godmode){
                     if (m_pPlayer->m_Engineer_Wall_Editing) {
-                        if (m_Wall->EndWallEdit(m_aWeapons[m_ActiveWeapon].m_Ammo)) {
+                        int amm=m_aWeapons[m_ActiveWeapon].m_Ammo;
+                        if (m_aWeapons[m_ActiveWeapon].m_Ammo>1) {
+                            amm =2;
+                        }else{
+                            amm=m_aWeapons[m_ActiveWeapon].m_Ammo;
+                        }
+                        if (m_Wall->EndWallEdit(amm)) {
                             m_pPlayer->m_Engineer_ActiveWalls++;
                             m_pPlayer->m_Engineer_Wall_Editing = false;
-                            m_aWeapons[m_ActiveWeapon].m_Ammo = 0;
+                            m_aWeapons[m_ActiveWeapon].m_Ammo -= amm;
                             m_Wall = new CWall(GameWorld(), m_pPlayer->GetCID(), GetMapID());
                         } else {
                             GameServer()->CreateSound(m_Pos, SOUND_WEAPON_NOAMMO, -1, GetMapID());
@@ -578,7 +583,6 @@ void CCharacter::FireWeapon()
 
             if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Hunter){
                 m_Ninja.m_CurrentMoveTime = -1;
-                //amplify sound
                 if (m_ShadowDimension) {
                     m_ShadowDimension= false;
                     m_ShadowDimensionTick=Server()->Tick();

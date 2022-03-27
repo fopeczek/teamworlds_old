@@ -1671,9 +1671,11 @@ void CGameContext::ConKill(IConsole::IResult *pResult, void *pUserData) {
         }
     }
     if (player) {
-        if (player->GetCharacter()->IsAlive()) {
-            player->Cheats.Godmode = false;
-            player->GetCharacter()->Die(WEAPON_SELF, WEAPON_SELF);
+        if (player->GetCharacter()) {
+            if (player->GetCharacter()->IsAlive()) {
+                player->Cheats.Godmode = false;
+                player->GetCharacter()->Die(WEAPON_SELF, WEAPON_SELF);
+            }
         }
     }
 }

@@ -158,32 +158,56 @@ vec2 CWall::CheckForIntersection(vec2 st_pos1, vec2 st_pos2, vec2 sec_pos1, vec2
 
 void CWall::HeIsHealing(CPlayer* player)
 {
-    if (!m_SpiderWeb){
-        if (distance(player->GetCharacter()->GetPos(), m_Pos) <= player->GetCharacter()->GetProximityRadius()*1.5f or distance(player->GetCharacter()->GetPos(), m_From) <= player->GetCharacter()->GetProximityRadius()*1.5f){
-            if (m_Health <m_MAX_Health){
-                m_Health += 1;
-                m_Health = clamp(m_Health, 0, m_MAX_Health);
+    if (player->GetTeam()==pPlayer->GetTeam()) {
+        if (player->GetCharacter()->m_Health > 1 or player->GetCharacter()->m_Armor > 0) {
+            if (!m_SpiderWeb) {
+                if (distance(player->GetCharacter()->GetPos(), m_Pos) <=
+                    player->GetCharacter()->GetProximityRadius() * 1.5f or
+                    distance(player->GetCharacter()->GetPos(), m_From) <=
+                    player->GetCharacter()->GetProximityRadius() * 1.5f) {
+                    if (m_Health < m_MAX_Health) {
+                        m_Health += 1;
+                        m_Health = clamp(m_Health, 0, m_MAX_Health);
+                        if (player->GetCharacter()->m_Armor>0){
+                            player->GetCharacter()->m_Armor-=1;
+                        } else if (m_Health>1) {
+                            player->GetCharacter()->m_Health-=1;
+                        }
 
-                for (int i=0;i<m_Health; i++){
-                    if (!m_Health_Interface[i]){
-                        m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH, Calc_hp_pos(m_HPTick/m_hp_interface_delay), GetMapID(), false);
+                        for (int i = 0; i < m_Health; i++) {
+                            if (!m_Health_Interface[i]) {
+                                m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH,
+                                                                    Calc_hp_pos(m_HPTick / m_hp_interface_delay),
+                                                                    GetMapID(), false);
+                            }
+                        }
+                        GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH, -1, GetMapID());
                     }
                 }
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH, -1, GetMapID());
-            }
-        }
-    } else if (m_SpiderWeb and m_Fortified){
-        if (distance(player->GetCharacter()->GetPos(), m_Pos) <= player->GetCharacter()->GetProximityRadius()*1.5f or distance(player->GetCharacter()->GetPos(), m_From) <= player->GetCharacter()->GetProximityRadius()*1.5f){
-            if (m_Health <m_MAX_FortifiedSpiderWeb_Health){
-                m_Health += 1;
-                m_Health = clamp(m_Health, 0, m_MAX_FortifiedSpiderWeb_Health);
+            } else if (m_SpiderWeb and m_Fortified) {
+                if (distance(player->GetCharacter()->GetPos(), m_Pos) <=
+                    player->GetCharacter()->GetProximityRadius() * 1.5f or
+                    distance(player->GetCharacter()->GetPos(), m_From) <=
+                    player->GetCharacter()->GetProximityRadius() * 1.5f) {
+                    if (m_Health < m_MAX_FortifiedSpiderWeb_Health) {
+                        m_Health += 1;
+                        m_Health = clamp(m_Health, 0, m_MAX_FortifiedSpiderWeb_Health);
+                        if (player->GetCharacter()->m_Armor>0){
+                            player->GetCharacter()->m_Armor-=1;
+                        } else {
+                            player->GetCharacter()->m_Health-=1;
+                        }
 
-                for (int i=0;i<m_Health; i++){
-                    if (!m_Health_Interface[i]){
-                        m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH, Calc_hp_pos(m_HPTick/m_hp_interface_delay), GetMapID(), false);
+                        for (int i = 0; i < m_Health; i++) {
+                            if (!m_Health_Interface[i]) {
+                                m_Health_Interface[i] = new CPickup(GameWorld(), PICKUP_HEALTH,
+                                                                    Calc_hp_pos(m_HPTick / m_hp_interface_delay),
+                                                                    GetMapID(), false);
+                            }
+                        }
+                        GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH, -1, GetMapID());
                     }
                 }
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH, -1, GetMapID());
             }
         }
     }
@@ -545,7 +569,7 @@ void CWall::CheckForBullets() {
         if (pPosBullet) {
             if (pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon() == WEAPON_GUN) {
                 if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo + m_Health)<=10 or m_WaitingToConfirm){
-                    pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, m_Health);
+                    pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo+=m_Health;
                     Reset();
                 } else{
                     m_WaitingToConfirm= true;
@@ -561,7 +585,7 @@ void CWall::CheckForBullets() {
         if (pFromBullet) {
             if (pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon() == WEAPON_GUN) {
                 if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo + m_Health)<=10 or m_WaitingToConfirm){
-                    pPlayer->GetCharacter()->GiveWeapon(WEAPON_LASER, m_Health);
+                    pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo+=m_Health;
                     Reset();
                 } else{
                     m_WaitingToConfirm= true;
@@ -586,10 +610,8 @@ void CWall::CheckForBullets() {
                                 m_deconstruct_range) {
                                 if (pPosBullet->GetOwner() == otherWalls[i]->m_Owner) {
                                     if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo + otherWalls[i]->m_Health)<=10 or otherWalls[i]->m_WaitingToConfirm){
+                                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo+=otherWalls[i]->m_Health;
                                         otherWalls[i]->Reset();
-                                        pPlayer->GetCharacter()->GiveWeapon(WEAPON_SHOTGUN,
-                                                                            pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo +
-                                                                            otherWalls[i]->m_Health);
                                     } else{
                                         otherWalls[i]->m_WaitingToConfirm= true;
                                         otherWalls[i]->m_ConfirmTick= Server()->Tick();
@@ -618,10 +640,8 @@ void CWall::CheckForBullets() {
                                 m_deconstruct_range) {
                                 if (pFromBullet->GetOwner() == otherWalls[i]->m_Owner) {
                                     if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo + otherWalls[i]->m_Health)<=10 or otherWalls[i]->m_WaitingToConfirm) {
+                                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo+=otherWalls[i]->m_Health;
                                         otherWalls[i]->Reset();
-                                        pPlayer->GetCharacter()->GiveWeapon(WEAPON_SHOTGUN,
-                                                                            pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo +
-                                                                            otherWalls[i]->m_Health);
                                     } else{
                                         otherWalls[i]->m_WaitingToConfirm= true;
                                         otherWalls[i]->m_ConfirmTick= Server()->Tick();
