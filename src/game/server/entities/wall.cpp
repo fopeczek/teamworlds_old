@@ -168,6 +168,8 @@ void CWall::HeIsHealing(CPlayer* player)
                     if (m_Health < m_MAX_Health) {
                         m_Health += 1;
                         m_Health = clamp(m_Health, 0, m_MAX_Health);
+                        m_WaitingToConfirm= false;
+                        m_ConfirmTick=0;
                         if (player->GetCharacter()->m_Armor>0){
                             player->GetCharacter()->m_Armor-=1;
                         } else if (m_Health>1) {
@@ -192,6 +194,8 @@ void CWall::HeIsHealing(CPlayer* player)
                     if (m_Health < m_MAX_FortifiedSpiderWeb_Health) {
                         m_Health += 1;
                         m_Health = clamp(m_Health, 0, m_MAX_FortifiedSpiderWeb_Health);
+                        m_WaitingToConfirm= false;
+                        m_ConfirmTick=0;
                         if (player->GetCharacter()->m_Armor>0){
                             player->GetCharacter()->m_Armor-=1;
                         } else {
@@ -568,10 +572,47 @@ void CWall::CheckForBullets() {
                                                                              GetMapID());
         if (pPosBullet) {
             if (pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon() == WEAPON_GUN) {
+                bool HpOk= true;
+                if (m_Health>5){
+                    //return hp and armor
+                    int Health = m_Health-5; //player hp recoverable health
+//                    int old_Health = m_Health;
+                    if ((pPlayer->GetCharacter()->m_Health + Health)<=10){
+                        pPlayer->GetCharacter()->m_Health += Health;
+                        m_Health -= Health;
+                    } else {
+                        int overflow = pPlayer->GetCharacter()->m_Health + Health - 10;
+
+                        pPlayer->GetCharacter()->m_Health += Health-overflow;
+                        m_Health -= Health-overflow;
+
+                        if ((pPlayer->GetCharacter()->m_Armor + overflow)<=10){
+                            pPlayer->GetCharacter()->m_Armor += overflow;
+                            m_Health -= overflow;
+                        } else {
+                            HpOk= false;
+                        }
+                    }
+                    for (int i = m_Health + 1; i <= m_MAX_Health; i++) {
+                        if (m_Health < m_MAX_Health) {
+                            if (m_Health_Interface[i - 1]) {
+                                m_Health_Interface[i - 1]->Destroy();
+                                m_Health_Interface[i - 1] = nullptr;
+                            }
+                        }
+                    }
+                }
                 if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo + m_Health)<=10 or m_WaitingToConfirm){
                     pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo+=m_Health;
-                    Reset();
+                    pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo= clamp(pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo, 0, 10);
+                    if (HpOk or m_WaitingToConfirm) {
+                        Reset();
+                    }
                 } else{
+                    m_WaitingToConfirm= true;
+                    m_ConfirmTick= Server()->Tick();
+                }
+                if (!HpOk){
                     m_WaitingToConfirm= true;
                     m_ConfirmTick= Server()->Tick();
                 }
@@ -584,10 +625,50 @@ void CWall::CheckForBullets() {
                                                                               GetMapID());
         if (pFromBullet) {
             if (pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon() == WEAPON_GUN) {
+                bool HpOk= true;
+                if (m_Health>5){
+                    //return hp and armor
+                    int Health = m_Health-5; //player hp recoverable health
+//                    int old_Health = m_Health;
+                    if ((pPlayer->GetCharacter()->m_Health + Health)<=10){
+                        pPlayer->GetCharacter()->m_Health += Health;
+                        m_Health -= Health;
+                    } else {
+                        int overflow = pPlayer->GetCharacter()->m_Health + Health - 10;
+
+                        pPlayer->GetCharacter()->m_Health += Health-overflow;
+                        m_Health -= Health-overflow;
+
+                        if ((pPlayer->GetCharacter()->m_Armor + overflow)<=10){
+                            pPlayer->GetCharacter()->m_Armor += overflow;
+                            m_Health -= overflow;
+                        } else {
+                            int overoverflow = pPlayer->GetCharacter()->m_Armor + overflow - 10;
+                            pPlayer->GetCharacter()->m_Armor += overflow-overoverflow;
+                            m_Health -= overflow-overoverflow;
+                            HpOk= false;
+                        }
+                    }
+                    for (int i = m_Health + 1; i <= m_MAX_Health; i++) {
+                        if (m_Health < m_MAX_Health) {
+                            if (m_Health_Interface[i - 1]) {
+                                m_Health_Interface[i - 1]->Destroy();
+                                m_Health_Interface[i - 1] = nullptr;
+                            }
+                        }
+                    }
+                }
                 if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo + m_Health)<=10 or m_WaitingToConfirm){
                     pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo+=m_Health;
-                    Reset();
+                    pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo= clamp(pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo, 0, 10);
+                    if (HpOk or m_WaitingToConfirm) {
+                        Reset();
+                    }
                 } else{
+                    m_WaitingToConfirm= true;
+                    m_ConfirmTick= Server()->Tick();
+                }
+                if (!HpOk){
                     m_WaitingToConfirm= true;
                     m_ConfirmTick= Server()->Tick();
                 }
