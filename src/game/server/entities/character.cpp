@@ -534,8 +534,8 @@ void CCharacter::FireWeapon()
                 if(m_pPlayer->m_Engineer_ActiveWalls < m_pPlayer->m_Engineer_MaxActiveWalls or m_pPlayer->Cheats.Godmode){
                     if (m_pPlayer->m_Engineer_Wall_Editing) {
                         int amm=m_aWeapons[m_ActiveWeapon].m_Ammo;
-                        if (m_aWeapons[m_ActiveWeapon].m_Ammo>1) {
-                            amm =2;
+                        if (m_aWeapons[m_ActiveWeapon].m_Ammo>4) {
+                            amm =5;
                         }else{
                             amm=m_aWeapons[m_ActiveWeapon].m_Ammo;
                         }
