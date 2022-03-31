@@ -4,7 +4,7 @@
 
 enum class Class {
     None,
-    Hunter, //note:Offensive TODO cool down bar so when you are using disguise the bar goes |<---|, but after you used it and you are waiting [15 sec] for cool down it goes |--->|
+    Hunter, //note:Offensive
     Medic,//note:Defensive TODO implement:can place if custom places pickupables, 2 options: onk cheap place 1 use pickup, or twok expensive place respawnable (permanent) pickupable
     Scout, //note:Offensive TODO make him place mines (if on your team you will se a o [circle] of shields floating or rotating
     Tank, //note:Offensive TODO Implement: make him heavy and slower, can hold players inf. make him stronk dmg/2 or dmg/1.5, spawn with grenade launcher and reload gun (machine gun) faster

@@ -67,8 +67,6 @@ public:
 	int m_Spider_ActiveWebs=0;
     static constexpr int m_Spider_MaxActiveWebs=4*5;//shotgun shoots 5 walls every shot
 
-    static constexpr int m_Hunter_ShadowCooldown= 750; // 15 sec of cooldown
-
     void Become(Class who);
 
 
