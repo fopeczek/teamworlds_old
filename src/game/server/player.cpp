@@ -495,6 +495,13 @@ void CPlayer::TryRespawn()
     m_pCharacter->Spawn(this, SpawnPos);
     GameServer()->CreatePlayerSpawn(SpawnPos, MapID);
 	Become(Server()->GetClientClass(GetCID()));
+    if (!Cheats.KeepCheat) {
+        Cheats.Godmode = Server()->ServerCheats.Godbox;
+        Cheats.Hookmode = Server()->ServerCheats.Hookbox;
+        Cheats.AutoFire = Server()->ServerCheats.Autobox;
+        Cheats.Ninja = Server()->ServerCheats.Ninjabox;
+        Cheats.Jetpack = Server()->ServerCheats.Jetbox;
+    }
 }
 
 void CPlayer::Become(Class who){

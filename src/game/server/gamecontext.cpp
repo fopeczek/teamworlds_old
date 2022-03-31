@@ -2127,14 +2127,12 @@ void CGameContext::ConVoteResetCheat(IConsole::IResult *pResult, void *pUserData
 
     for (int i = 0; i < MAX_CLIENTS; i++) {
         if (pSelf->m_apPlayers[i]) {
-            if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
-                pSelf->m_apPlayers[i]->Cheats.KeepCheat = false;
-                pSelf->m_apPlayers[i]->Cheats.Godmode = false;
-                pSelf->m_apPlayers[i]->Cheats.AutoFire = false;
-                pSelf->m_apPlayers[i]->Cheats.Ninja = false;
-                pSelf->m_apPlayers[i]->Cheats.Jetpack = false;
-                pSelf->m_apPlayers[i]->Cheats.NoSelfDmg = false;
-            }
+            pSelf->m_apPlayers[i]->Cheats.KeepCheat = false;
+            pSelf->m_apPlayers[i]->Cheats.Godmode = false;
+            pSelf->m_apPlayers[i]->Cheats.AutoFire = false;
+            pSelf->m_apPlayers[i]->Cheats.Ninja = false;
+            pSelf->m_apPlayers[i]->Cheats.Jetpack = false;
+            pSelf->m_apPlayers[i]->Cheats.NoSelfDmg = false;
         }
     }
 }

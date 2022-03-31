@@ -370,8 +370,12 @@ void CCharacter::FireWeapon()
                                                       CGameWorld::ENTTYPE_LASER, GetMapID());
 
             for (int i = 0; i < manyWalls; ++i) {
-                apWalls[i]->HeIsHealing(m_pPlayer);
-                apWalls[i]->HammerHit(g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage, m_pPlayer);
+                if (apWalls[i]){
+                    if(apWalls[i]->Created){
+                        apWalls[i]->HeIsHealing(m_pPlayer);
+                        apWalls[i]->HammerHit(g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage, m_pPlayer);
+                    }
+                }
             }
 
             CCharacter *apEnts[MAX_CLIENTS];
@@ -1054,7 +1058,35 @@ void CCharacter::Die(int Killer, int Weapon)
 
 bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weapon)
 {
-	m_Core.m_Vel += Force;
+    if (From == m_pPlayer->GetCID()){
+        m_Core.m_Vel += Force;
+    } else {
+        if (Server()->GetClientClass(From) == Class::Scout) {
+            // get ground state
+            const bool Grounded =
+                    m_Core.m_pCollision->CheckPoint(m_Pos.x + m_Core.PHYS_SIZE / 2, m_Pos.y + m_Core.PHYS_SIZE / 2 + 5)
+                    ||
+                    m_Core.m_pCollision->CheckPoint(m_Pos.x - m_Core.PHYS_SIZE / 2, m_Pos.y + m_Core.PHYS_SIZE / 2 + 5);
+            if (Grounded) {
+                vec2 AddMe(0.f, -5.f);
+                if (Force.x > 0) {
+                    AddMe += vec2(15.f, 0.f);
+                } else if (Force.x < 0) {
+                    AddMe += vec2(-15.f, 0.f);
+                }
+                m_Core.m_Vel += Force + AddMe * 2;
+                m_Core.m_Vel.y = clamp(m_Core.m_Vel.y, -10.f, 10.f);
+            } else {
+                vec2 AddMe(0.f, 0.f);
+                if (Force.x > 0) {
+                    AddMe += vec2(5.f, 0.f);
+                } else if (Force.x < 0) {
+                    AddMe += vec2(-5.f, 0.f);
+                }
+                m_Core.m_Vel += Force + AddMe * 2;
+            }
+        }
+    }
 
 	if(From >= 0)
 	{

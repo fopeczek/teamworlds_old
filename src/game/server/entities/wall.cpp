@@ -161,6 +161,7 @@ vec2 CWall::CheckForIntersection(vec2 st_pos1, vec2 st_pos2, vec2 sec_pos1, vec2
 
 void CWall::HeIsHealing(CPlayer* player)
 {
+
     if (player->GetTeam()==pPlayer->GetTeam()) {
         if (player->GetCharacter()->m_Health > 1 or player->GetCharacter()->m_Armor > 0) {
             if (!m_SpiderWeb) {

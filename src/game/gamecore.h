@@ -146,10 +146,10 @@ public:
 class CCharacterCore
 {
     CWorldCore *m_pWorld;
-	CCollision *m_pCollision;
 
     bool m_pRetval= false;
 public:
+    CCollision *m_pCollision;
 	static const float PHYS_SIZE;
 	vec2 m_Pos;
 	vec2 m_Vel;
