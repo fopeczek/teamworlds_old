@@ -287,9 +287,15 @@ void CCharacter::FireWeapon()
     if (m_pPlayer->Cheats.AutoFire and !m_pPlayer->Cheats.Ninja) {
         m_ReloadTimer=0;
     }
-    if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Engineer and m_ActiveWeapon == WEAPON_LASER) {
+
+    if (Server()->GetClientClass(m_pPlayer->GetCID()) == Class::Engineer and m_ActiveWeapon == WEAPON_LASER) {
         m_ReloadTimer=0;
     }
+
+//    if (Server()->GetClientClass(m_pPlayer->GetCID()) == Class::Tank and m_ActiveWeapon == WEAPON_GUN) {
+//        m_ReloadTimer=0;
+//    }
+
     if (m_ReloadTimer != 0)
         return;
 
@@ -300,6 +306,9 @@ void CCharacter::FireWeapon()
     bool FullAuto = false;
 
     if(m_ActiveWeapon == WEAPON_GRENADE || m_ActiveWeapon == WEAPON_SHOTGUN || m_ActiveWeapon == WEAPON_LASER)
+        FullAuto = true;
+
+    if(Server()->GetClientClass(m_pPlayer->GetCID()) == Class::Tank and m_ActiveWeapon == WEAPON_GUN)
         FullAuto = true;
 
     if (Server()->GetClientClass(GetPlayer()->GetCID())==Class::Engineer and m_ActiveWeapon==WEAPON_LASER){
@@ -432,7 +441,10 @@ void CCharacter::FireWeapon()
                             g_pData->m_Weapons.m_Gun.m_pBase->m_Damage, false, 0, -1, WEAPON_GUN, GetMapID());
 
             GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE, -1, GetMapID());
-            if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and m_ShadowDimension) {
+            if (Server()->GetClientClass(m_pPlayer->GetCID()) == Class::Tank){
+                m_Tank_PistolShot ++;
+            }
+            if (Server()->GetClientClass(m_pPlayer->GetCID()) == Class::Hunter and m_ShadowDimension) {
                 m_ShadowDimension= false;
                 m_ShadowDimensionCooldown= true;
                 //amplify sound of undisguised
@@ -611,6 +623,9 @@ void CCharacter::FireWeapon()
 
     if(!m_ReloadTimer){
         m_ReloadTimer = g_pData->m_Weapons.m_aId[m_ActiveWeapon].m_Firedelay * Server()->TickSpeed() / 1000;
+        if (Server()->GetClientClass(GetPlayer()->GetCID())== Class::Tank and m_ActiveWeapon == WEAPON_GUN){
+            m_ReloadTimer = g_pData->m_Weapons.m_aId[m_ActiveWeapon].m_Firedelay * Server()->TickSpeed() / 1000 - 2;
+        }
         if (m_pPlayer->Cheats.Ninja and m_pPlayer->Cheats.AutoFire){
             m_ReloadTimer = 300.f * Server()->TickSpeed() / 1000;
         }
@@ -625,6 +640,15 @@ void CCharacter::FireWeapon()
         }
         if (Server()->GetClientClass(GetPlayer()->GetCID())== Class::Spider){
             if (m_ActiveWeapon == WEAPON_SHOTGUN){
+                return;
+            }
+        }
+        if (Server()->GetClientClass(GetPlayer()->GetCID())== Class::Tank){
+            if (m_ActiveWeapon == WEAPON_GUN){
+                if (m_Tank_PistolShot == 3){
+                    m_aWeapons[m_ActiveWeapon].m_Ammo--;
+                    m_Tank_PistolShot=0;
+                }
                 return;
             }
         }

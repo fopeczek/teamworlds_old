@@ -75,6 +75,7 @@ public:
     bool m_ShadowDimensionCooldown= false;
 
     int m_Tank_PistolHitTick;
+    int m_Tank_PistolShot = 0;
 
     int m_Health;
     int m_Armor;
