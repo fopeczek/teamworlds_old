@@ -88,6 +88,9 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
         m_Wall = new CWall (GameWorld(), m_pPlayer->GetCID(), Server()->MainMapID);
     }
 
+    if (Server()->GetClientClass(m_pPlayer->GetCID()) == Class::Tank){
+        IncreaseArmor(10);
+    }
 
 	return true;
 }

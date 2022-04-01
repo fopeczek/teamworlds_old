@@ -99,8 +99,12 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 
 	m_Vel.y += m_pWorld->m_Tuning.m_Gravity;
 
-	float MaxSpeed = Grounded ? m_pWorld->m_Tuning.m_GroundControlSpeed : m_pWorld->m_Tuning.m_AirControlSpeed;
-	float Accel = Grounded ? m_pWorld->m_Tuning.m_GroundControlAccel : m_pWorld->m_Tuning.m_AirControlAccel;
+    float MaxSpeed = Grounded ? m_pWorld->m_Tuning.m_GroundControlSpeed : m_pWorld->m_Tuning.m_AirControlSpeed;
+    float Accel = Grounded ? m_pWorld->m_Tuning.m_GroundControlAccel : m_pWorld->m_Tuning.m_AirControlAccel;
+    if (hisClass == Class::Tank){
+        MaxSpeed = Grounded ? m_pWorld->m_Tuning.m_GroundControlSpeed/1.5f : m_pWorld->m_Tuning.m_AirControlSpeed/1.5f;
+        Accel = Grounded ? m_pWorld->m_Tuning.m_GroundControlAccel/1.5f : m_pWorld->m_Tuning.m_AirControlAccel/1.5f;
+    }
 	float Friction = Grounded ? m_pWorld->m_Tuning.m_GroundFriction : m_pWorld->m_Tuning.m_AirFriction;
 
 	// handle input
@@ -293,11 +297,15 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 			else
 				HookVel.x *= 0.75f;
 
+            if (hisClass==Class::Tank){
+                HookVel/=2.f;
+            }
 			vec2 NewVel = m_Vel+HookVel;
 
 			// check if we are under the legal limit for the hook
-			if(length(NewVel) < m_pWorld->m_Tuning.m_HookDragSpeed || length(NewVel) < length(m_Vel))
-				m_Vel = NewVel; // no problem. apply
+			if(length(NewVel) < m_pWorld->m_Tuning.m_HookDragSpeed || length(NewVel) < length(m_Vel)) {
+                m_Vel = NewVel; // no problem. apply
+            }
 
 		}
 
@@ -350,7 +358,6 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 				if(Distance > PHYS_SIZE*1.50f) // TODO: fix tweakable variable
 				{
 					float Accel = m_pWorld->m_Tuning.m_HookDragAccel * (Distance/m_pWorld->m_Tuning.m_HookLength);
-
 					// add force to the hooked player
 					pCharCore->m_HookDragVel += Dir*Accel*1.5f;
 
