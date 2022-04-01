@@ -1059,28 +1059,32 @@ bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weap
         m_Core.m_Vel += Force;
     } else {
         if (Server()->GetClientClass(From) == Class::Scout) {
-            // get ground state
-            const bool Grounded =
-                    m_Core.m_pCollision->CheckPoint(m_Pos.x + m_Core.PHYS_SIZE / 2, m_Pos.y + m_Core.PHYS_SIZE / 2 + 5)
-                    ||
-                    m_Core.m_pCollision->CheckPoint(m_Pos.x - m_Core.PHYS_SIZE / 2, m_Pos.y + m_Core.PHYS_SIZE / 2 + 5);
-            if (Grounded) {
-                vec2 AddMe(0.f, -5.f);
-                if (Force.x > 0) {
-                    AddMe += vec2(15.f, 0.f);
-                } else if (Force.x < 0) {
-                    AddMe += vec2(-15.f, 0.f);
+            if (Weapon==WEAPON_GRENADE) {
+                // get ground state
+                const bool Grounded =
+                        m_Core.m_pCollision->CheckPoint(m_Pos.x + m_Core.PHYS_SIZE / 2,
+                                                        m_Pos.y + m_Core.PHYS_SIZE / 2 + 5)
+                        ||
+                        m_Core.m_pCollision->CheckPoint(m_Pos.x - m_Core.PHYS_SIZE / 2,
+                                                        m_Pos.y + m_Core.PHYS_SIZE / 2 + 5);
+                if (Grounded) {
+                    vec2 AddMe(0.f, -5.f);
+                    if (Force.x > 0) {
+                        AddMe += vec2(15.f, 0.f);
+                    } else if (Force.x < 0) {
+                        AddMe += vec2(-15.f, 0.f);
+                    }
+                    m_Core.m_Vel += Force + AddMe * 2;
+                    m_Core.m_Vel.y = clamp(m_Core.m_Vel.y, -10.f, 10.f);
+                } else {
+                    vec2 AddMe(0.f, 0.f);
+                    if (Force.x > 0) {
+                        AddMe += vec2(5.f, 0.f);
+                    } else if (Force.x < 0) {
+                        AddMe += vec2(-5.f, 0.f);
+                    }
+                    m_Core.m_Vel += Force + AddMe * 2;
                 }
-                m_Core.m_Vel += Force + AddMe * 2;
-                m_Core.m_Vel.y = clamp(m_Core.m_Vel.y, -10.f, 10.f);
-            } else {
-                vec2 AddMe(0.f, 0.f);
-                if (Force.x > 0) {
-                    AddMe += vec2(5.f, 0.f);
-                } else if (Force.x < 0) {
-                    AddMe += vec2(-5.f, 0.f);
-                }
-                m_Core.m_Vel += Force + AddMe * 2;
             }
         }
     }
@@ -1110,6 +1114,23 @@ bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weap
         }
         if (m_pPlayer->Cheats.NoSelfDmg) {
             Dmg = 0;
+        }
+    }
+
+    if (Server()->GetClientClass(m_pPlayer->GetCID()) == Class::Tank){
+        if (Dmg > 1){
+            Dmg = round_to_int(Dmg / 2.f);
+        }else {
+            if (m_Tank_PistolHitTick + 500 <= Server()->Tick()){ //after 5 sec reset pistol hit
+                m_pPlayer->m_Tank_PistolHit = false;
+            }
+            if (m_pPlayer->m_Tank_PistolHit){
+                m_pPlayer->m_Tank_PistolHit = false;
+            } else {
+                Dmg = 0;
+                m_pPlayer->m_Tank_PistolHit = true;
+                m_Tank_PistolHitTick=Server()->Tick();
+            }
         }
     }
 

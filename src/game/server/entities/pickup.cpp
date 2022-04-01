@@ -54,22 +54,36 @@ void CPickup::Tick()
             bool Picked = false;
             switch (m_Type) {
                 case PICKUP_HEALTH:
-                    if (pChr->IncreaseHealth(1)) {
-                        Picked = true;
-                        GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH, -1, GetMapID());
+                    if (GetMapID()!=Server()->LobbyMapID) {
+                        if (pChr->IncreaseHealth(1)) {
+                            Picked = true;
+                            GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH, -1, GetMapID());
+                        }
                     }
                     break;
 
                 case PICKUP_ARMOR:
-                    if (pChr->IncreaseArmor(1)) {
-                        Picked = true;
-                        GameServer()->CreateSound(m_Pos, SOUND_PICKUP_ARMOR, -1, GetMapID());
+                    if (GetMapID()!=Server()->LobbyMapID) {
+                        if (pChr->IncreaseArmor(1)) {
+                            Picked = true;
+                            GameServer()->CreateSound(m_Pos, SOUND_PICKUP_ARMOR, -1, GetMapID());
+                        }
                     }
                     break;
 
                 case PICKUP_GRENADE:
                     if (GetMapID()==Server()->LobbyMapID){
-                        pChr->GetPlayer()->Become(Class::Scout);
+                        CPickup *Hp[2];
+                        int num = GameWorld()->FindEntities(m_Pos, GetProximityRadius()*2.f, (CEntity**)Hp, 2, CGameWorld::ENTTYPE_PICKUP, Server()->LobbyMapID);
+                        if (num > 1) {
+                            for (int i = 0; i < 2; i++) {
+                                if (Hp[i]->m_Type == PICKUP_ARMOR) {
+                                    pChr->GetPlayer()->Become(Class::Tank);
+                                }
+                            }
+                        }else {
+                            pChr->GetPlayer()->Become(Class::Scout);
+                        }
                     } else {
                         if (pChr->GiveWeapon(WEAPON_GRENADE, g_pData->m_Weapons.m_aId[WEAPON_GRENADE].m_Maxammo)) {
                             Picked = true;

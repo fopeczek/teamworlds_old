@@ -80,7 +80,7 @@ bool CWall::HitCharacter()
                 return false;
 
             pHit->TakeDamage(vec2(0.f, 0.f), normalize(m_Pos - m_From),
-                             g_pData->m_Weapons.m_aId[WEAPON_LASER].m_Damage * 2,
+                             10,
                              m_Owner, WEAPON_LASER);
             TakeDamage(1, pHit->GetPlayer()->GetCID());
         }

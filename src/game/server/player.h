@@ -67,6 +67,8 @@ public:
 	int m_Spider_ActiveWebs=0;
     static constexpr int m_Spider_MaxActiveWebs=4*5;//shotgun shoots 5 walls every shot
 
+    bool m_Tank_PistolHit= false;
+
     void Become(Class who);
 
 
