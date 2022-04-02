@@ -1948,6 +1948,14 @@ void CGameContext::ConVoteGodmode(IConsole::IResult *pResult, void *pUserData){
     for (int i = 0; i < MAX_CLIENTS; i++) {
         if (pSelf->m_apPlayers[i]) {
             pSelf->m_apPlayers[i]->Cheats.Godmode= pSelf->Server()->ServerCheats.Godbox;
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Now godmode is: ");
+            if (pSelf->Server()->ServerCheats.Godbox){
+                msg<<"on";
+            } else {
+                msg<<"off";
+            }
+            pSelf->SendChat(i, CHAT_WHISPER, i, msg.str().c_str());
         }
     }
 }
@@ -1962,6 +1970,14 @@ void CGameContext::ConVoteAutomode(IConsole::IResult *pResult, void *pUserData){
     for (int i = 0; i < MAX_CLIENTS; i++) {
         if (pSelf->m_apPlayers[i]) {
             pSelf->m_apPlayers[i]->Cheats.AutoFire= pSelf->Server()->ServerCheats.Autobox;
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Now auto fire is: ");
+            if (pSelf->Server()->ServerCheats.Autobox){
+                msg<<"on";
+            } else {
+                msg<<"off";
+            }
+            pSelf->SendChat(i, CHAT_WHISPER, i, msg.str().c_str());
         }
     }
 }
@@ -1976,6 +1992,14 @@ void CGameContext::ConVoteHookmode(IConsole::IResult *pResult, void *pUserData){
     for (int i = 0; i < MAX_CLIENTS; i++) {
         if (pSelf->m_apPlayers[i]) {
             pSelf->m_apPlayers[i]->Cheats.Hookmode= pSelf->Server()->ServerCheats.Hookbox;
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Now infinite hook is: ");
+            if (pSelf->Server()->ServerCheats.Hookbox){
+                msg<<"on";
+            } else {
+                msg<<"off";
+            }
+            pSelf->SendChat(i, CHAT_WHISPER, i, msg.str().c_str());
         }
     }
 }
@@ -1990,6 +2014,14 @@ void CGameContext::ConVoteJetpack(IConsole::IResult *pResult, void *pUserData){
     for (int i = 0; i < MAX_CLIENTS; i++) {
         if (pSelf->m_apPlayers[i]) {
             pSelf->m_apPlayers[i]->Cheats.Jetpack= pSelf->Server()->ServerCheats.Jetbox;
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Now jetpack is: ");
+            if (pSelf->Server()->ServerCheats.Jetbox){
+                msg<<"on";
+            } else {
+                msg<<"off";
+            }
+            pSelf->SendChat(i, CHAT_WHISPER, i, msg.str().c_str());
         }
     }
 }
@@ -2003,18 +2035,22 @@ void CGameContext::ConVoteNinja(IConsole::IResult *pResult, void *pUserData){
     }
     for (int i = 0; i < MAX_CLIENTS; i++) {
         if (pSelf->m_apPlayers[i]) {
-            pSelf->m_apPlayers[i]->Cheats.Ninja= pSelf->Server()->ServerCheats.Ninjabox;
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Now super ninja is: ");
             if (pSelf->Server()->ServerCheats.Ninjabox) {
                 pSelf->m_apPlayers[i]->Cheats.Ninja = true;
                 pSelf->m_apPlayers[i]->Cheats.Godmode = true;
                 pSelf->m_apPlayers[i]->Cheats.AutoFire = true;
                 pSelf->m_apPlayers[i]->GetCharacter()->GiveNinja();
+                msg<<"on";
             } else{
                 pSelf->m_apPlayers[i]->Cheats.Ninja = false;
                 pSelf->m_apPlayers[i]->Cheats.Godmode = false;
                 pSelf->m_apPlayers[i]->Cheats.AutoFire = false;
                 pSelf->m_apPlayers[i]->GetCharacter()->UngiveNinja();
+                msg<<"off";
             }
+            pSelf->SendChat(i, CHAT_WHISPER, i, msg.str().c_str());
         }
     }
 }
@@ -2030,12 +2066,17 @@ void CGameContext::ConKeepCheat(IConsole::IResult *pResult, void *pUserData){
     for (int i = 0; i < MAX_CLIENTS; i++) {
         if (pSelf->m_apPlayers[i]) {
             if (str_comp(pSelf->Server()->ClientName(i), username.c_str()) == 0) {
-                if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
+                if (pSelf->m_apPlayers[i]->GetCharacter()) {
+                    std::ostringstream msg (std::ostringstream::ate);
+                    msg.str("Now keep cheat is: ");
                     if (pSelf->m_apPlayers[i]->Cheats.KeepCheat == true) {
                         pSelf->m_apPlayers[i]->Cheats.KeepCheat = false;
+                        msg<<"off";
                     } else {
                         pSelf->m_apPlayers[i]->Cheats.KeepCheat = true;
+                        msg<<"on";
                     }
+                    pSelf->SendChat(i, CHAT_WHISPER, i, msg.str().c_str());
                 }
             }
         }
@@ -2046,11 +2087,16 @@ void CGameContext::ConDoActivityCheck(IConsole::IResult *pResult, void *pUserDat
     CGameContext *pSelf = (CGameContext *)pUserData;
     std::string username;
 
+    std::ostringstream msg (std::ostringstream::ate);
+    msg.str("Now afk is: ");
     if (pSelf->Server()->AFK) {
         pSelf->Server()->AFK = false;
+        msg<<"not allowed";
     } else {
         pSelf->Server()->AFK = true;
+        msg<<"allowed";
     }
+    pSelf->SendChat(-1, CHAT_NONE, -1, msg.str().c_str());
 }
 
 void CGameContext::addVote(const char *pDescription, const char *pCommand,void *pUserData) {

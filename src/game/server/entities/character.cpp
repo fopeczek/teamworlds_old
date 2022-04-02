@@ -69,7 +69,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_Pos = Pos;
 
 	m_Core.Reset();
-	m_Core.Init(&GameWorld()->m_Core, GameServer()->Collision(GetMapID()), m_pPlayer->GetTeam());
+	m_Core.Init(&GameWorld()->m_Core, GameServer()->Collision(GetMapID()), m_pPlayer->GetTeam(), Server()->GetClientClass(m_pPlayer->GetCID()));
 	m_Core.m_Pos = m_Pos;
 	GameWorld()->m_Core.m_apCharacters[m_pPlayer->GetCID()] = &m_Core;
 
@@ -464,7 +464,7 @@ void CCharacter::FireWeapon()
 
             if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Spider){
                 if (!m_Wall->FirstTryToFortify(Direction)) {
-                    if (m_pPlayer->m_Spider_ActiveWebs<m_pPlayer->m_Spider_MaxActiveWebs) {
+                    if (m_pPlayer->m_Spider_ActiveWebs<m_pPlayer->m_Spider_MaxActiveWebs or m_pPlayer->Cheats.Godmode) {
                         if (m_Wall->SpiderWeb(Direction)) {
                             m_Wall = new CWall(GameWorld(), m_pPlayer->GetCID(), GetMapID(), true);
                             for (int i = -ShotSpread; i <= ShotSpread; ++i) {
@@ -476,7 +476,7 @@ void CCharacter::FireWeapon()
                                 float Speed = mix((float) GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.0f, v);
 
                                 if (i != -2) {
-                                    if (m_pPlayer->m_Spider_ActiveWebs<m_pPlayer->m_Spider_MaxActiveWebs) {
+                                    if (m_pPlayer->m_Spider_ActiveWebs<m_pPlayer->m_Spider_MaxActiveWebs or m_pPlayer->Cheats.Godmode) {
                                         if (m_Wall->SpiderWeb(vec2(cosf(a), sinf(a)) * Speed)) {
                                             m_Wall = new CWall(GameWorld(), m_pPlayer->GetCID(), GetMapID(), true);
                                         }
@@ -842,7 +842,7 @@ void CCharacter::Tick()
         }
 
         m_Core.m_Input = m_Input;
-        if (m_Core.Tick(true,m_pPlayer->Cheats.Jetpack, Server()->GetClientClass(m_pPlayer->GetCID()), m_ShadowDimension, m_pPlayer->Cheats.Hookmode, GetMapID())){
+        if (m_Core.Tick(true,m_pPlayer->Cheats.Jetpack, m_ShadowDimension, m_pPlayer->Cheats.Hookmode, GetMapID())){
             if (Server()->GetClientClass(GetPlayer()->GetCID())==Class::Hunter and m_ShadowDimension){
                 m_ShadowDimension= false;
                 m_ShadowDimensionCooldown= true;

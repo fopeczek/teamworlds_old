@@ -57,11 +57,12 @@ float VelocityRamp(float Value, float Start, float Range, float Curvature)
 
 const float CCharacterCore::PHYS_SIZE = 28.0f;
 
-void CCharacterCore::Init(CWorldCore *pWorld, CCollision *pCollision, int Team)
+void CCharacterCore::Init(CWorldCore *pWorld, CCollision *pCollision, int Team, Class MyClass)
 {
 	m_pWorld = pWorld;
 	m_pCollision = pCollision;
     m_Team=Team;
+    m_myClass = MyClass;
 }
 
 void CCharacterCore::Reset()
@@ -79,7 +80,7 @@ void CCharacterCore::Reset()
 	m_Death = false;
 }
 
-bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShadow, bool hookmode, int MapID)
+bool CCharacterCore::Tick(bool UseInput, bool Jet, bool actShadow, bool hookmode, int MapID)
 {
     bool reveal = false;
     if (m_pRetval){
@@ -101,11 +102,15 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 
     float MaxSpeed = Grounded ? m_pWorld->m_Tuning.m_GroundControlSpeed : m_pWorld->m_Tuning.m_AirControlSpeed;
     float Accel = Grounded ? m_pWorld->m_Tuning.m_GroundControlAccel : m_pWorld->m_Tuning.m_AirControlAccel;
-    if (hisClass == Class::Tank){
-        MaxSpeed = Grounded ? m_pWorld->m_Tuning.m_GroundControlSpeed/1.5f : m_pWorld->m_Tuning.m_AirControlSpeed/1.5f;
-        Accel = Grounded ? m_pWorld->m_Tuning.m_GroundControlAccel/1.5f : m_pWorld->m_Tuning.m_AirControlAccel/1.5f;
-    }
+//    if (hisClass == Class::Tank){
+//        MaxSpeed = Grounded ? m_pWorld->m_Tuning.m_GroundControlSpeed/1.5f : m_pWorld->m_Tuning.m_AirControlSpeed/1.5f;
+//        Accel = Grounded ? m_pWorld->m_Tuning.m_GroundControlAccel/1.5f : m_pWorld->m_Tuning.m_AirControlAccel/1.5f;
+//    }
 	float Friction = Grounded ? m_pWorld->m_Tuning.m_GroundFriction : m_pWorld->m_Tuning.m_AirFriction;
+
+    if (m_myClass==Class::Tank){
+        Friction = Grounded ? m_pWorld->m_Tuning.m_GroundFriction+0.35f : m_pWorld->m_Tuning.m_AirFriction;
+    }
 
 	// handle input
 	if(UseInput)
@@ -122,12 +127,18 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 				{
 					m_TriggeredEvents |= COREEVENTFLAG_GROUND_JUMP;
 					m_Vel.y = -m_pWorld->m_Tuning.m_GroundJumpImpulse;
+                    if (m_myClass==Class::Tank){
+                        m_Vel.y = -m_pWorld->m_Tuning.m_GroundJumpImpulse*0.75f;
+                    }
 					m_Jumped |= 1;
 				}
 				else if(!(m_Jumped&2))
 				{
 					m_TriggeredEvents |= COREEVENTFLAG_AIR_JUMP;
 					m_Vel.y = -m_pWorld->m_Tuning.m_AirJumpImpulse;
+                    if (m_myClass==Class::Tank){
+                        m_Vel.y = -m_pWorld->m_Tuning.m_AirJumpImpulse*0.75f;
+                    }
                     if (!Jet){
                         m_Jumped |= 3;
                     }
@@ -164,7 +175,7 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 	if(m_Direction > 0)
 		m_Vel.x = SaturatedAdd(-MaxSpeed, MaxSpeed, m_Vel.x, Accel);
 	if(m_Direction == 0)
-		m_Vel.x *= Friction;
+        m_Vel.x *= Friction;
 
 	// handle jumping
 	// 1 bit = to keep track if a jump has been made on this input
@@ -204,7 +215,7 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 		if(Hit)
 		{
 			if(Hit&CCollision::COLFLAG_NOHOOK) {
-                if (hisClass != Class::Spider) {
+                if (m_myClass != Class::Spider) {
                     GoingToRetract = true;
                 } else{
                     GoingToHitGround = true;
@@ -297,8 +308,12 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 			else
 				HookVel.x *= 0.75f;
 
-            if (hisClass==Class::Tank){
-                HookVel/=2.f;
+            if (m_myClass==Class::Tank){
+                HookVel.y/=2.f;
+            }
+
+            if (m_myClass==Class::Tank){
+                HookVel.x/=1.5f;
             }
 			vec2 NewVel = m_Vel+HookVel;
 
@@ -310,8 +325,8 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 		}
 
 		// release hook (max hook time is 1.25
-        if (!hookmode) {// make as jetpack (add a fun param)
-            if(hisClass!=Class::Spider) {
+        if (!hookmode) {
+            if(m_myClass!=Class::Spider) {
                 m_HookTick++;
             }
         }
@@ -345,8 +360,9 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 
 				// make sure that we don't add excess force by checking the
 				// direction against the current velocity. if not zero.
-				if(length(m_Vel) > 0.0001)
+				if(length(m_Vel) > 0.0001){
 					Velocity = 1-(dot(normalize(m_Vel), Dir)+1)/2;
+                }
 
 				m_Vel += Dir*a*(Velocity*0.75f);
 				m_Vel *= 0.85f;
@@ -363,6 +379,10 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, Class hisClass, bool actShado
 
 					// add a little bit force to the guy who has the grip
 					m_HookDragVel -= Dir*Accel*0.25f;
+
+                    if (pCharCore->m_myClass==Class::Tank){
+                        pCharCore->m_HookDragVel/=2;
+                    }
 				}
 			}
 		}

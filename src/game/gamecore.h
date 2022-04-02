@@ -148,6 +148,7 @@ class CCharacterCore
     CWorldCore *m_pWorld;
 
     bool m_pRetval= false;
+    Class m_myClass = Class::None;
 public:
     CCollision *m_pCollision;
 	static const float PHYS_SIZE;
@@ -175,9 +176,9 @@ public:
 
 	int m_TriggeredEvents;
 
-	void Init(CWorldCore *pWorld, CCollision *pCollision, int Team = -1);
+	void Init(CWorldCore *pWorld, CCollision *pCollision, int Team = -1, Class MyClass = Class::None);
 	void Reset();
-	bool Tick(bool UseInput, bool Jet=false, Class hisClass=Class::None, bool actShadow=false, bool hookmode=false, int MapID = 0);//Main map id = 0
+	bool Tick(bool UseInput, bool Jet=false, bool actShadow=false, bool hookmode=false, int MapID = 0);//Main map id = 0
 	void Move();
 
 	void AddDragVelocity();
