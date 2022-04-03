@@ -1082,8 +1082,10 @@ void CCharacter::Die(int Killer, int Weapon)
 
 bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weapon)
 {
+    vec2 NewForce = m_Core.m_Vel + Force;
+    vec2 ScoutForce = vec2(0.f,0.f);
     if (From == m_pPlayer->GetCID()){
-        m_Core.m_Vel += Force;
+        NewForce = m_Core.m_Vel + Force;
     } else {
         if (Server()->GetClientClass(From) == Class::Scout) {
             if (Weapon==WEAPON_GRENADE) {
@@ -1101,8 +1103,9 @@ bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weap
                     } else if (Force.x < 0) {
                         AddMe += vec2(-15.f, 0.f);
                     }
-                    m_Core.m_Vel += Force + AddMe * 2;
-                    m_Core.m_Vel.y = clamp(m_Core.m_Vel.y, -10.f, 10.f);
+                    ScoutForce = Force + AddMe * 2;
+                    NewForce = m_Core.m_Vel + ScoutForce;
+                    NewForce.y = clamp(NewForce.y, -10.f, 10.f);
                 } else {
                     vec2 AddMe(0.f, 0.f);
                     if (Force.x > 0) {
@@ -1110,11 +1113,24 @@ bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weap
                     } else if (Force.x < 0) {
                         AddMe += vec2(-5.f, 0.f);
                     }
-                    m_Core.m_Vel += Force + AddMe * 2;
+                    ScoutForce = Force + AddMe * 2;
+                    NewForce = m_Core.m_Vel + ScoutForce;
                 }
             }
         }
     }
+    if (Server()->GetClientClass(m_pPlayer->GetCID()) == Class::Tank){
+        if (Server()->GetClientClass(From) == Class::Scout) {
+            if (Weapon==WEAPON_GRENADE) {
+                NewForce = m_Core.m_Vel + ScoutForce / 4.f;
+            }
+        } else {
+            NewForce = m_Core.m_Vel + Force/2.f;
+        }
+    }
+
+    //all done adding force
+    m_Core.m_Vel = NewForce;
 
 	if(From >= 0)
 	{

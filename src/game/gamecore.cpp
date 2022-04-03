@@ -109,7 +109,8 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, bool actShadow, bool hookmode
 	float Friction = Grounded ? m_pWorld->m_Tuning.m_GroundFriction : m_pWorld->m_Tuning.m_AirFriction;
 
     if (m_myClass==Class::Tank){
-        Friction = Grounded ? m_pWorld->m_Tuning.m_GroundFriction+0.35f : m_pWorld->m_Tuning.m_AirFriction;
+        Friction = Grounded ? m_pWorld->m_Tuning.m_GroundFriction+0.4f : m_pWorld->m_Tuning.m_AirFriction;
+        Accel -= Grounded ? 1.5f : 0.5f;
     }
 
 	// handle input
@@ -310,6 +311,7 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, bool actShadow, bool hookmode
 
             if (m_myClass==Class::Tank){
                 HookVel.y/=2.f;
+                HookVel.y+=0.2f;
             }
 
             if (m_myClass==Class::Tank){
@@ -363,9 +365,13 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, bool actShadow, bool hookmode
 				if(length(m_Vel) > 0.0001){
 					Velocity = 1-(dot(normalize(m_Vel), Dir)+1)/2;
                 }
-
-				m_Vel += Dir*a*(Velocity*0.75f);
-				m_Vel *= 0.85f;
+                if (pCharCore->m_myClass !=Class::Tank) {
+                    m_Vel += Dir * a * (Velocity * 0.75f);
+                    m_Vel *= 0.85f;
+                } else {
+                    m_Vel += Dir * a * Velocity;
+//                    m_Vel *= 0.85f;
+                }
 			}
 
 			// handle hook influence

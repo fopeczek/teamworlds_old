@@ -66,26 +66,47 @@ bool CWall::HitCharacter()
             }
 
             m_LastHitTick=Server()->Tick();
-            return true;
         }
     }else {
-        for (int i = 0; i < 2; i++) {
-            vec2 At;
-            CCharacter *pOwnerChar = GameServer()->GetPlayerChar(m_Owner);
+        vec2 At;
+        CCharacter *pOwnerChar = GameServer()->GetPlayerChar(m_Owner);
 
-            CCharacter *pHit = GameWorld()->IntersectCharacter(m_Pos, m_From, 0.f, At, pOwnerChar);
-            if (!pHit)
-                return false;
-            if (pHit->GetPlayer()->GetTeam() == pPlayer->GetTeam())
-                return false;
+        CCharacter *pHit = GameWorld()->IntersectCharacter(m_Pos, m_From, 0.f, At, pOwnerChar);
+        if (!pHit)
+            return false;
+        if (pHit->GetPlayer()->GetTeam() == pPlayer->GetTeam())
+            return false;
 
-            pHit->TakeDamage(vec2(0.f, 0.f), normalize(m_Pos - m_From),
-                             10,
-                             m_Owner, WEAPON_LASER);
-            TakeDamage(1, pHit->GetPlayer()->GetCID());
+        int Player_HP = pHit->m_Health + pHit->m_Armor;
+        if (Server()->GetClientClass(pHit->GetPlayer()->GetCID()) != Class::Tank) {
+            for (int i = 0; i < Player_HP/10; i++) {
+                if (pHit){
+                    for (int j=0;j<10;j++){
+                        pHit->TakeDamage(vec2(0.f, 0.f), normalize(m_Pos - m_From),
+                                         1,
+                                         m_Owner, WEAPON_LASER);
+                    }
+                    if (TakeDamage(1, pHit->GetPlayer()->GetCID())){
+                        return true;
+                    }
+                }
+            }
+        } else{
+            for (int i = 0; i < Player_HP/5; i++) {
+                if (pHit){
+                    for (int j=0;j<10;j++){
+                        pHit->TakeDamage(vec2(0.f, 0.f), normalize(m_Pos - m_From),
+                                         1,
+                                         m_Owner, WEAPON_LASER);
+                    }
+                    if (TakeDamage(1, pHit->GetPlayer()->GetCID())){
+                        return true;
+                    }
+                }
+            }
         }
-        return true;
     }
+    return true;
 }
 
 vec2 CWall::CheckForIntersection(vec2 st_pos1, vec2 st_pos2, vec2 sec_pos1, vec2 sec_pos2){

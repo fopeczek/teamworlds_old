@@ -5,9 +5,9 @@
 enum class Class {
     None,
     Hunter, //note:Offensive
-    Medic,//note:Support TODO implement:can place if custom places pickupables, 2 options: onk cheap place 1 use pickup, or twok expensive place respawnable (permanent) pickupable
+    Medic,//note:Support TODO implement:can place in custom places pickupables, 2 options: onk cheap place 1 use pickup, or twok expensive place respawnable (permanent) pickupable
     Scout, //note:Offensive TODO make him place mines (if on your team you will se a o [circle] of shields floating or rotating
-    Tank, //note:Offensive TODO Implement: make him heavy and slower, can hold players inf
+    Tank, //note:Offensive
     Spider, //note:Offensive/Defensive TODO make like in engineer walls (make that when two laser walls intersect one of them will stop on another (NO: --|--, but YES:   |--))
     Engineer, //note:Defensive TODO make that when two laser walls intersect one of them will stop on another (NO: --|--, but YES:   |--)
     Armorer,//note:Support TODO make better name, implement: can (like medic place custom pickupables same 2 options, but for weapons), maybe can create aura of battle or slt
