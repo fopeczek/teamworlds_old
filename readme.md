@@ -5,18 +5,20 @@ Teamworlds is a game based on  [teeworlds](https://github.com/teeworlds/teeworld
 ![Notice that server type is named TeamUp](datasrc/github/server.png "Notice that server type is named TeamUp")
 Notice that server type is named TeamUp.
 ---------
-![This is lobby](/datasrc/github/lobby.png "This is lobby")
+![This is lobby](/datasrc/github/Lobby.png "This is lobby")
 Upon joining into my server you will spawn in lobby.
 ------------
-![This is lobby](/datasrc/github/lobby_and_weapons.png "This is lobby")
+![This is lobby](/datasrc/github/Lobby&weapons.png "This is lobby")
 Every weapon represents a different class available in my server.
 
 Here are some info about each class: [ 
 [Engineer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Engineer) | 
-[Scout](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Scout) | 
-[Hunter](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Hunter) | 
 [Spider](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Spider) | 
-[Medic](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Medic)
+[Scout](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Scout) | 
+[Tank](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Tank) | 
+[Hunter](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Hunter) | 
+[Medic](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Medic) | 
+[Armorer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Armorer)
  ]
 
 ----------
@@ -94,6 +96,11 @@ https://user-images.githubusercontent.com/46483193/160896628-b513e3ae-ba4e-4670-
 
 ---------
 
+# Spider
+Spider special abitlity is placing webs using shotgun and hooking to metal walls. 
+
+----------
+
 # Scout
 Scout is offensive class, his special abitlity is rocket boosting and jumping using granade launcher. 
 He also spawns with granade launcher. 
@@ -112,17 +119,22 @@ https://user-images.githubusercontent.com/46483193/161442031-0e1cfeeb-4e91-4d91-
 
 ---------
 
+# Tank
+Tank offensive class that is slow and resistant. 
+
+----------
+
 # Hunter
 Hunter special abitlity is turning invisable using ninja. 
 
 ----------
 
-# Spider
-Spider special abitlity is placing webs using shotgun and hooking to metal walls. 
+# Medic
+Medic implementation is WIP(work in progress) by now it works as vanilla. 
 
 ----------
 
-# Medic
-Medic implementation is WIP(work in progress) by now it works as vanilla. 
+# Armorer
+Armorer implementation is WIP(work in progress) by now it works as vanilla. 
 
 ----------
