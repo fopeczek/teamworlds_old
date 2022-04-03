@@ -95,7 +95,20 @@ https://user-images.githubusercontent.com/46483193/160896628-b513e3ae-ba4e-4670-
 ---------
 
 # Scout
-Scout special abitlity is rocket boosting using granade launcher. 
+Scout is offensive class, his special abitlity is rocket boosting and jumping using granade launcher. 
+He also spawns with granade launcher. 
+
+
+He does only 1 hp of self damage. Tip: To rocket jump you have to fire underneath yourself and jump at the same time. 
+Here is video of rocket boosting and jumping. 
+
+https://user-images.githubusercontent.com/46483193/161442033-0d9c7057-7f9d-4bc5-9d24-fe7462b17448.mp4
+
+
+Also his granade launcher makes more knock back to other players than other classes. And he does only 3 hp of damage to others. 
+
+https://user-images.githubusercontent.com/46483193/161442031-0e1cfeeb-4e91-4d91-9066-a7496e6adf68.mp4
+
 
 ---------
 
