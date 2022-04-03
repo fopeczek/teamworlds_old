@@ -11,36 +11,36 @@
 #include "projectile.h"
 #include "pickup.h"
 
-CWall::CWall(CGameWorld *pGameWorld, int Owner, int MapID, bool SpiderWeb) :  CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER, vec2(0, 0), MapID)
-{
+CWall::CWall(CGameWorld *pGameWorld, int Owner, int MapID, bool SpiderWeb) : CEntity(pGameWorld,
+                                                                                     CGameWorld::ENTTYPE_LASER,
+                                                                                     vec2(0, 0), MapID) {
     m_Owner = Owner;
     m_EvalTick = 0;
-    m_SpiderWebTick=0;
-    m_LastHitTick=0;
+    m_SpiderWebTick = 0;
+    m_LastHitTick = 0;
     m_Hited = 0;
     pPlayer = GameServer()->GetPlayerChar(m_Owner)->GetPlayer();
-    Created= false;
-    m_Done= false;
-    m_Fortified= false;
+    Created = false;
+    m_Done = false;
+    m_Fortified = false;
     m_Delay_fac = 1000.0f;
-    m_Health=0;
-    m_SpiderWeb=SpiderWeb;
-    if (SpiderWeb){
+    m_Health = 0;
+    m_SpiderWeb = SpiderWeb;
+    if (SpiderWeb) {
         for (int i = 0; i < m_MAX_SpiderWeb_Health; i++) {
             m_Health_Interface[i] = nullptr;
         }
-    }else {
+    } else {
         for (int i = 0; i < m_MAX_Health; i++) {
             m_Health_Interface[i] = nullptr;
         }
     }
-    m_Pos=vec2 (0,0);
+    m_Pos = vec2(0, 0);
 }
 
 
-bool CWall::HitCharacter()
-{
-    if (m_SpiderWeb){
+bool CWall::HitCharacter() {
+    if (m_SpiderWeb) {
         vec2 At;
         CCharacter *pOwnerChar = GameServer()->GetPlayerChar(m_Owner);
 
@@ -50,24 +50,56 @@ bool CWall::HitCharacter()
         if (pHit->GetPlayer()->GetTeam() == pPlayer->GetTeam())
             return false;
 
-        pHit->m_Core.m_Vel.x = clamp(pHit->m_Core.m_Vel.x, -5.f, 5.f);
-        pHit->m_Core.m_Vel.y = clamp(pHit->m_Core.m_Vel.y, -5.f, 5.f);
+        if (m_Fortified) {
+            vec2 NewVel = pHit->m_Core.m_Vel;
+            NewVel.x = clamp(NewVel.x, -m_SpiderWeb_max_speed, m_SpiderWeb_max_speed);
+            NewVel.y = clamp(NewVel.y, -m_SpiderWeb_max_speed, m_SpiderWeb_max_speed);
+
+            vec2 Diff = pHit->m_Core.m_Vel - NewVel;
+            pHit->m_Core.m_Vel -= Diff * 0.1f;
+        }else {
+            pHit->m_Core.m_Vel.x = clamp(pHit->m_Core.m_Vel.x, -m_SpiderWeb_max_speed, m_SpiderWeb_max_speed);
+            pHit->m_Core.m_Vel.y = clamp(pHit->m_Core.m_Vel.y, -m_SpiderWeb_max_speed, m_SpiderWeb_max_speed);
+        }
+
+//        const float abs_Vel = sqrt(pow(pHit->m_Core.m_Vel.x, 2) + pow(pHit->m_Core.m_Vel.y, 2));
+//        if (abs_Vel > 15) {
+//            int a = abs_Vel;
+//        }
+//        const float excess_Vel = maximum(0.f, abs_Vel - m_SpiderWeb_max_speed);
+//        const float new_abs_Vel = minimum(abs_Vel, m_SpiderWeb_max_speed) + excess_Vel * 0.8f;
+//        vec2 NewVel(pHit->m_Core.m_Vel.x / abs_Vel * new_abs_Vel, pHit->m_Core.m_Vel.y / abs_Vel * new_abs_Vel);
+//        const float tmp_abs_vel = sqrt(NewVel.x * NewVel.x + NewVel.y * NewVel.y);
+//        if (tmp_abs_vel < abs_Vel-0.01) {
+//            int a = abs_Vel;
+//        }
+//        if (abs_Vel > 10.f) {
+//            int a = abs_Vel;
+//        }
+//        pHit->m_Core.m_Vel = NewVel;
+////        pHit->m_Core.m_Vel.x = NewVel.x;
+////        pHit->m_Core.m_Vel.y = NewVel.y;
+//        const float abs_Vel_two = sqrt(
+//                pHit->m_Core.m_Vel.x * pHit->m_Core.m_Vel.x + pHit->m_Core.m_Vel.y * pHit->m_Core.m_Vel.y);
+//        if (abs_Vel_two > abs_Vel) {
+//            int a = abs_Vel;
+//        }
         if (Server()->Tick() >= m_LastHitTick + (Server()->TickSpeed() * m_WebHitDelay)) {
 
-            if (Server()->Tick() > m_LastHitTick+ (Server()->TickSpeed()*10)){
-                m_Hited=0;
+            if (Server()->Tick() > m_LastHitTick + (Server()->TickSpeed() * 10)) {
+                m_Hited = 0;
             }
 
             ++m_Hited;
 
-            if(m_Hited>=m_WebMaxHits){
+            if (m_Hited >= m_WebMaxHits) {
                 TakeDamage(1, pHit->GetPlayer()->GetCID());
-                m_Hited=0;
+                m_Hited = 0;
             }
 
-            m_LastHitTick=Server()->Tick();
+            m_LastHitTick = Server()->Tick();
         }
-    }else {
+    } else {
         vec2 At;
         CCharacter *pOwnerChar = GameServer()->GetPlayerChar(m_Owner);
 
@@ -79,27 +111,27 @@ bool CWall::HitCharacter()
 
         int Player_HP = pHit->m_Health + pHit->m_Armor;
         if (Server()->GetClientClass(pHit->GetPlayer()->GetCID()) != Class::Tank) {
-            for (int i = 0; i < Player_HP/10; i++) {
-                if (pHit){
-                    for (int j=0;j<10;j++){
+            for (int i = 0; i < Player_HP / 10; i++) {
+                if (pHit) {
+                    for (int j = 0; j < 10; j++) {
                         pHit->TakeDamage(vec2(0.f, 0.f), normalize(m_Pos - m_From),
                                          1,
                                          m_Owner, WEAPON_LASER);
                     }
-                    if (TakeDamage(1, pHit->GetPlayer()->GetCID())){
+                    if (TakeDamage(1, pHit->GetPlayer()->GetCID())) {
                         return true;
                     }
                 }
             }
-        } else{
-            for (int i = 0; i < Player_HP/5; i++) {
-                if (pHit){
-                    for (int j=0;j<10;j++){
+        } else {
+            for (int i = 0; i < Player_HP / 5; i++) {
+                if (pHit) {
+                    for (int j = 0; j < 10; j++) {
                         pHit->TakeDamage(vec2(0.f, 0.f), normalize(m_Pos - m_From),
                                          1,
                                          m_Owner, WEAPON_LASER);
                     }
-                    if (TakeDamage(1, pHit->GetPlayer()->GetCID())){
+                    if (TakeDamage(1, pHit->GetPlayer()->GetCID())) {
                         return true;
                     }
                 }
@@ -109,81 +141,79 @@ bool CWall::HitCharacter()
     return true;
 }
 
-vec2 CWall::CheckForIntersection(vec2 st_pos1, vec2 st_pos2, vec2 sec_pos1, vec2 sec_pos2){
-    float a1=(st_pos1.y-st_pos2.y)/(st_pos1.x-st_pos2.x);
-    float b1=st_pos1.y-a1*st_pos1.x;
-    
-    float a2=(sec_pos1.y-sec_pos2.y)/(sec_pos1.x-sec_pos2.x);
-    float b2=sec_pos1.y-a1*sec_pos1.x;
-    
-    float x = (b2-b1)/(a1-a2);
-    float y = a1*x+b1;
-    
+vec2 CWall::CheckForIntersection(vec2 st_pos1, vec2 st_pos2, vec2 sec_pos1, vec2 sec_pos2) {
+    float a1 = (st_pos1.y - st_pos2.y) / (st_pos1.x - st_pos2.x);
+    float b1 = st_pos1.y - a1 * st_pos1.x;
+
+    float a2 = (sec_pos1.y - sec_pos2.y) / (sec_pos1.x - sec_pos2.x);
+    float b2 = sec_pos1.y - a1 * sec_pos1.x;
+
+    float x = (b2 - b1) / (a1 - a2);
+    float y = a1 * x + b1;
+
     vec2 res(x, y);
 
     float st_right_pos;
     float st_left_pos;
-    if (st_pos1.x>st_pos2.x){
-        st_right_pos=st_pos1.x;
-        st_left_pos=st_pos2.x;
-    } else{
-        st_right_pos=st_pos2.x;
-        st_left_pos=st_pos1.x;
+    if (st_pos1.x > st_pos2.x) {
+        st_right_pos = st_pos1.x;
+        st_left_pos = st_pos2.x;
+    } else {
+        st_right_pos = st_pos2.x;
+        st_left_pos = st_pos1.x;
     }
 
     float st_up_pos;
     float st_down_pos;
-    if (st_pos1.y>st_pos2.y){
-        st_up_pos=st_pos1.y;
-        st_down_pos=st_pos2.y;
-    } else{
-        st_up_pos=st_pos2.y;
-        st_down_pos=st_pos1.y;
+    if (st_pos1.y > st_pos2.y) {
+        st_up_pos = st_pos1.y;
+        st_down_pos = st_pos2.y;
+    } else {
+        st_up_pos = st_pos2.y;
+        st_down_pos = st_pos1.y;
     }
 
     float sec_right_pos;
     float sec_left_pos;
-    if (sec_pos1.x>sec_pos2.x){
-        sec_right_pos=sec_pos1.x;
-        sec_left_pos=sec_pos2.x;
-    } else{
-        sec_right_pos=sec_pos2.x;
-        sec_left_pos=sec_pos1.x;
+    if (sec_pos1.x > sec_pos2.x) {
+        sec_right_pos = sec_pos1.x;
+        sec_left_pos = sec_pos2.x;
+    } else {
+        sec_right_pos = sec_pos2.x;
+        sec_left_pos = sec_pos1.x;
     }
 
     float sec_up_pos;
     float sec_down_pos;
-    if (sec_pos1.y>sec_pos2.y){
-        sec_up_pos=sec_pos1.y;
-        sec_down_pos=sec_pos2.y;
-    } else{
-        sec_up_pos=sec_pos2.y;
-        sec_down_pos=sec_pos1.y;
+    if (sec_pos1.y > sec_pos2.y) {
+        sec_up_pos = sec_pos1.y;
+        sec_down_pos = sec_pos2.y;
+    } else {
+        sec_up_pos = sec_pos2.y;
+        sec_down_pos = sec_pos1.y;
     }
 
-    if (x<=st_right_pos and x >= st_left_pos){
-        if (y<=st_up_pos and y >= st_down_pos) {
-            if (x<=sec_right_pos and x >= sec_left_pos) {
+    if (x <= st_right_pos and x >= st_left_pos) {
+        if (y <= st_up_pos and y >= st_down_pos) {
+            if (x <= sec_right_pos and x >= sec_left_pos) {
                 if (y <= sec_up_pos and y >= sec_down_pos) {
                     return res;
-                } else{
-                    return vec2 (0,0);
+                } else {
+                    return vec2(0, 0);
                 }
-            } else{
-                return vec2 (0,0);
+            } else {
+                return vec2(0, 0);
             }
-        } else{
-            return vec2 (0,0);
+        } else {
+            return vec2(0, 0);
         }
-    } else{
-        return vec2 (0,0);
+    } else {
+        return vec2(0, 0);
     }
 }
 
-void CWall::HeIsHealing(CPlayer* player)
-{
-
-    if (player->GetTeam()==pPlayer->GetTeam()) {
+void CWall::HeIsHealing(CPlayer *player) {
+    if (player->GetTeam() == pPlayer->GetTeam()) {
         if (player->GetCharacter()->m_Health > 1 or player->GetCharacter()->m_Armor > 0) {
             if (!m_SpiderWeb) {
                 if (distance(player->GetCharacter()->GetPos(), m_Pos) <=
@@ -193,12 +223,12 @@ void CWall::HeIsHealing(CPlayer* player)
                     if (m_Health < m_MAX_Health) {
                         m_Health += 1;
                         m_Health = clamp(m_Health, 0, m_MAX_Health);
-                        m_WaitingToConfirm= false;
-                        m_ConfirmTick=0;
-                        if (player->GetCharacter()->m_Armor>0){
-                            player->GetCharacter()->m_Armor-=1;
-                        } else if (m_Health>1) {
-                            player->GetCharacter()->m_Health-=1;
+                        m_WaitingToConfirm = false;
+                        m_ConfirmTick = 0;
+                        if (player->GetCharacter()->m_Armor > 0) {
+                            player->GetCharacter()->m_Armor -= 1;
+                        } else if (m_Health > 1) {
+                            player->GetCharacter()->m_Health -= 1;
                         }
 
                         for (int i = 0; i < m_Health; i++) {
@@ -219,12 +249,12 @@ void CWall::HeIsHealing(CPlayer* player)
                     if (m_Health < m_MAX_FortifiedSpiderWeb_Health) {
                         m_Health += 1;
                         m_Health = clamp(m_Health, 0, m_MAX_FortifiedSpiderWeb_Health);
-                        m_WaitingToConfirm= false;
-                        m_ConfirmTick=0;
-                        if (player->GetCharacter()->m_Armor>0){
-                            player->GetCharacter()->m_Armor-=1;
+                        m_WaitingToConfirm = false;
+                        m_ConfirmTick = 0;
+                        if (player->GetCharacter()->m_Armor > 0) {
+                            player->GetCharacter()->m_Armor -= 1;
                         } else {
-                            player->GetCharacter()->m_Health-=1;
+                            player->GetCharacter()->m_Health -= 1;
                         }
 
                         for (int i = 0; i < m_Health; i++) {
@@ -242,7 +272,7 @@ void CWall::HeIsHealing(CPlayer* player)
     }
 }
 
-bool CWall::EndWallEdit(int ammo){
+bool CWall::EndWallEdit(int ammo) {
     m_From = pPlayer->GetCharacter()->GetPos();
     m_From = Clamp_vec(m_Pos, m_From, m_laser_range);
 
@@ -308,7 +338,7 @@ bool CWall::EndWallEdit(int ammo){
     }
 }
 
-void CWall::StartWallEdit(vec2 Dir){
+void CWall::StartWallEdit(vec2 Dir) {
     if (!m_Done) {
         m_Dir = Dir;
         GameWorld()->InsertEntity(this);
@@ -320,15 +350,19 @@ void CWall::StartWallEdit(vec2 Dir){
     }
 }
 
-bool CWall::FirstTryToFortify(vec2 Dir){
+bool CWall::FirstTryToFortify(vec2 Dir) {
     bool b = false;
-    CWall* spiderWebs [MAX_PLAYERS*pPlayer->m_Spider_MaxActiveWebs];
-    int manyWebs = GameWorld()->FindEntities(pPlayer->GetCharacter()->GetPos(), m_laser_range, (CEntity**)spiderWebs, MAX_PLAYERS*pPlayer->m_Spider_MaxActiveWebs, GameWorld()->ENTTYPE_LASER, GetMapID());
-    if (manyWebs>0) {
+    CWall *spiderWebs[MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs];
+    int manyWebs = GameWorld()->FindEntities(pPlayer->GetCharacter()->GetPos(), m_laser_range, (CEntity **) spiderWebs,
+                                             MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs, GameWorld()->ENTTYPE_LASER,
+                                             GetMapID());
+    if (manyWebs > 0) {
         for (int i = 0; i < manyWebs; i++) {
             if (spiderWebs[i]) {
-                if (spiderWebs[i]->m_Done and !spiderWebs[i]->m_Fortified and  pPlayer->GetCharacter()->m_aWeapons[pPlayer->GetCharacter()->m_ActiveWeapon].m_Ammo>=1) {
-                    if (distance(spiderWebs[i]->m_From, pPlayer->GetCharacter()->GetPos()) <= m_deconstruct_range or distance(spiderWebs[i]->m_Pos, pPlayer->GetCharacter()->GetPos()) <= m_deconstruct_range) {
+                if (spiderWebs[i]->m_Done and !spiderWebs[i]->m_Fortified and
+                    pPlayer->GetCharacter()->m_aWeapons[pPlayer->GetCharacter()->m_ActiveWeapon].m_Ammo >= 1) {
+                    if (distance(spiderWebs[i]->m_From, pPlayer->GetCharacter()->GetPos()) <= m_deconstruct_range or
+                        distance(spiderWebs[i]->m_Pos, pPlayer->GetCharacter()->GetPos()) <= m_deconstruct_range) {
                         spiderWebs[i]->SpiderWebFortify();
                         b = true;
                     }
@@ -336,16 +370,16 @@ bool CWall::FirstTryToFortify(vec2 Dir){
             }
         }
     }
-    if (b){
+    if (b) {
         return true;
-    } else{
+    } else {
         return false;
     }
 }
 
-bool CWall::SpiderWeb(vec2 Dir){
+bool CWall::SpiderWeb(vec2 Dir) {
 
-    if (pPlayer->GetCharacter()->m_aWeapons[pPlayer->GetCharacter()->m_ActiveWeapon].m_Ammo>=1) {
+    if (pPlayer->GetCharacter()->m_aWeapons[pPlayer->GetCharacter()->m_ActiveWeapon].m_Ammo >= 1) {
         m_Dir = Dir;
         m_From = pPlayer->GetCharacter()->GetPos();
         m_Pos = m_From + m_Dir * m_laser_range;
@@ -384,12 +418,12 @@ bool CWall::SpiderWeb(vec2 Dir){
         } else {
             return false;
         }
-    } else{
+    } else {
         return false;
     }
 }
 
-void CWall::SpiderWebFortify(){
+void CWall::SpiderWebFortify() {
     if (!m_Fortified) {
         if (distance(m_Pos, m_From) >= radius * 2) {
 
@@ -432,13 +466,14 @@ void CWall::SpiderWebFortify(){
     }
 }
 
-void CWall::HammerHit(int Dmg, CPlayer* player){
+void CWall::HammerHit(int Dmg, CPlayer *player) {
     if (player->GetTeam() != pPlayer->GetTeam()) {
         if (distance(player->GetCharacter()->GetPos(), m_Pos) <= player->GetCharacter()->GetProximityRadius() * 2.f) {
             GameServer()->CreateDamage(m_Pos, m_Owner, player->GetCharacter()->GetPos(), Dmg, 0, false, GetMapID());
             TakeDamage(Dmg, player->GetCID());
             GameServer()->CreateSound(m_Pos, SOUND_HAMMER_HIT, -1, GetMapID());
-        } else if (distance(player->GetCharacter()->GetPos(), m_From) <= player->GetCharacter()->GetProximityRadius() * 2.f) {
+        } else if (distance(player->GetCharacter()->GetPos(), m_From) <=
+                   player->GetCharacter()->GetProximityRadius() * 2.f) {
             GameServer()->CreateDamage(m_From, m_Owner, player->GetCharacter()->GetPos(), Dmg, 0, false, GetMapID());
             TakeDamage(Dmg, player->GetCID());
             GameServer()->CreateSound(m_Pos, SOUND_HAMMER_HIT, -1, GetMapID());
@@ -447,8 +482,8 @@ void CWall::HammerHit(int Dmg, CPlayer* player){
 }
 
 bool CWall::TakeDamage(int Dmg, int From) {
-    if (Dmg>0){
-        m_Health-=Dmg;
+    if (Dmg > 0) {
+        m_Health -= Dmg;
     }
 
     if (!m_SpiderWeb)
@@ -522,7 +557,7 @@ void CWall::Die(int Killer) {
     Reset();
 }
 
-void CWall::CheckForBulletCollision(){
+void CWall::CheckForBulletCollision() {
     CProjectile *pAttackBullet = (CProjectile *) GameWorld()->FindFirst(GameWorld()->ENTTYPE_PROJECTILE);
     if (pAttackBullet) {
         for (; pAttackBullet; pAttackBullet = (CProjectile *) pAttackBullet->TypeNext()) {
@@ -597,25 +632,25 @@ void CWall::CheckForBullets() {
                                                                              GetMapID());
         if (pPosBullet) {
             if (pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon() == WEAPON_GUN) {
-                bool HpOk= true;
-                if (m_Health>5){
+                bool HpOk = true;
+                if (m_Health > 5) {
                     //return hp and armor
-                    int Health = m_Health-5; //player hp recoverable health
+                    int Health = m_Health - 5; //player hp recoverable health
 //                    int old_Health = m_Health;
-                    if ((pPlayer->GetCharacter()->m_Health + Health)<=10){
+                    if ((pPlayer->GetCharacter()->m_Health + Health) <= 10) {
                         pPlayer->GetCharacter()->m_Health += Health;
                         m_Health -= Health;
                     } else {
                         int overflow = pPlayer->GetCharacter()->m_Health + Health - 10;
 
-                        pPlayer->GetCharacter()->m_Health += Health-overflow;
-                        m_Health -= Health-overflow;
+                        pPlayer->GetCharacter()->m_Health += Health - overflow;
+                        m_Health -= Health - overflow;
 
-                        if ((pPlayer->GetCharacter()->m_Armor + overflow)<=10){
+                        if ((pPlayer->GetCharacter()->m_Armor + overflow) <= 10) {
                             pPlayer->GetCharacter()->m_Armor += overflow;
                             m_Health -= overflow;
                         } else {
-                            HpOk= false;
+                            HpOk = false;
                         }
                     }
                     for (int i = m_Health + 1; i <= m_MAX_Health; i++) {
@@ -627,19 +662,20 @@ void CWall::CheckForBullets() {
                         }
                     }
                 }
-                if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo + m_Health)<=10 or m_WaitingToConfirm){
-                    pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo+=m_Health;
-                    pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo= clamp(pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo, 0, 10);
+                if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo + m_Health) <= 10 or m_WaitingToConfirm) {
+                    pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo += m_Health;
+                    pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo = clamp(
+                            pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo, 0, 10);
                     if (HpOk or m_WaitingToConfirm) {
                         Reset();
                     }
-                } else{
-                    m_WaitingToConfirm= true;
-                    m_ConfirmTick= Server()->Tick();
+                } else {
+                    m_WaitingToConfirm = true;
+                    m_ConfirmTick = Server()->Tick();
                 }
-                if (!HpOk){
-                    m_WaitingToConfirm= true;
-                    m_ConfirmTick= Server()->Tick();
+                if (!HpOk) {
+                    m_WaitingToConfirm = true;
+                    m_ConfirmTick = Server()->Tick();
                 }
                 pPosBullet->Destroy();
             }
@@ -650,28 +686,28 @@ void CWall::CheckForBullets() {
                                                                               GetMapID());
         if (pFromBullet) {
             if (pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon() == WEAPON_GUN) {
-                bool HpOk= true;
-                if (m_Health>5){
+                bool HpOk = true;
+                if (m_Health > 5) {
                     //return hp and armor
-                    int Health = m_Health-5; //player hp recoverable health
+                    int Health = m_Health - 5; //player hp recoverable health
 //                    int old_Health = m_Health;
-                    if ((pPlayer->GetCharacter()->m_Health + Health)<=10){
+                    if ((pPlayer->GetCharacter()->m_Health + Health) <= 10) {
                         pPlayer->GetCharacter()->m_Health += Health;
                         m_Health -= Health;
                     } else {
                         int overflow = pPlayer->GetCharacter()->m_Health + Health - 10;
 
-                        pPlayer->GetCharacter()->m_Health += Health-overflow;
-                        m_Health -= Health-overflow;
+                        pPlayer->GetCharacter()->m_Health += Health - overflow;
+                        m_Health -= Health - overflow;
 
-                        if ((pPlayer->GetCharacter()->m_Armor + overflow)<=10){
+                        if ((pPlayer->GetCharacter()->m_Armor + overflow) <= 10) {
                             pPlayer->GetCharacter()->m_Armor += overflow;
                             m_Health -= overflow;
                         } else {
                             int overoverflow = pPlayer->GetCharacter()->m_Armor + overflow - 10;
-                            pPlayer->GetCharacter()->m_Armor += overflow-overoverflow;
-                            m_Health -= overflow-overoverflow;
-                            HpOk= false;
+                            pPlayer->GetCharacter()->m_Armor += overflow - overoverflow;
+                            m_Health -= overflow - overoverflow;
+                            HpOk = false;
                         }
                     }
                     for (int i = m_Health + 1; i <= m_MAX_Health; i++) {
@@ -683,44 +719,50 @@ void CWall::CheckForBullets() {
                         }
                     }
                 }
-                if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo + m_Health)<=10 or m_WaitingToConfirm){
-                    pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo+=m_Health;
-                    pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo= clamp(pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo, 0, 10);
+                if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo + m_Health) <= 10 or m_WaitingToConfirm) {
+                    pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo += m_Health;
+                    pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo = clamp(
+                            pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo, 0, 10);
                     if (HpOk or m_WaitingToConfirm) {
                         Reset();
                     }
-                } else{
-                    m_WaitingToConfirm= true;
-                    m_ConfirmTick= Server()->Tick();
+                } else {
+                    m_WaitingToConfirm = true;
+                    m_ConfirmTick = Server()->Tick();
                 }
-                if (!HpOk){
-                    m_WaitingToConfirm= true;
-                    m_ConfirmTick= Server()->Tick();
+                if (!HpOk) {
+                    m_WaitingToConfirm = true;
+                    m_ConfirmTick = Server()->Tick();
                 }
                 pFromBullet->Destroy();
             }
         }
-    } else{
+    } else {
         CProjectile *pPosBullet = (CProjectile *) GameWorld()->ClosestEntity(m_Pos, m_deconstruct_range,
                                                                              GameWorld()->ENTTYPE_PROJECTILE, this,
                                                                              GetMapID());
 
-        CWall* otherWalls[MAX_PLAYERS*pPlayer->m_Engineer_MaxActiveWalls + MAX_PLAYERS*pPlayer->m_Spider_MaxActiveWebs];
-        int howMany = GameWorld()->FindEntities(m_Pos, m_laser_range, (CEntity **)otherWalls, MAX_PLAYERS*pPlayer->m_Engineer_MaxActiveWalls + MAX_PLAYERS*pPlayer->m_Spider_MaxActiveWebs, GameWorld()->ENTTYPE_LASER, GetMapID());
+        CWall *otherWalls[
+                MAX_PLAYERS * pPlayer->m_Engineer_MaxActiveWalls + MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs];
+        int howMany = GameWorld()->FindEntities(m_Pos, m_laser_range, (CEntity **) otherWalls,
+                                                MAX_PLAYERS * pPlayer->m_Engineer_MaxActiveWalls +
+                                                MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs,
+                                                GameWorld()->ENTTYPE_LASER, GetMapID());
         if (pPosBullet) {
             if (pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon() == WEAPON_GUN) {
-                if (howMany>0) {
+                if (howMany > 0) {
                     for (int i = 0; i < howMany; i++) {
                         if (otherWalls[i]) {
                             if (distance(otherWalls[i]->m_Pos, pPlayer->GetCharacter()->GetPos()) <=
                                 m_deconstruct_range) {
                                 if (pPosBullet->GetOwner() == otherWalls[i]->m_Owner) {
-                                    if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo + otherWalls[i]->m_Health)<=10 or otherWalls[i]->m_WaitingToConfirm){
-                                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo+=otherWalls[i]->m_Health;
+                                    if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo +
+                                         otherWalls[i]->m_Health) <= 10 or otherWalls[i]->m_WaitingToConfirm) {
+                                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo += otherWalls[i]->m_Health;
                                         otherWalls[i]->Reset();
-                                    } else{
-                                        otherWalls[i]->m_WaitingToConfirm= true;
-                                        otherWalls[i]->m_ConfirmTick= Server()->Tick();
+                                    } else {
+                                        otherWalls[i]->m_WaitingToConfirm = true;
+                                        otherWalls[i]->m_ConfirmTick = Server()->Tick();
                                     }
                                 }
                             }
@@ -735,22 +777,26 @@ void CWall::CheckForBullets() {
                                                                               GameWorld()->ENTTYPE_PROJECTILE, this,
                                                                               GetMapID());
 
-        otherWalls[MAX_PLAYERS*pPlayer->m_Engineer_MaxActiveWalls + MAX_PLAYERS*pPlayer->m_Spider_MaxActiveWebs];
-        howMany = GameWorld()->FindEntities(m_From, m_laser_range, (CEntity **)otherWalls, MAX_PLAYERS*pPlayer->m_Engineer_MaxActiveWalls + MAX_PLAYERS*pPlayer->m_Spider_MaxActiveWebs, GameWorld()->ENTTYPE_LASER, GetMapID());
+        otherWalls[MAX_PLAYERS * pPlayer->m_Engineer_MaxActiveWalls + MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs];
+        howMany = GameWorld()->FindEntities(m_From, m_laser_range, (CEntity **) otherWalls,
+                                            MAX_PLAYERS * pPlayer->m_Engineer_MaxActiveWalls +
+                                            MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs, GameWorld()->ENTTYPE_LASER,
+                                            GetMapID());
         if (pFromBullet) {
             if (pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon() == WEAPON_GUN) {
-                if (howMany>0) {
+                if (howMany > 0) {
                     for (int i = 0; i < howMany; i++) {
                         if (otherWalls[i]) {
                             if (distance(otherWalls[i]->m_From, pPlayer->GetCharacter()->GetPos()) <=
                                 m_deconstruct_range) {
                                 if (pFromBullet->GetOwner() == otherWalls[i]->m_Owner) {
-                                    if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo + otherWalls[i]->m_Health)<=10 or otherWalls[i]->m_WaitingToConfirm) {
-                                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo+=otherWalls[i]->m_Health;
+                                    if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo +
+                                         otherWalls[i]->m_Health) <= 10 or otherWalls[i]->m_WaitingToConfirm) {
+                                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo += otherWalls[i]->m_Health;
                                         otherWalls[i]->Reset();
-                                    } else{
-                                        otherWalls[i]->m_WaitingToConfirm= true;
-                                        otherWalls[i]->m_ConfirmTick= Server()->Tick();
+                                    } else {
+                                        otherWalls[i]->m_WaitingToConfirm = true;
+                                        otherWalls[i]->m_ConfirmTick = Server()->Tick();
                                     }
                                 }
                             }
@@ -763,20 +809,19 @@ void CWall::CheckForBullets() {
     }
 }
 
-void CWall::UpdateHealthInterface(){
+void CWall::UpdateHealthInterface() {
     m_HPTick++;
     m_HPTick %= static_cast<int>(m_hp_interface_delay);
-    for (int i =0; i < m_MAX_Health; i++){
-        if (m_Health_Interface[i]){
-            int HPTick = m_HPTick + i*m_hp_interface_space;
+    for (int i = 0; i < m_MAX_Health; i++) {
+        if (m_Health_Interface[i]) {
+            int HPTick = m_HPTick + i * m_hp_interface_space;
             HPTick %= static_cast<int>(m_hp_interface_delay);
-            m_Health_Interface[i]->SetPos(Calc_hp_pos(HPTick/m_hp_interface_delay));
+            m_Health_Interface[i]->SetPos(Calc_hp_pos(HPTick / m_hp_interface_delay));
         }
     }
 }
 
-void CWall::Reset()
-{
+void CWall::Reset() {
     if (!m_SpiderWeb) {
         for (int i = 0; i < m_MAX_Health; i++) {
             if (m_Health_Interface[i]) {
@@ -784,7 +829,7 @@ void CWall::Reset()
                 m_Health_Interface[i] = nullptr;
             }
         }
-    }else {
+    } else {
         if (m_Fortified) {
             for (int i = 0; i < m_MAX_FortifiedSpiderWeb_Health; i++) {
                 if (m_Health_Interface[i]) {
@@ -794,8 +839,8 @@ void CWall::Reset()
             }
         }
     }
-    for (int i = 0; i<3; i++){
-        if(m_Hud_Interface[i]){
+    for (int i = 0; i < 3; i++) {
+        if (m_Hud_Interface[i]) {
             m_Hud_Interface[i]->Destroy();
             m_Hud_Interface[i] = nullptr;
         }
@@ -808,12 +853,12 @@ void CWall::Reset()
     GameWorld()->DestroyEntity(this);
 }
 
-vec2 CWall::Calc_hp_pos(float alpha){
+vec2 CWall::Calc_hp_pos(float alpha) {
     if (alpha < cumsum_stops[0]) {
         alpha = alpha / stops[0];
         vec2 p;
-        p.x = radius * sin(theta   + alpha * pi);
-        p.y = radius * cos(theta    + alpha * pi);
+        p.x = radius * sin(theta + alpha * pi);
+        p.y = radius * cos(theta + alpha * pi);
         vec2 start = midpoint1 + versor * radius;
         return start + p;
     } else if (alpha < cumsum_stops[1]) {
@@ -828,41 +873,42 @@ vec2 CWall::Calc_hp_pos(float alpha){
     } else if (alpha < cumsum_stops[2]) {
         alpha = (alpha - cumsum_stops[1]) / stops[2];
         vec2 p;
-        p.x = radius * sin(theta - pi  + alpha * pi);
-        p.y = radius * cos(theta - pi  + alpha * pi);
+        p.x = radius * sin(theta - pi + alpha * pi);
+        p.y = radius * cos(theta - pi + alpha * pi);
         vec2 start = midpoint2 - versor * radius;
         return start + p;
     } else {
         float a = (alpha - cumsum_stops[2]) / stops[3];
 
         vec2 start = midpoint2 - versor * radius +
-                vec2(versor[1], -versor[0]) * radius;
+                     vec2(versor[1], -versor[0]) * radius;
         vec2 end = midpoint1 + versor * radius +
-              vec2(versor[1], -versor[0]) * radius;
+                   vec2(versor[1], -versor[0]) * radius;
         vec2 p = start * (1 - a) + end * a;
         return p;
     }
 }
 
-vec2 CWall::Clamp_vec(vec2 From, vec2 To, float clamp){
+vec2 CWall::Clamp_vec(vec2 From, vec2 To, float clamp) {
     vec2 diff = To - From;
     float d = maximum(clamp, distance(To, From));
     vec2 clamped_end;
     if (d <= clamp) {
         clamped_end = To;
     } else {
-        clamped_end = From + diff * clamp /d;
+        clamped_end = From + diff * clamp / d;
     }
     return clamped_end;
 }
 
 void CWall::Tick() {
-    if (GameServer()->GameTypeType()->m_GameState==GameServer()->GameTypeType()->EGameState::IGS_END_MATCH){
+    if (GameServer()->GameTypeType()->m_GameState == GameServer()->GameTypeType()->EGameState::IGS_END_MATCH) {
         Reset();
     }
-    if (Server()->Tick() > m_EvalTick + (Server()->TickSpeed() * GameServer()->Tuning()->m_LaserBounceDelay) / m_Delay_fac){
-        if(pPlayer->GetCharacter()) {
-            if (pPlayer->GetCharacter()->GetActiveWeapon()!=WEAPON_LASER and !m_Done){
+    if (Server()->Tick() >
+        m_EvalTick + (Server()->TickSpeed() * GameServer()->Tuning()->m_LaserBounceDelay) / m_Delay_fac) {
+        if (pPlayer->GetCharacter()) {
+            if (pPlayer->GetCharacter()->GetActiveWeapon() != WEAPON_LASER and !m_Done) {
                 return;
             }
             if (pPlayer->m_Engineer_Wall_Editing and !m_Done) {
@@ -895,42 +941,41 @@ void CWall::Tick() {
                 if (!m_SpiderWeb or m_Fortified)
                     UpdateHealthInterface();
             }
-            if (m_SpiderWeb and !m_Fortified){
-                if(m_SpiderWebTick + (Server()->TickSpeed()*30) < Server()->Tick()) {
+            if (m_SpiderWeb and !m_Fortified) {
+                if (m_SpiderWebTick + (Server()->TickSpeed() * 30) < Server()->Tick()) {
                     Reset();
                 }
             }
-            if (m_WaitingToConfirm){
-                if(m_ConfirmTick + (Server()->TickSpeed()*5) < Server()->Tick()) {
-                    m_WaitingToConfirm= false;
+            if (m_WaitingToConfirm) {
+                if (m_ConfirmTick + (Server()->TickSpeed() * 5) < Server()->Tick()) {
+                    m_WaitingToConfirm = false;
                 }
             }
-        } else{
-            if (!pPlayer){
+        } else {
+            if (!pPlayer) {
                 Die(-2);
             }
         }
     }
 }
 
-void CWall::TickPaused()
-{
+void CWall::TickPaused() {
     ++m_EvalTick;
     ++m_SpiderWebTick;
 }
 
-void CWall::Snap(int SnappingClient)
-{
-    if(NetworkClipped(SnappingClient) && NetworkClipped(SnappingClient, m_From))
+void CWall::Snap(int SnappingClient) {
+    if (NetworkClipped(SnappingClient) && NetworkClipped(SnappingClient, m_From))
         return;
 
-    CNetObj_Laser *pObj = static_cast<CNetObj_Laser *>(Server()->SnapNewItem(NETOBJTYPE_LASER, GetID(), sizeof(CNetObj_Laser)));
-    if(!pObj)
+    CNetObj_Laser *pObj = static_cast<CNetObj_Laser *>(Server()->SnapNewItem(NETOBJTYPE_LASER, GetID(),
+                                                                             sizeof(CNetObj_Laser)));
+    if (!pObj)
         return;
 
-    pObj->m_X = (int)m_Pos.x;
-    pObj->m_Y = (int)m_Pos.y;
-    pObj->m_FromX = (int)m_From.x;
-    pObj->m_FromY = (int)m_From.y;
+    pObj->m_X = (int) m_Pos.x;
+    pObj->m_Y = (int) m_Pos.y;
+    pObj->m_FromX = (int) m_From.x;
+    pObj->m_FromY = (int) m_From.y;
     pObj->m_StartTick = m_EvalTick;
 }

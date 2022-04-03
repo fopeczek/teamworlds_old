@@ -52,6 +52,7 @@ private:
     static constexpr float m_WebHitDelay = 4.f;
     static constexpr int m_WebMaxHits = 3;
     static constexpr float m_SpiderWeb_range = 500.f;
+    static constexpr float m_SpiderWeb_max_speed = 5.f;
 
     CPlayer *pPlayer;
     vec2 m_From;
