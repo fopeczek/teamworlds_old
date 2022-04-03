@@ -1544,7 +1544,7 @@ void CGameContext::ConGodmode(IConsole::IResult *pResult, void *pUserData) {
     if(pResult->NumArguments()>0) {
         player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        for (int i = 0; i < MAX_CLIENTS; i++) {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
             if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
                 player=pSelf->m_apPlayers[i];
                 break;
@@ -1568,7 +1568,7 @@ void CGameContext::ConAutoFire(IConsole::IResult *pResult, void *pUserData) {
     if(pResult->NumArguments()>0) {
         player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        for (int i = 0; i < MAX_CLIENTS; i++) {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
             if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
                 player=pSelf->m_apPlayers[i];
                 break;
@@ -1593,7 +1593,7 @@ void CGameContext::ConSandbox(IConsole::IResult *pResult, void *pUserData) {
     if(pResult->NumArguments()>0) {
         player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        for (int i = 0; i < MAX_CLIENTS; i++) {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
             if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
                 player=pSelf->m_apPlayers[i];
                 break;
@@ -1619,7 +1619,7 @@ void CGameContext::ConHookmode(IConsole::IResult *pResult, void *pUserData) {
     if(pResult->NumArguments()>0) {
         player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        for (int i = 0; i < MAX_CLIENTS; i++) {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
             if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
                 player=pSelf->m_apPlayers[i];
                 break;
@@ -1645,7 +1645,7 @@ void CGameContext::ConKillAll(IConsole::IResult *pResult, void *pUserData) {
     if(pResult->NumArguments()>0) {
         player_id = str_toint(pResult->GetString(0));
     }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
+    for (int i = 0; i < MAX_PLAYERS; i++) {
         if (i != player_id){
             if (pSelf->m_apPlayers[i]) {
                 if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
@@ -1663,7 +1663,7 @@ void CGameContext::ConKill(IConsole::IResult *pResult, void *pUserData) {
     if(pResult->NumArguments()>0) {
         player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        for (int i = 0; i < MAX_CLIENTS; i++) {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
             if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
                 player=pSelf->m_apPlayers[i];
                 break;
@@ -1688,7 +1688,7 @@ void CGameContext::ConNoSelfDmg(IConsole::IResult *pResult, void *pUserData) {
     if(pResult->NumArguments()>0) {
         player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        for (int i = 0; i < MAX_CLIENTS; i++) {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
             if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
                 player=pSelf->m_apPlayers[i];
                 break;
@@ -1714,7 +1714,7 @@ void CGameContext::ConSuperNinja(IConsole::IResult *pResult, void *pUserData) {
     if(pResult->NumArguments()>0) {
         player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        for (int i = 0; i < MAX_CLIENTS; i++) {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
             if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
                 player=pSelf->m_apPlayers[i];
                 break;
@@ -1746,7 +1746,7 @@ void CGameContext::ConNinja(IConsole::IResult *pResult, void *pUserData) {
     if(pResult->NumArguments()>0) {
         player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        for (int i = 0; i < MAX_CLIENTS; i++) {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
             if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
                 player=pSelf->m_apPlayers[i];
                 break;
@@ -1773,7 +1773,7 @@ void CGameContext::ConPosLock(IConsole::IResult *pResult, void *pUserData) {
     if(pResult->NumArguments()>0) {
         player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        for (int i = 0; i < MAX_CLIENTS; i++) {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
             if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
                 player=pSelf->m_apPlayers[i];
                 break;
@@ -1800,7 +1800,7 @@ void CGameContext::ConJetpack(IConsole::IResult *pResult, void *pUserData) {
     if(pResult->NumArguments()>0) {
         player = pSelf->m_apPlayers[pResult->GetInteger(0)];
     }else {
-        for (int i = 0; i < MAX_CLIENTS; i++) {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
             if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
                 player=pSelf->m_apPlayers[i];
                 break;
@@ -1834,7 +1834,7 @@ void CGameContext::ConTeleport(IConsole::IResult *pResult, void *pUserData) {
             msg<<player_to_id;
             pSelf->SendChat(-1, CHAT_ALL, -1, msg.str().c_str());
         } else {
-            for (int i = 0; i < MAX_CLIENTS; i++) {
+            for (int i = 0; i < MAX_PLAYERS; i++) {
                 if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
                     player_to = pSelf->m_apPlayers[i];
                     break;
@@ -1870,7 +1870,7 @@ void CGameContext::ConTeleport(IConsole::IResult *pResult, void *pUserData) {
 //        float x = pResult->GetFloat(1);
 //        float y = pResult->GetFloat(2);
 //        Where_pos+=vec2 (x,y);
-//        for (int i = 0; i < MAX_CLIENTS; i++) {
+//        for (int i = 0; i < MAX_PLAYERS; i++) {
 //            if (pSelf->m_apPlayers[i]) {
 //                if(Who == -1){
 //                    if (str_comp(pSelf->Server()->ClientName(i), username_who.c_str()) == 0) {
@@ -1907,7 +1907,7 @@ void CGameContext::ConTeleport(IConsole::IResult *pResult, void *pUserData) {
 //        for (int i = 1; i <= pSelf->m_MP.length(); i++){
 //            if(pSelf->)
 //        }
-//        for (int i = 0; i < MAX_CLIENTS; i++) {
+//        for (int i = 0; i < MAX_PLAYERS; i++) {
 //            if (pSelf->m_apPlayers[i]) {
 //                if(Who == -1){
 //                    if (str_comp("me", pResult->GetString(0)) == 0){
@@ -1945,7 +1945,7 @@ void CGameContext::ConVoteGodmode(IConsole::IResult *pResult, void *pUserData){
     } else{
         pSelf->Server()->ServerCheats.Godbox= true;
     }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
+    for (int i = 0; i < MAX_PLAYERS; i++) {
         if (pSelf->m_apPlayers[i]) {
             pSelf->m_apPlayers[i]->Cheats.Godmode= pSelf->Server()->ServerCheats.Godbox;
             std::ostringstream msg (std::ostringstream::ate);
@@ -1955,7 +1955,13 @@ void CGameContext::ConVoteGodmode(IConsole::IResult *pResult, void *pUserData){
             } else {
                 msg<<"off";
             }
-            pSelf->SendChat(i, CHAT_WHISPER, i, msg.str().c_str());
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_NONE;
+            chatMsg.m_ClientID = -1;
+            chatMsg.m_TargetID = i;
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, i);
         }
     }
 }
@@ -1967,7 +1973,7 @@ void CGameContext::ConVoteAutomode(IConsole::IResult *pResult, void *pUserData){
     } else{
         pSelf->Server()->ServerCheats.Autobox= true;
     }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
+    for (int i = 0; i < MAX_PLAYERS; i++) {
         if (pSelf->m_apPlayers[i]) {
             pSelf->m_apPlayers[i]->Cheats.AutoFire= pSelf->Server()->ServerCheats.Autobox;
             std::ostringstream msg (std::ostringstream::ate);
@@ -1977,7 +1983,13 @@ void CGameContext::ConVoteAutomode(IConsole::IResult *pResult, void *pUserData){
             } else {
                 msg<<"off";
             }
-            pSelf->SendChat(i, CHAT_WHISPER, i, msg.str().c_str());
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_NONE;
+            chatMsg.m_ClientID = -1;
+            chatMsg.m_TargetID = i;
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, i);
         }
     }
 }
@@ -1989,7 +2001,7 @@ void CGameContext::ConVoteHookmode(IConsole::IResult *pResult, void *pUserData){
     } else{
         pSelf->Server()->ServerCheats.Hookbox= true;
     }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
+    for (int i = 0; i < MAX_PLAYERS; i++) {
         if (pSelf->m_apPlayers[i]) {
             pSelf->m_apPlayers[i]->Cheats.Hookmode= pSelf->Server()->ServerCheats.Hookbox;
             std::ostringstream msg (std::ostringstream::ate);
@@ -1999,7 +2011,13 @@ void CGameContext::ConVoteHookmode(IConsole::IResult *pResult, void *pUserData){
             } else {
                 msg<<"off";
             }
-            pSelf->SendChat(i, CHAT_WHISPER, i, msg.str().c_str());
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_NONE;
+            chatMsg.m_ClientID = -1;
+            chatMsg.m_TargetID = i;
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, i);
         }
     }
 }
@@ -2011,7 +2029,7 @@ void CGameContext::ConVoteJetpack(IConsole::IResult *pResult, void *pUserData){
     } else{
         pSelf->Server()->ServerCheats.Jetbox= true;
     }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
+    for (int i = 0; i < MAX_PLAYERS; i++) {
         if (pSelf->m_apPlayers[i]) {
             pSelf->m_apPlayers[i]->Cheats.Jetpack= pSelf->Server()->ServerCheats.Jetbox;
             std::ostringstream msg (std::ostringstream::ate);
@@ -2021,7 +2039,13 @@ void CGameContext::ConVoteJetpack(IConsole::IResult *pResult, void *pUserData){
             } else {
                 msg<<"off";
             }
-            pSelf->SendChat(i, CHAT_WHISPER, i, msg.str().c_str());
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_NONE;
+            chatMsg.m_ClientID = -1;
+            chatMsg.m_TargetID = i;
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, i);
         }
     }
 }
@@ -2033,7 +2057,7 @@ void CGameContext::ConVoteNinja(IConsole::IResult *pResult, void *pUserData){
     } else{
         pSelf->Server()->ServerCheats.Ninjabox= true;
     }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
+    for (int i = 0; i < MAX_PLAYERS; i++) {
         if (pSelf->m_apPlayers[i]) {
             std::ostringstream msg (std::ostringstream::ate);
             msg.str("Now super ninja is: ");
@@ -2050,7 +2074,13 @@ void CGameContext::ConVoteNinja(IConsole::IResult *pResult, void *pUserData){
                 pSelf->m_apPlayers[i]->GetCharacter()->UngiveNinja();
                 msg<<"off";
             }
-            pSelf->SendChat(i, CHAT_WHISPER, i, msg.str().c_str());
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_NONE;
+            chatMsg.m_ClientID = -1;
+            chatMsg.m_TargetID = i;
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, i);
         }
     }
 }
@@ -2063,7 +2093,7 @@ void CGameContext::ConKeepCheat(IConsole::IResult *pResult, void *pUserData){
     }else {
         username = "Silent";
     }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
+    for (int i = 0; i < MAX_PLAYERS; i++) {
         if (pSelf->m_apPlayers[i]) {
             if (str_comp(pSelf->Server()->ClientName(i), username.c_str()) == 0) {
                 if (pSelf->m_apPlayers[i]->GetCharacter()) {
@@ -2076,7 +2106,13 @@ void CGameContext::ConKeepCheat(IConsole::IResult *pResult, void *pUserData){
                         pSelf->m_apPlayers[i]->Cheats.KeepCheat = true;
                         msg<<"on";
                     }
-                    pSelf->SendChat(i, CHAT_WHISPER, i, msg.str().c_str());
+                    CNetMsg_Sv_Chat chatMsg;
+                    chatMsg.m_Mode = CHAT_WHISPER;
+                    chatMsg.m_ClientID = i;
+                    chatMsg.m_TargetID = i;
+                    std::string str_tmp = msg.str();
+                    chatMsg.m_pMessage = str_tmp.c_str();
+                    pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, i);
                 }
             }
         }
@@ -2085,7 +2121,6 @@ void CGameContext::ConKeepCheat(IConsole::IResult *pResult, void *pUserData){
 
 void CGameContext::ConDoActivityCheck(IConsole::IResult *pResult, void *pUserData){
     CGameContext *pSelf = (CGameContext *)pUserData;
-    std::string username;
 
     std::ostringstream msg (std::ostringstream::ate);
     msg.str("Now afk is: ");
@@ -2096,7 +2131,17 @@ void CGameContext::ConDoActivityCheck(IConsole::IResult *pResult, void *pUserDat
         pSelf->Server()->AFK = true;
         msg<<"allowed";
     }
-    pSelf->SendChat(-1, CHAT_NONE, -1, msg.str().c_str());
+    for (int i =0; i < MAX_PLAYERS; i++){
+        if (pSelf->m_apPlayers[i]){
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_NONE;
+            chatMsg.m_ClientID = -1;
+            chatMsg.m_TargetID = i;
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, i);
+        }
+    }
 }
 
 void CGameContext::addVote(const char *pDescription, const char *pCommand,void *pUserData) {
@@ -2171,7 +2216,7 @@ void CGameContext::ConVoteResetCheat(IConsole::IResult *pResult, void *pUserData
     pSelf->Server()->ServerCheats.Godbox= false;
     pSelf->Server()->ServerCheats.Jetbox= false;
 
-    for (int i = 0; i < MAX_CLIENTS; i++) {
+    for (int i = 0; i < MAX_PLAYERS; i++) {
         if (pSelf->m_apPlayers[i]) {
             pSelf->m_apPlayers[i]->Cheats.KeepCheat = false;
             pSelf->m_apPlayers[i]->Cheats.Godmode = false;

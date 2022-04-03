@@ -383,10 +383,8 @@ void CCharacter::FireWeapon()
 
             for (int i = 0; i < manyWalls; ++i) {
                 if (apWalls[i]){
-                    if(apWalls[i]->Created){
-                        apWalls[i]->HeIsHealing(m_pPlayer);
-                        apWalls[i]->HammerHit(g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage, m_pPlayer);
-                    }
+                    apWalls[i]->HeIsHealing(m_pPlayer);
+                    apWalls[i]->HammerHit(g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage, m_pPlayer);
                 }
             }
 

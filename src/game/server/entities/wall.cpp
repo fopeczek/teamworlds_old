@@ -62,28 +62,6 @@ bool CWall::HitCharacter() {
             pHit->m_Core.m_Vel.y = clamp(pHit->m_Core.m_Vel.y, -m_SpiderWeb_max_speed, m_SpiderWeb_max_speed);
         }
 
-//        const float abs_Vel = sqrt(pow(pHit->m_Core.m_Vel.x, 2) + pow(pHit->m_Core.m_Vel.y, 2));
-//        if (abs_Vel > 15) {
-//            int a = abs_Vel;
-//        }
-//        const float excess_Vel = maximum(0.f, abs_Vel - m_SpiderWeb_max_speed);
-//        const float new_abs_Vel = minimum(abs_Vel, m_SpiderWeb_max_speed) + excess_Vel * 0.8f;
-//        vec2 NewVel(pHit->m_Core.m_Vel.x / abs_Vel * new_abs_Vel, pHit->m_Core.m_Vel.y / abs_Vel * new_abs_Vel);
-//        const float tmp_abs_vel = sqrt(NewVel.x * NewVel.x + NewVel.y * NewVel.y);
-//        if (tmp_abs_vel < abs_Vel-0.01) {
-//            int a = abs_Vel;
-//        }
-//        if (abs_Vel > 10.f) {
-//            int a = abs_Vel;
-//        }
-//        pHit->m_Core.m_Vel = NewVel;
-////        pHit->m_Core.m_Vel.x = NewVel.x;
-////        pHit->m_Core.m_Vel.y = NewVel.y;
-//        const float abs_Vel_two = sqrt(
-//                pHit->m_Core.m_Vel.x * pHit->m_Core.m_Vel.x + pHit->m_Core.m_Vel.y * pHit->m_Core.m_Vel.y);
-//        if (abs_Vel_two > abs_Vel) {
-//            int a = abs_Vel;
-//        }
         if (Server()->Tick() >= m_LastHitTick + (Server()->TickSpeed() * m_WebHitDelay)) {
 
             if (Server()->Tick() > m_LastHitTick + (Server()->TickSpeed() * 10)) {
@@ -111,31 +89,39 @@ bool CWall::HitCharacter() {
 
         int Player_HP = pHit->m_Health + pHit->m_Armor;
         if (Server()->GetClientClass(pHit->GetPlayer()->GetCID()) != Class::Tank) {
-            for (int i = 0; i < Player_HP / 10; i++) {
-                if (pHit) {
+            int repeat=maximum(round(Player_HP * 0.1f + 0.5f), 1.f);
+            for (int i = 0; i < repeat; i++) {
+                if (pHit->m_Health>0) {
                     for (int j = 0; j < 10; j++) {
-                        pHit->TakeDamage(vec2(0.f, 0.f), normalize(m_Pos - m_From),
-                                         1,
-                                         m_Owner, WEAPON_LASER);
+                        if (pHit->m_Health>0) {
+                            pHit->TakeDamage(vec2(0.f, 0.f), normalize(m_Pos - m_From),
+                                             1,
+                                             m_Owner, WEAPON_LASER);
+                        }
                     }
                     if (TakeDamage(1, pHit->GetPlayer()->GetCID())) {
                         return true;
                     }
                 }
             }
+            return true;
         } else {
-            for (int i = 0; i < Player_HP / 5; i++) {
-                if (pHit) {
-                    for (int j = 0; j < 10; j++) {
-                        pHit->TakeDamage(vec2(0.f, 0.f), normalize(m_Pos - m_From),
-                                         1,
-                                         m_Owner, WEAPON_LASER);
+            int repeat=maximum(round(Player_HP * 0.5f + 0.5f), 1.f);
+            for (int i = 0; i < repeat; i++) {
+                if (pHit->m_Health>0) {
+                    for (int j = 0; j < 5; j++) {
+                        if (pHit->m_Health>0) {
+                            pHit->TakeDamage(vec2(0.f, 0.f), normalize(m_Pos - m_From),
+                                             1,
+                                             m_Owner, WEAPON_LASER);
+                        }
                     }
                     if (TakeDamage(1, pHit->GetPlayer()->GetCID())) {
                         return true;
                     }
                 }
             }
+            return true;
         }
     }
     return true;
@@ -215,7 +201,7 @@ vec2 CWall::CheckForIntersection(vec2 st_pos1, vec2 st_pos2, vec2 sec_pos1, vec2
 void CWall::HeIsHealing(CPlayer *player) {
     if (player->GetTeam() == pPlayer->GetTeam()) {
         if (player->GetCharacter()->m_Health > 1 or player->GetCharacter()->m_Armor > 0) {
-            if (!m_SpiderWeb) {
+            if (!m_SpiderWeb and Created) {
                 if (distance(player->GetCharacter()->GetPos(), m_Pos) <=
                     player->GetCharacter()->GetProximityRadius() * 1.5f or
                     distance(player->GetCharacter()->GetPos(), m_From) <=
