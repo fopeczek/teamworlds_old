@@ -97,7 +97,25 @@ https://user-images.githubusercontent.com/46483193/160896628-b513e3ae-ba4e-4670-
 ---------
 
 # Spider
-Spider special abitlity is placing webs using shotgun and hooking to metal walls. 
+Spider offensive and defensive class. 
+
+Offensive part of spider class:
+Spiders can hook metal walls. 
+
+https://user-images.githubusercontent.com/46483193/161601841-42232993-6a08-40d4-8918-6beb0b969088.mp4
+
+
+Spiders can hook other players infinitely
+
+https://user-images.githubusercontent.com/46483193/161601824-a9fd6fe7-7b01-427d-9f14-eb40b9147fd6.mp4
+
+
+Spiders can place webs, that are very similar to [engineer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Engineer) walls, but there are some differences between spider webs and engineer walls:
+Webs only slow down player
+Spiders place 5 webs at the same time using shotgun
+First shot of shotgun makes webs with only 1 hp (and there will be no floating hearts)
+Second shot fortifies it and prevents from detoriaging, fortification gives additional 1 hp and adds floating hearts
+Removing webs will restore your shotgun ammo
 
 ----------
 
