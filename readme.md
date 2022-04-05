@@ -107,7 +107,7 @@ https://user-images.githubusercontent.com/46483193/161601841-42232993-6a08-40d4-
 
 Spiders can hook other players infinitely
 
-https://user-images.githubusercontent.com/46483193/161601824-a9fd6fe7-7b01-427d-9f14-eb40b9147fd6.mp4
+https://user-images.githubusercontent.com/46483193/161605427-aed0bd8d-4dd5-4cda-bc12-76cd607e83d9.mp4
 
 
 Spiders can place webs, that are very similar to [engineer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Engineer) walls, but there are some differences between spider webs and engineer walls:
