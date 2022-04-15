@@ -12,6 +12,7 @@
 #include <game/gamecore.h>
 #include <game/version.h>
 #include <sstream>
+#include <algorithm>
 
 #include "entities/character.h"
 #include "gamemodes/ctf.h"
@@ -1553,11 +1554,22 @@ void CGameContext::ConGodmode(IConsole::IResult *pResult, void *pUserData) {
     }
     if (player) {
         if (player->GetCharacter()->IsAlive()) {
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Now god mode is: ");
             if (player->Cheats.Godmode == true) {
                 player->Cheats.Godmode = false;
+                msg<<"off";
             } else {
                 player->Cheats.Godmode = true;
+                msg<<"on";
             }
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_WHISPER;
+            chatMsg.m_ClientID = player->GetCID();
+            chatMsg.m_TargetID = player->GetCID();
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, player->GetCID());
         }
     }
 }
@@ -1577,11 +1589,22 @@ void CGameContext::ConAutoFire(IConsole::IResult *pResult, void *pUserData) {
     }
     if (player) {
         if (player->GetCharacter()->IsAlive()) {
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Now full auto is: ");
             if (player->Cheats.AutoFire == true) {
                 player->Cheats.AutoFire = false;
+                msg<<"off";
             } else {
                 player->Cheats.AutoFire = true;
+                msg<<"on";
             }
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_WHISPER;
+            chatMsg.m_ClientID = player->GetCID();
+            chatMsg.m_TargetID = player->GetCID();
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, player->GetCID());
         }
     }
 }
@@ -1602,13 +1625,24 @@ void CGameContext::ConSandbox(IConsole::IResult *pResult, void *pUserData) {
     }
     if (player) {
         if (player->GetCharacter()->IsAlive()) {
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Now sandbox is: ");
             if (player->Cheats.Godmode == true) {
                 player->Cheats.Godmode = false;
                 player->Cheats.AutoFire = false;
+                msg<<"off";
             } else {
                 player->Cheats.AutoFire = true;
                 player->Cheats.Godmode = true;
+                msg<<"on";
             }
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_WHISPER;
+            chatMsg.m_ClientID = player->GetCID();
+            chatMsg.m_TargetID = player->GetCID();
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, player->GetCID());
         }
     }
 }
@@ -1628,11 +1662,22 @@ void CGameContext::ConHookmode(IConsole::IResult *pResult, void *pUserData) {
     }
     if (player) {
         if (player->GetCharacter()->IsAlive()) {
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Now infinite player hooking is: ");
             if (player->Cheats.Hookmode == true) {
                 player->Cheats.Hookmode = false;
+                msg<<"off";
             } else {
                 player->Cheats.Hookmode = true;
+                msg<<"on";
             }
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_WHISPER;
+            chatMsg.m_ClientID = player->GetCID();
+            chatMsg.m_TargetID = player->GetCID();
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, player->GetCID());
         }
     }
 }
@@ -1651,6 +1696,12 @@ void CGameContext::ConKillAll(IConsole::IResult *pResult, void *pUserData) {
                 if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
                     pSelf->m_apPlayers[i]->Cheats.Godmode = false;
                     pSelf->m_apPlayers[i]->GetCharacter()->Die(WEAPON_SELF, WEAPON_SELF);
+                    CNetMsg_Sv_Chat chatMsg;
+                    chatMsg.m_Mode = CHAT_WHISPER;
+                    chatMsg.m_ClientID = pSelf->m_apPlayers[i]->GetCID();
+                    chatMsg.m_TargetID = pSelf->m_apPlayers[i]->GetCID();
+                    chatMsg.m_pMessage = "Admin killed all players. ";
+                    pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, pSelf->m_apPlayers[i]->GetCID());
                 }
             }
         }
@@ -1675,6 +1726,12 @@ void CGameContext::ConKill(IConsole::IResult *pResult, void *pUserData) {
             if (player->GetCharacter()->IsAlive()) {
                 player->Cheats.Godmode = false;
                 player->GetCharacter()->Die(WEAPON_SELF, WEAPON_SELF);
+                CNetMsg_Sv_Chat chatMsg;
+                chatMsg.m_Mode = CHAT_WHISPER;
+                chatMsg.m_ClientID = player->GetCID();
+                chatMsg.m_TargetID = player->GetCID();
+                chatMsg.m_pMessage = "You were killed by admin. ";
+                pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, player->GetCID());
             }
         }
     }
@@ -1697,11 +1754,22 @@ void CGameContext::ConNoSelfDmg(IConsole::IResult *pResult, void *pUserData) {
     }
     if (player) {
         if (player->GetCharacter()->IsAlive()) {
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Now no self damage is: ");
             if (player->Cheats.NoSelfDmg == true) {
                 player->Cheats.NoSelfDmg = false;
+                msg<<"off";
             } else {
                 player->Cheats.NoSelfDmg = true;
+                msg<<"on";
             }
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_WHISPER;
+            chatMsg.m_ClientID = player->GetCID();
+            chatMsg.m_TargetID = player->GetCID();
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, player->GetCID());
         }
     }
 }
@@ -1723,17 +1791,28 @@ void CGameContext::ConSuperNinja(IConsole::IResult *pResult, void *pUserData) {
     }
     if (player) {
         if (player->GetCharacter()->IsAlive()) {
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Now super ninja is: ");
             if (player->Cheats.Ninja == true) {
                 player->Cheats.Godmode = false;
                 player->Cheats.AutoFire = false;
                 player->Cheats.Ninja = false;
                 player->GetCharacter()->UngiveNinja();
+                msg<<"off";
             } else {
                 player->Cheats.Godmode = true;
                 player->Cheats.AutoFire = true;
                 player->Cheats.Ninja = true;
                 player->GetCharacter()->GiveNinja();
+                msg<<"on";
             }
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_WHISPER;
+            chatMsg.m_ClientID = player->GetCID();
+            chatMsg.m_TargetID = player->GetCID();
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, player->GetCID());
         }
     }
 }
@@ -1755,13 +1834,24 @@ void CGameContext::ConNinja(IConsole::IResult *pResult, void *pUserData) {
     }
     if (player) {
         if (player->GetCharacter()->IsAlive()) {
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Now ninja is: ");
             if (player->Cheats.Ninja == true) {
                 player->Cheats.Ninja = false;
                 player->GetCharacter()->UngiveNinja();
+                msg<<"off";
             } else {
                 player->Cheats.Ninja = true;
                 player->GetCharacter()->GiveNinja();
+                msg<<"on";
             }
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_WHISPER;
+            chatMsg.m_ClientID = player->GetCID();
+            chatMsg.m_TargetID = player->GetCID();
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, player->GetCID());
         }
     }
 }
@@ -1782,13 +1872,24 @@ void CGameContext::ConPosLock(IConsole::IResult *pResult, void *pUserData) {
     }
     if (player) {
         if (player->GetCharacter()->IsAlive()) {
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Now you are: ");
             if (player->Cheats.Lock == true) {
                 player->GetCharacter()->LockPos(false);
                 ConSuperNinja(pResult, pUserData);
+                msg<<"unlocked";
             } else {
                 player->GetCharacter()->LockPos(true);
                 ConSuperNinja(pResult, pUserData);
+                msg<<"locked";
             }
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_WHISPER;
+            chatMsg.m_ClientID = player->GetCID();
+            chatMsg.m_TargetID = player->GetCID();
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, player->GetCID());
         }
     }
 }
@@ -1809,10 +1910,75 @@ void CGameContext::ConJetpack(IConsole::IResult *pResult, void *pUserData) {
     }
     if (player) {
         if (player->GetCharacter()->IsAlive()) {
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Now jetpack is: ");
             if (player->Cheats.Jetpack == true) {
                 player->Cheats.Jetpack = false;
+                msg<<"off";
             } else {
                 player->Cheats.Jetpack = true;
+                msg<<"on";
+            }
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_WHISPER;
+            chatMsg.m_ClientID = player->GetCID();
+            chatMsg.m_TargetID = player->GetCID();
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, player->GetCID());
+        }
+    }
+}
+
+
+void CGameContext::ConSetClass(IConsole::IResult *pResult, void *pUserData) {
+    CGameContext *pSelf = (CGameContext *)pUserData;
+    CPlayer *player;
+    if(pResult->NumArguments()>0) {
+        player = pSelf->m_apPlayers[pResult->GetInteger(0)];
+    }else {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
+            if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
+                player=pSelf->m_apPlayers[i];
+                break;
+            }
+        }
+    }
+    std::ostringstream msg (std::ostringstream::ate);
+    msg.str("Admin has changed your class to: ");
+    Class wanted_class = Class::None;
+    if (str_comp_nocase(pResult->GetString(1), "none") == 0){
+        wanted_class = Class::None;
+    } else if (str_comp_nocase(pResult->GetString(1), "engineer") == 0){
+        wanted_class = Class::Engineer;
+    } else if (str_comp_nocase(pResult->GetString(1), "scout") == 0){
+        wanted_class = Class::Scout;
+    } else if (str_comp_nocase(pResult->GetString(1), "hunter") == 0){
+        wanted_class = Class::Hunter;
+    } else if (str_comp_nocase(pResult->GetString(1), "tank") == 0){
+        wanted_class = Class::Tank;
+    } else if (str_comp_nocase(pResult->GetString(1), "spider") == 0){
+        wanted_class = Class::Spider;
+    } else if (str_comp_nocase(pResult->GetString(1), "medic") == 0){
+        wanted_class = Class::Medic;
+    } else if (str_comp_nocase(pResult->GetString(1), "armorer") == 0){
+        wanted_class = Class::Armorer;
+    } else if (str_comp_nocase(pResult->GetString(1), "necromancer") == 0) {
+        wanted_class = Class::Necromancer;
+    }
+    if (player) {
+        if (player->GetCharacter()->IsAlive()) {
+            if (pSelf->Server()->GetClientClass(player->GetCID()) != wanted_class){
+                pSelf->Server()->SetClientClass(player->GetCID(), wanted_class);
+                player->GetCharacter()->Die(player->GetCID(), WEAPON_GAME);
+                msg<<pResult->GetString(1);
+                CNetMsg_Sv_Chat chatMsg;
+                chatMsg.m_Mode = CHAT_WHISPER;
+                chatMsg.m_ClientID = player->GetCID();
+                chatMsg.m_TargetID = player->GetCID();
+                std::string str_tmp = msg.str();
+                chatMsg.m_pMessage = str_tmp.c_str();
+                pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, player->GetCID());
             }
         }
     }
@@ -1829,10 +1995,6 @@ void CGameContext::ConTeleport(IConsole::IResult *pResult, void *pUserData) {
         if (pResult->NumArguments() > 1) {
             int player_to_id = pResult->GetInteger(1);
             player_to = pSelf->m_apPlayers[player_to_id];
-            std::ostringstream msg (std::ostringstream::ate);
-            msg.str("Second param is ");
-            msg<<player_to_id;
-            pSelf->SendChat(-1, CHAT_ALL, -1, msg.str().c_str());
         } else {
             for (int i = 0; i < MAX_PLAYERS; i++) {
                 if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
@@ -1847,6 +2009,21 @@ void CGameContext::ConTeleport(IConsole::IResult *pResult, void *pUserData) {
         if (player_from->GetCharacter()->IsAlive() and player_to->GetCharacter()->IsAlive()) {
             vec2 Tp_pos = player_to->GetCharacter()->GetPos() - vec2(0, 70);
             player_from->GetCharacter()->Teleport(Tp_pos);
+
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("You were teleported to: ");
+            IServer::CClientInfo Info;
+            if (pSelf->Server()->GetClientInfo(player_to->GetCID(), &Info)) {
+                msg << Info.m_pName;
+
+                CNetMsg_Sv_Chat chatMsg;
+                chatMsg.m_Mode = CHAT_WHISPER;
+                chatMsg.m_ClientID = player_from->GetCID();
+                chatMsg.m_TargetID = player_from->GetCID();
+                std::string str_tmp = msg.str();
+                chatMsg.m_pMessage = str_tmp.c_str();
+                pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, player_from->GetCID());
+            }
         }
     }
 }
@@ -2278,6 +2455,7 @@ void CGameContext::OnConsoleInit()
     Console()->Register("lock_pos", "?i[player id]", CFGFLAG_SERVER, ConPosLock, this, "Lock position");
     Console()->Register("jet", "?i[player id]", CFGFLAG_SERVER, ConJetpack, this, "Toggle jetpack");
     Console()->Register("tp", "i?i", CFGFLAG_SERVER, ConTeleport, this, "Teleport one player to second");
+    Console()->Register("setClass", "is", CFGFLAG_SERVER, ConSetClass, this, "Manually set class of wanted player");
 //    Console()->Register("tp_xy", "p[who] x[x] y[y]", CFGFLAG_SERVER, ConTeleportToXY, this, "Teleport player x, y");
 //    Console()->Register("tp_loc", "p[who] l[location name]", CFGFLAG_SERVER, ConTeleportToLoc, this, "Teleport player to preset location");
 //    Console()->Register("get_pos", "", CFGFLAG_SERVER, ConGetPos, this, "Gather teleportation preset data");

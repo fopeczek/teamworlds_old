@@ -631,7 +631,7 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
             chatMsg.m_ClientID = GameServer()->m_apPlayers[0]->GetCID();
             chatMsg.m_TargetID = GameServer()->m_apPlayers[0]->GetCID();
 
-            chatMsg.m_pMessage = "You have won, but you are still alone though";
+            chatMsg.m_pMessage = "You have won, despite playing alone";
             Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, GameServer()->m_apPlayers[0]->GetCID());
         }
 		if(m_GameState == IGS_GAME_RUNNING || m_GameState == IGS_END_MATCH || m_GameState == IGS_END_ROUND || m_GameState == IGS_GAME_PAUSED || m_GameState == IGS_WARMUP_GAME)
@@ -641,8 +641,8 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 			m_SuddenDeath = 0;
 			GameServer()->m_World.m_Paused = true;
 		}
-            int only;
-            int howMany;
+        int only;
+        int howMany;
         for (int i = 0; i<MAX_PLAYERS; i++) {
             if (Server()->ClientIngame(i)){
                 if (howMany<2){
@@ -653,7 +653,7 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
                 }
             }
         }
-        GameServer()->SendBroadcast("You have won, but you are still alone though", 0);
+        GameServer()->SendBroadcast("You have won, despite playing alone", only);
 	}
 }
 

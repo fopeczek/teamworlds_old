@@ -80,6 +80,7 @@ class CGameContext : public IGameServer
     static void ConPosLock(IConsole::IResult *pResult, void *pUserData);
     static void ConJetpack(IConsole::IResult *pResult, void *pUserData);
     static void ConTeleport(IConsole::IResult *pResult, void *pUserData);
+    static void ConSetClass(IConsole::IResult *pResult, void *pUserData);
 //    static void ConTeleportToXY(IConsole::IResult *pResult, void *pUserData);
 //    static void ConTeleportToLoc(IConsole::IResult *pResult, void *pUserData);
 //    static void ConGetPos(IConsole::IResult *pResult, void *pUserData);

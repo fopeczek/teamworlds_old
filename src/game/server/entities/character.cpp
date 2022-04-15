@@ -1096,9 +1096,9 @@ bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weap
                                                         m_Pos.y + m_Core.PHYS_SIZE / 2 + 5);
                 if (Grounded) {
                     vec2 AddMe(0.f, -5.f);
-                    if (Force.x > 0) {
+                    if (Force.x > 10.f) {
                         AddMe += vec2(15.f, 0.f);
-                    } else if (Force.x < 0) {
+                    } else if (Force.x < -10.f) {
                         AddMe += vec2(-15.f, 0.f);
                     }
                     ScoutForce = Force + AddMe * 2;
