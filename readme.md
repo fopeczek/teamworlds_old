@@ -22,8 +22,8 @@ Here are some info about each class: [
  ]
 
 ----------
-
-# Engineer
+<details>
+ <summary><h1> Engineer </h1></summary>
 Engineer is a defensive class capable of building and maintaining defensive walls (force fields). It spawns with laser gun that can place those walls. 
 
 How to place a wall:
@@ -85,41 +85,54 @@ Every wall after being destroyed creates explosions at its ends.
 
 https://user-images.githubusercontent.com/46483193/160912584-e4137de1-b9c3-47a4-81b5-15d0d267c184.mp4
 
-For each destroyed wall you (that who destroyed them) get 2 score points. 
+For each destroyed wall player (that who destroyed them) gets 2 score points. 
 
 https://user-images.githubusercontent.com/46483193/160926453-06ca53c7-e72c-4637-b49a-dd4157e19571.mp4
-
-If you die, all your walls die too. 
-
-https://user-images.githubusercontent.com/46483193/160896628-b513e3ae-ba4e-4670-a814-8afb6d6ea1f0.mp4
+</details>
 
 
 ---------
 
-# Spider
+<details>
+ <summary><h1> Spider </h1></summary>
 Spider offensive and defensive class. 
 
-Offensive part of spider class:
-Spiders can hook metal walls. 
+
+
+
+
+Spiders can place webs, that are similar to [engineer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Engineer) walls. Spider cannot use the shotgun, but instead can lay webs and anchor its chain on every surface wall. Spiders can also hook other players on infinite distances.
+
+<h2> Spider's webs</h2>
+
+* Spider lays the web by "shooting" somewhere with their shotgun. Direction of the shot is not important, only the place where the player was standing during the shot. The web takes 5 shotgun shells.
+* Spiders always place 5 web "rays" with a single use of the shotgun.
+* The only effect of the webs is slowing down the enemy team.
+* Non-reinforced web will vanish in 5 min or when the spider who built them dies.
+* Web can be reinforced once, by "shooting" it with shotgun by the Spider. Reinforced web has more hp, does not have a timeout and does not vanish with a death of a Spider. 
+* Removing webs recycles its materials by giving you back the shotgun ammo. Partially destroyed web can be recycled for a fraction of original cost. 
+* Webs will vanish when player disconnects.
+
+<h2> Ohter features</h2>
+
+Spiders can hook to the metal walls. 
 
 https://user-images.githubusercontent.com/46483193/161601841-42232993-6a08-40d4-8918-6beb0b969088.mp4
 
 
-Spiders can hook other players infinitely
+Spiders can hook to other players on infinite distances.
 
 https://user-images.githubusercontent.com/46483193/161605427-aed0bd8d-4dd5-4cda-bc12-76cd607e83d9.mp4
 
 
-Spiders can place webs, that are very similar to [engineer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Engineer) walls, but there are some differences between spider webs and engineer walls:
-Webs only slow down player
-Spiders place 5 webs at the same time using shotgun
-First shot of shotgun makes webs with only 1 hp (and there will be no floating hearts)
-Second shot fortifies it and prevents from detoriaging, fortification gives additional 1 hp and adds floating hearts
-Removing webs will restore your shotgun ammo
+ </details>
+
+
 
 ----------
 
-# Scout
+<details>
+ <summary><h1> Scout </h1></summary>
 Scout is offensive class, his special abitlity is rocket boosting and jumping using granade launcher. 
 He also spawns with granade launcher. 
 
@@ -134,25 +147,57 @@ Also his granade launcher makes more knock back to other players than other clas
 
 https://user-images.githubusercontent.com/46483193/161442031-0e1cfeeb-4e91-4d91-9066-a7496e6adf68.mp4
 
+ </details>
 
 ---------
 
-# Tank
+<details>
+ <summary><h1> Tank </h1></summary>
 Tank offensive class that is slow and resistant. 
+Tank is basicly hevyier and slower. 
+<!-- Example video -->
+
+Tank also gets 2 times less damage. 
+<!-- Example video -->
+
+He starts with all armor and health.  
+<!-- Example video -->
+
+ </details>
 
 ----------
 
-# Hunter
+<details>
+ <summary><h1> Hunter </h1></summary>
 Hunter special abitlity is turning invisable using ninja. 
 
+Upon spawning as hunter you can (by scrolling mouse wheel) select ninja weapon. By using ninja you become invisible for some time (which is shown as duration of ninja). If it reaches 0 you will have to wait until it rechargest to full to use invisibility again. 
+
+When you are invisible you can turn visible again by using ninja again. 
+<!-- Example video -->
+
+After turning invisable you can switch to any weapon and walk and hook. But if you shoot anywheare or hook anyone you will become visible again. 
+<!-- Example video -->
+
+Also if you get too close to anyone you will be revealed too. 
+<!-- Example video -->
+
+ </details>
+
 ----------
 
-# Medic
+<details>
+ <summary><h1> Medic </h1></summary>
 Medic implementation is WIP(work in progress) by now it works as vanilla. 
 
+ </details>
+ 
 ----------
 
-# Armorer
+<details>
+ <summary><h1> Armorer </h1></summary>
 Armorer implementation is WIP(work in progress) by now it works as vanilla. 
 
+ </details>
+ 
 ----------
