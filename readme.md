@@ -191,15 +191,17 @@ If you are invisable, hutner from other team can see you if he becomes invisable
 
 There are 2 specific sounds (and they are loud) that inform player and other players:
 1. Sound of getting revealed
-<!-- Example sound -->
- <audio controls>
-  <source src="datasrc/github/Hunter_reveal.mp3" type="audio/mpeg">
+ 
+<audio controls>
+  <source src="/datasrc/github/Hunter_reveal.mp3" type="audio/mpeg">
 </audio> 
+ 
 2. Sound of getting invisable
-<!-- Example sound -->
- <audio controls>
-  <source src="datasrc/github/Hunter_hide.mp3" type="audio/mpeg">
+ 
+<audio controls>
+  <source src="/datasrc/github/Hunter_hide.mp3" type="audio/mpeg">
 </audio> 
+ 
  </details>
 
  </details>
