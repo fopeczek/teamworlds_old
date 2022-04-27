@@ -79,6 +79,7 @@ class CGameContext : public IGameServer
     static void ConSuperNinja(IConsole::IResult *pResult, void *pUserData);
     static void ConPosLock(IConsole::IResult *pResult, void *pUserData);
     static void ConJetpack(IConsole::IResult *pResult, void *pUserData);
+    static void ConHappy(IConsole::IResult *pResult, void *pUserData);
     static void ConTeleport(IConsole::IResult *pResult, void *pUserData);
     static void ConSetClass(IConsole::IResult *pResult, void *pUserData);
 //    static void ConTeleportToXY(IConsole::IResult *pResult, void *pUserData);

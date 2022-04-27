@@ -549,62 +549,63 @@ void CWall::CheckForBulletCollision() {
         for (; pAttackBullet; pAttackBullet = (CProjectile *) pAttackBullet->TypeNext()) {
             vec2 At;
             if (GameWorld()->IntersectBullet(m_Pos, m_From, m_collision_range, At, pAttackBullet)) {
+                if (GameServer()->m_apPlayers[pAttackBullet->GetOwner()]) {
+                    if (GameServer()->m_apPlayers[pAttackBullet->GetOwner()]->GetTeam() !=
+                        GameServer()->m_apPlayers[m_Owner]->GetTeam()) {
 
-                if (GameServer()->m_apPlayers[pAttackBullet->GetOwner()]->GetTeam() !=
-                    GameServer()->m_apPlayers[m_Owner]->GetTeam()) {
+                        float Ct = (Server()->Tick() - pAttackBullet->GetStartTick()) / (float) Server()->TickSpeed();
 
-                    float Ct = (Server()->Tick() - pAttackBullet->GetStartTick()) / (float) Server()->TickSpeed();
-
-                    if (distance(pAttackBullet->GetPos(Ct), m_Pos) <= m_deconstruct_range) {
-                        int Dmg;
-                        if (pAttackBullet->GetExposive()) {
-                            Dmg = 2;
+                        if (distance(pAttackBullet->GetPos(Ct), m_Pos) <= m_deconstruct_range) {
+                            int Dmg;
+                            if (pAttackBullet->GetExposive()) {
+                                Dmg = 2;
+                            } else {
+                                Dmg = 1;
+                            }
+                            Dmg *= 2;
+                            if (TakeDamage(Dmg, pAttackBullet->GetOwner())) {
+                                pAttackBullet->Wall_Coll = true;
+                                pAttackBullet->Tick();
+                                return;
+                            }
+                            GameServer()->CreateDamage(m_Pos, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false,
+                                                       GetMapID());
+                        } else if (distance(pAttackBullet->GetPos(Ct), m_From) <= m_deconstruct_range) {
+                            int Dmg;
+                            if (pAttackBullet->GetExposive()) {
+                                Dmg = 2;
+                            } else {
+                                Dmg = 1;
+                            }
+                            Dmg *= 2;
+                            if (TakeDamage(Dmg, pAttackBullet->GetOwner())) {
+                                pAttackBullet->Wall_Coll = true;
+                                pAttackBullet->Tick();
+                                return;
+                            }
+                            GameServer()->CreateDamage(m_From, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false,
+                                                       GetMapID());
                         } else {
-                            Dmg = 1;
+                            int Dmg;
+                            if (pAttackBullet->GetExposive()) {
+                                Dmg = 2;
+                            } else {
+                                Dmg = 1;
+                            }
+                            if (TakeDamage(Dmg, pAttackBullet->GetOwner())) {
+                                pAttackBullet->Wall_Coll = true;
+                                pAttackBullet->Tick();
+                                return;
+                            }
+                            GameServer()->CreateDamage(At, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false,
+                                                       GetMapID());
                         }
-                        Dmg *= 2;
-                        if (TakeDamage(Dmg, pAttackBullet->GetOwner())) {
-                            pAttackBullet->Wall_Coll = true;
-                            pAttackBullet->Tick();
-                            return;
-                        }
-                        GameServer()->CreateDamage(m_Pos, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false,
-                                                   GetMapID());
-                    } else if (distance(pAttackBullet->GetPos(Ct), m_From) <= m_deconstruct_range) {
-                        int Dmg;
-                        if (pAttackBullet->GetExposive()) {
-                            Dmg = 2;
-                        } else {
-                            Dmg = 1;
-                        }
-                        Dmg *= 2;
-                        if (TakeDamage(Dmg, pAttackBullet->GetOwner())) {
-                            pAttackBullet->Wall_Coll = true;
-                            pAttackBullet->Tick();
-                            return;
-                        }
-                        GameServer()->CreateDamage(m_From, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false,
-                                                   GetMapID());
-                    } else {
-                        int Dmg;
-                        if (pAttackBullet->GetExposive()) {
-                            Dmg = 2;
-                        } else {
-                            Dmg = 1;
-                        }
-                        if (TakeDamage(Dmg, pAttackBullet->GetOwner())) {
-                            pAttackBullet->Wall_Coll = true;
-                            pAttackBullet->Tick();
-                            return;
-                        }
-                        GameServer()->CreateDamage(At, m_Owner, pAttackBullet->GetPos(Ct), Dmg, 0, false,
-                                                   GetMapID());
+                        pAttackBullet->Wall_Coll = true;
+                        pAttackBullet->Tick();
                     }
-                    pAttackBullet->Wall_Coll = true;
-                    pAttackBullet->Tick();
-                }
-                if (pAttackBullet == (CProjectile *) pAttackBullet->TypeNext()) {
-                    break;
+                    if (pAttackBullet == (CProjectile *) pAttackBullet->TypeNext()) {
+                        break;
+                    }
                 }
             }
         }
@@ -891,32 +892,39 @@ void CWall::Tick() {
     if (GameServer()->GameTypeType()->m_GameState == GameServer()->GameTypeType()->EGameState::IGS_END_MATCH) {
         Reset();
     }
+    if (!m_Done and !pPlayer->GetCharacter()){
+        Reset();
+    }
     if (Server()->Tick() >
         m_EvalTick + (Server()->TickSpeed() * GameServer()->Tuning()->m_LaserBounceDelay) / m_Delay_fac) {
-        if (pPlayer->GetCharacter()) {
-            if (pPlayer->GetCharacter()->GetActiveWeapon() != WEAPON_LASER and !m_Done) {
-                return;
+        if (!m_Done) {
+            if (pPlayer->GetCharacter()) {
+                if (pPlayer->GetCharacter()->GetActiveWeapon() != WEAPON_LASER) {
+                    return;
+                }
+                if (pPlayer->m_Engineer_Wall_Editing) {
+                    m_EvalTick = Server()->Tick();
+
+                    m_From = pPlayer->GetCharacter()->GetPos();
+                    m_From = Clamp_vec(m_Pos, m_From, m_laser_range);
+                    GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, m_From, 0x0, &m_From);
+
+                    //                CWall* otherWalls[MAX_PLAYERS*pPlayer->m_Engineer_MaxActiveWalls + MAX_PLAYERS*pPlayer->m_Spider_MaxActiveWebs];
+                    //                int howMany = GameWorld()->FindEntities(m_Pos, m_laser_range*2, (CEntity **)otherWalls, MAX_PLAYERS*pPlayer->m_Engineer_MaxActiveWalls + MAX_PLAYERS*pPlayer->m_Spider_MaxActiveWebs, GameWorld()->ENTTYPE_LASER, GetMapID());
+                    //                if (howMany>0){
+                    //                    for(int i=0; i<howMany;++i){
+                    //                        vec2 intersection = CheckForIntersection(m_Pos, m_From, otherWalls[i]->m_Pos, otherWalls[i]->m_From); //Not working TODO fix CheckForIntersection
+                    //                        if (intersection!=vec2(0,0)){
+                    //                            m_From=intersection;
+                    //                        }
+                    //                    }
+                    //                }
+
+                    GameServer()->CreateSound(m_From, SOUND_LASER_BOUNCE, -1, GetMapID());
+                }
             }
-            if (pPlayer->m_Engineer_Wall_Editing and !m_Done) {
-                m_EvalTick = Server()->Tick();
-
-                m_From = pPlayer->GetCharacter()->GetPos();
-                m_From = Clamp_vec(m_Pos, m_From, m_laser_range);
-                GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, m_From, 0x0, &m_From);
-
-//                CWall* otherWalls[MAX_PLAYERS*pPlayer->m_Engineer_MaxActiveWalls + MAX_PLAYERS*pPlayer->m_Spider_MaxActiveWebs];
-//                int howMany = GameWorld()->FindEntities(m_Pos, m_laser_range*2, (CEntity **)otherWalls, MAX_PLAYERS*pPlayer->m_Engineer_MaxActiveWalls + MAX_PLAYERS*pPlayer->m_Spider_MaxActiveWebs, GameWorld()->ENTTYPE_LASER, GetMapID());
-//                if (howMany>0){
-//                    for(int i=0; i<howMany;++i){
-//                        vec2 intersection = CheckForIntersection(m_Pos, m_From, otherWalls[i]->m_Pos, otherWalls[i]->m_From); //Not working TODO fix CheckForIntersection
-//                        if (intersection!=vec2(0,0)){
-//                            m_From=intersection;
-//                        }
-//                    }
-//                }
-
-                GameServer()->CreateSound(m_From, SOUND_LASER_BOUNCE, -1, GetMapID());
-            } else {
+        } else {
+            if (GameServer()->m_apPlayers[m_Owner]) {
                 m_EvalTick = Server()->Tick();
 
                 GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, m_From, 0x0, &m_From);
@@ -926,20 +934,18 @@ void CWall::Tick() {
                 CheckForBulletCollision();
                 if (!m_SpiderWeb or m_Fortified)
                     UpdateHealthInterface();
+            } else {
+                Reset();
             }
-            if (m_SpiderWeb and !m_Fortified) {
-                if (m_SpiderWebTick + (Server()->TickSpeed() * 30) < Server()->Tick()) {
-                    Reset();
-                }
+        }
+        if (m_SpiderWeb and !m_Fortified) {
+            if (m_SpiderWebTick + (Server()->TickSpeed() * 30) < Server()->Tick()) {
+                Reset();
             }
-            if (m_WaitingToConfirm) {
-                if (m_ConfirmTick + (Server()->TickSpeed() * 5) < Server()->Tick()) {
-                    m_WaitingToConfirm = false;
-                }
-            }
-        } else {
-            if (!pPlayer) {
-                Die(-2);
+        }
+        if (m_WaitingToConfirm) {
+            if (m_ConfirmTick + (Server()->TickSpeed() * 5) < Server()->Tick()) {
+                m_WaitingToConfirm = false;
             }
         }
     }

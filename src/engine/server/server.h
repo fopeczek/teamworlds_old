@@ -136,6 +136,8 @@ public:
 
         Class MyClass;
 
+        bool m_Smile;
+
 		int m_MapChunk;
 		bool m_NoRconNote;
 		bool m_Quitting;
@@ -227,6 +229,9 @@ public:
 
     virtual Class GetClientClass(int ClientID);
     virtual void SetClientClass(int ClientID, Class who);
+
+    virtual bool GetClientSmile(int ClientID);
+    virtual void SetClientSmile(int ClientID, bool new_smile);
 
     //Multimap
     virtual void SetClientMap(int ClientID, int MapID);

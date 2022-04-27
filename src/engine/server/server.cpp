@@ -325,6 +325,14 @@ Class CServer::GetClientClass(int ClientID){
     return m_aClients[ClientID].MyClass;
 }
 
+bool CServer::GetClientSmile(int ClientID){
+    return m_aClients[ClientID].m_Smile;
+}
+
+void CServer::SetClientSmile(int ClientID, bool new_smile){
+    m_aClients[ClientID].m_Smile = new_smile;
+}
+
 void CServer::SetClientMap(int ClientID, int MapID)
 {
     if(ClientID < 0 || ClientID >= MAX_CLIENTS || MapID < 0 || MapID >= (int)m_vpMap.size())

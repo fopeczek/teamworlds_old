@@ -50,6 +50,9 @@ public:
     virtual Class GetClientClass(int ClientID) = 0;
     virtual void SetClientClass(int ClientID, Class who) = 0;
 
+    virtual bool GetClientSmile(int ClientID) = 0;
+    virtual void SetClientSmile(int ClientID, bool new_smile) = 0;
+
     virtual IEngineMap* GetMap(int MapID) const = 0;
 
 	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID) = 0;

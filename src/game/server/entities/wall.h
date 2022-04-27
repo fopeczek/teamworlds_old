@@ -33,6 +33,8 @@ public:
     void HammerHit(int Dmg, CPlayer* player);
 
     void HeIsHealing(CPlayer* player);
+
+    bool m_SpiderWeb;
 protected:
     vec2 Calc_hp_pos(float alpha);
     bool HitCharacter();
@@ -45,7 +47,7 @@ private:
     static constexpr float m_collision_range = 30.f;
     static constexpr float m_hp_interface_delay = 500.f;
     static constexpr float m_hp_interface_space = 50.f;
-    static constexpr int m_wall_score = 2;
+    static constexpr int m_wall_score = 1;
     static constexpr int m_MAX_Health = 10;
     static constexpr int m_MAX_SpiderWeb_Health = 1;
     static constexpr int m_MAX_FortifiedSpiderWeb_Health = 2;
@@ -66,7 +68,6 @@ private:
     float m_Delay_fac;
     int m_Health;
     int m_Hited;
-    bool m_SpiderWeb;
     bool m_WaitingToConfirm= false;
     int m_ConfirmTick;
 

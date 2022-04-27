@@ -502,6 +502,32 @@ void CPlayer::TryRespawn()
         Cheats.Ninja = Server()->ServerCheats.Ninjabox;
         Cheats.Jetpack = Server()->ServerCheats.Jetbox;
     }
+
+    CWall *apWalls[MAX_PLAYERS * m_Engineer_MaxActiveWalls+MAX_PLAYERS * m_Spider_MaxActiveWebs];
+    int manyWalls = m_pCharacter->GameWorld()->FindEntities(m_pCharacter->GetPos(), 10000000000.f,
+                                              (CEntity **) apWalls,
+                                              MAX_PLAYERS * m_Engineer_MaxActiveWalls+MAX_PLAYERS * m_Spider_MaxActiveWebs,
+                                              CGameWorld::ENTTYPE_LASER, m_pCharacter->GetMapID());
+
+    for (int i = 0; i < manyWalls; ++i) {
+        if (apWalls[i]){
+            if (apWalls[i]->m_Owner==m_ClientID){
+                if (Server()->GetClientClass(m_ClientID)==Class::Engineer and !apWalls[i]->m_SpiderWeb){
+                    m_Engineer_ActiveWalls++;
+                    if (m_Engineer_ActiveWalls > m_Engineer_MaxActiveWalls){
+                        m_Engineer_ActiveWalls=m_Engineer_MaxActiveWalls;
+                        apWalls[i]->Die(-1);
+                    }
+                }else if (Server()->GetClientClass(m_ClientID)==Class::Spider and apWalls[i]->m_SpiderWeb){
+                    m_Spider_ActiveWebs++;
+                    if (m_Spider_ActiveWebs > m_Spider_MaxActiveWebs){
+                        m_Spider_ActiveWebs=m_Spider_MaxActiveWebs;
+                        apWalls[i]->Die(-1);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void CPlayer::Become(Class who){

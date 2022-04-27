@@ -1553,7 +1553,7 @@ void CGameContext::ConGodmode(IConsole::IResult *pResult, void *pUserData) {
         }
     }
     if (player) {
-        if (player->GetCharacter()->IsAlive()) {
+        if (player->GetCharacter()) {
             std::ostringstream msg (std::ostringstream::ate);
             msg.str("Now god mode is: ");
             if (player->Cheats.Godmode == true) {
@@ -1588,7 +1588,7 @@ void CGameContext::ConAutoFire(IConsole::IResult *pResult, void *pUserData) {
         }
     }
     if (player) {
-        if (player->GetCharacter()->IsAlive()) {
+        if (player->GetCharacter()) {
             std::ostringstream msg (std::ostringstream::ate);
             msg.str("Now full auto is: ");
             if (player->Cheats.AutoFire == true) {
@@ -1624,7 +1624,7 @@ void CGameContext::ConSandbox(IConsole::IResult *pResult, void *pUserData) {
         }
     }
     if (player) {
-        if (player->GetCharacter()->IsAlive()) {
+        if (player->GetCharacter()) {
             std::ostringstream msg (std::ostringstream::ate);
             msg.str("Now sandbox is: ");
             if (player->Cheats.Godmode == true) {
@@ -1661,7 +1661,7 @@ void CGameContext::ConHookmode(IConsole::IResult *pResult, void *pUserData) {
         }
     }
     if (player) {
-        if (player->GetCharacter()->IsAlive()) {
+        if (player->GetCharacter()) {
             std::ostringstream msg (std::ostringstream::ate);
             msg.str("Now infinite player hooking is: ");
             if (player->Cheats.Hookmode == true) {
@@ -1693,7 +1693,7 @@ void CGameContext::ConKillAll(IConsole::IResult *pResult, void *pUserData) {
     for (int i = 0; i < MAX_PLAYERS; i++) {
         if (i != player_id){
             if (pSelf->m_apPlayers[i]) {
-                if (pSelf->m_apPlayers[i]->GetCharacter()->IsAlive()) {
+                if (pSelf->m_apPlayers[i]->GetCharacter()) {
                     pSelf->m_apPlayers[i]->Cheats.Godmode = false;
                     pSelf->m_apPlayers[i]->GetCharacter()->Die(WEAPON_SELF, WEAPON_SELF);
                     CNetMsg_Sv_Chat chatMsg;
@@ -1723,7 +1723,7 @@ void CGameContext::ConKill(IConsole::IResult *pResult, void *pUserData) {
     }
     if (player) {
         if (player->GetCharacter()) {
-            if (player->GetCharacter()->IsAlive()) {
+            if (player->GetCharacter()) {
                 player->Cheats.Godmode = false;
                 player->GetCharacter()->Die(WEAPON_SELF, WEAPON_SELF);
                 CNetMsg_Sv_Chat chatMsg;
@@ -1753,7 +1753,7 @@ void CGameContext::ConNoSelfDmg(IConsole::IResult *pResult, void *pUserData) {
         }
     }
     if (player) {
-        if (player->GetCharacter()->IsAlive()) {
+        if (player->GetCharacter()) {
             std::ostringstream msg (std::ostringstream::ate);
             msg.str("Now no self damage is: ");
             if (player->Cheats.NoSelfDmg == true) {
@@ -1790,7 +1790,7 @@ void CGameContext::ConSuperNinja(IConsole::IResult *pResult, void *pUserData) {
         }
     }
     if (player) {
-        if (player->GetCharacter()->IsAlive()) {
+        if (player->GetCharacter()) {
             std::ostringstream msg (std::ostringstream::ate);
             msg.str("Now super ninja is: ");
             if (player->Cheats.Ninja == true) {
@@ -1833,7 +1833,7 @@ void CGameContext::ConNinja(IConsole::IResult *pResult, void *pUserData) {
         }
     }
     if (player) {
-        if (player->GetCharacter()->IsAlive()) {
+        if (player->GetCharacter()) {
             std::ostringstream msg (std::ostringstream::ate);
             msg.str("Now ninja is: ");
             if (player->Cheats.Ninja == true) {
@@ -1871,7 +1871,7 @@ void CGameContext::ConPosLock(IConsole::IResult *pResult, void *pUserData) {
         }
     }
     if (player) {
-        if (player->GetCharacter()->IsAlive()) {
+        if (player->GetCharacter()) {
             std::ostringstream msg (std::ostringstream::ate);
             msg.str("Now you are: ");
             if (player->Cheats.Lock == true) {
@@ -1909,7 +1909,7 @@ void CGameContext::ConJetpack(IConsole::IResult *pResult, void *pUserData) {
         }
     }
     if (player) {
-        if (player->GetCharacter()->IsAlive()) {
+        if (player->GetCharacter()) {
             std::ostringstream msg (std::ostringstream::ate);
             msg.str("Now jetpack is: ");
             if (player->Cheats.Jetpack == true) {
@@ -1918,6 +1918,42 @@ void CGameContext::ConJetpack(IConsole::IResult *pResult, void *pUserData) {
             } else {
                 player->Cheats.Jetpack = true;
                 msg<<"on";
+            }
+            CNetMsg_Sv_Chat chatMsg;
+            chatMsg.m_Mode = CHAT_WHISPER;
+            chatMsg.m_ClientID = player->GetCID();
+            chatMsg.m_TargetID = player->GetCID();
+            std::string str_tmp = msg.str();
+            chatMsg.m_pMessage = str_tmp.c_str();
+            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, player->GetCID());
+        }
+    }
+}
+
+
+void CGameContext::ConHappy(IConsole::IResult *pResult, void *pUserData) {
+    CGameContext *pSelf = (CGameContext *)pUserData;
+    CPlayer *player;
+    if(pResult->NumArguments()>0) {
+        player = pSelf->m_apPlayers[pResult->GetInteger(0)];
+    }else {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
+            if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
+                player=pSelf->m_apPlayers[i];
+                break;
+            }
+        }
+    }
+    if (player) {
+        if (player->GetCharacter()) {
+            std::ostringstream msg (std::ostringstream::ate);
+            msg.str("Now you are: ");
+            if (pSelf->Server()->GetClientSmile(player->GetCID()) == true) {
+                pSelf->Server()->SetClientSmile(player->GetCID(), false);
+                msg<<"normal";
+            } else {
+                pSelf->Server()->SetClientSmile(player->GetCID(), true);
+                msg<<"happy";
             }
             CNetMsg_Sv_Chat chatMsg;
             chatMsg.m_Mode = CHAT_WHISPER;
@@ -1967,7 +2003,7 @@ void CGameContext::ConSetClass(IConsole::IResult *pResult, void *pUserData) {
         wanted_class = Class::Necromancer;
     }
     if (player) {
-        if (player->GetCharacter()->IsAlive()) {
+        if (player->GetCharacter()) {
             if (pSelf->Server()->GetClientClass(player->GetCID()) != wanted_class){
                 pSelf->Server()->SetClientClass(player->GetCID(), wanted_class);
                 player->GetCharacter()->Die(player->GetCID(), WEAPON_GAME);
@@ -2006,7 +2042,7 @@ void CGameContext::ConTeleport(IConsole::IResult *pResult, void *pUserData) {
     }
 
     if (player_from and player_to){
-        if (player_from->GetCharacter()->IsAlive() and player_to->GetCharacter()->IsAlive()) {
+        if (player_from->GetCharacter() and player_to->GetCharacter()) {
             vec2 Tp_pos = player_to->GetCharacter()->GetPos() - vec2(0, 70);
             player_from->GetCharacter()->Teleport(Tp_pos);
 
@@ -2056,7 +2092,7 @@ void CGameContext::ConTeleport(IConsole::IResult *pResult, void *pUserData) {
 //                    }
 //                }
 //                if (Who!= -1){
-//                    if (pSelf->m_apPlayers[Who]->GetCharacter()->IsAlive()) {
+//                    if (pSelf->m_apPlayers[Who]->GetCharacter()) {
 //                        pSelf->Console()->Print(1, "World", "Teleporting...", true);
 //                        pSelf->m_apPlayers[Who]->GetCharacter()->Teleport(Where_pos);
 //                    }
@@ -2451,9 +2487,10 @@ void CGameContext::OnConsoleInit()
     Console()->Register("Sandbox", "?i[player id]", CFGFLAG_SERVER, ConSandbox, this, "Give someone auto fire and godmode");
     Console()->Register("Hookmode", "?i[player id]", CFGFLAG_SERVER, ConHookmode, this, "Give someone inv hook");
     Console()->Register("NoSelfDmg", "?i[player id]", CFGFLAG_SERVER, ConNoSelfDmg, this, "Silent mode");
-    Console()->Register("ninja", "?i[player id]", CFGFLAG_SERVER, ConNinja, this, "Ninja mode");
-    Console()->Register("lock_pos", "?i[player id]", CFGFLAG_SERVER, ConPosLock, this, "Lock position");
-    Console()->Register("jet", "?i[player id]", CFGFLAG_SERVER, ConJetpack, this, "Toggle jetpack");
+    Console()->Register("Ninja", "?i[player id]", CFGFLAG_SERVER, ConNinja, this, "Ninja mode");
+    Console()->Register("Lock_pos", "?i[player id]", CFGFLAG_SERVER, ConPosLock, this, "Lock position");
+    Console()->Register("Jetpack", "?i[player id]", CFGFLAG_SERVER, ConJetpack, this, "Toggle jetpack");
+    Console()->Register("Happy", "?i[player id]", CFGFLAG_SERVER, ConHappy, this, "Toggle smile face");
     Console()->Register("tp", "i?i", CFGFLAG_SERVER, ConTeleport, this, "Teleport one player to second");
     Console()->Register("setClass", "is", CFGFLAG_SERVER, ConSetClass, this, "Manually set class of wanted player");
 //    Console()->Register("tp_xy", "p[who] x[x] y[y]", CFGFLAG_SERVER, ConTeleportToXY, this, "Teleport player x, y");
