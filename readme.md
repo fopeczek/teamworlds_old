@@ -12,13 +12,13 @@ Upon joining into my server you will spawn in lobby.
 Every weapon represents a different class available in my server.
 
 Here are some info about each class: [ 
-[Engineer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Engineer) | 
-[Spider](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Spider) | 
-[Scout](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Scout) | 
-[Tank](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Tank) | 
-[Hunter](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Hunter) | 
-[Medic](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Medic) | 
-[Armorer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Armorer)
+[Engineer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#-engineer-) | 
+[Spider](https://github.com/fopeczek/teamworlds/edit/main/readme.md#-spider-) | 
+[Scout](https://github.com/fopeczek/teamworlds/edit/main/readme.md#-scout-) | 
+[Tank](https://github.com/fopeczek/teamworlds/edit/main/readme.md#-tank-) | 
+[Hunter](https://github.com/fopeczek/teamworlds/edit/main/readme.md#-hunter-) | 
+[Medic](https://github.com/fopeczek/teamworlds/edit/main/readme.md#-medic-) | 
+[Armorer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#-armorer-)
  ]
 
 ----------
@@ -85,9 +85,8 @@ Every wall after being destroyed creates explosions at its ends.
 
 https://user-images.githubusercontent.com/46483193/160912584-e4137de1-b9c3-47a4-81b5-15d0d267c184.mp4
 
-For each destroyed wall player (that who destroyed them) gets 2 score points. 
+For each destroyed wall player (that who destroyed them) gets 1 score point. 
 
-https://user-images.githubusercontent.com/46483193/160926453-06ca53c7-e72c-4637-b49a-dd4157e19571.mp4
 </details>
 
 
@@ -96,10 +95,6 @@ https://user-images.githubusercontent.com/46483193/160926453-06ca53c7-e72c-4637-
 <details>
  <summary><h1> Spider </h1></summary>
 Spider offensive and defensive class. 
-
-
-
-
 
 Spiders can place webs, that are similar to [engineer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Engineer) walls. Spider cannot use the shotgun, but instead can lay webs and anchor its chain on every surface wall. Spiders can also hook other players on infinite distances.
 
@@ -154,14 +149,20 @@ https://user-images.githubusercontent.com/46483193/161442031-0e1cfeeb-4e91-4d91-
 <details>
  <summary><h1> Tank </h1></summary>
 Tank offensive class that is slow and resistant. 
+
+He spawns with all armor and health.  
+
 Tank is basicly hevyier and slower. 
-<!-- Example video -->
+
+https://user-images.githubusercontent.com/46483193/165517450-43697393-674b-4903-80de-e1f4453c1a02.mp4
 
 Tank also gets 2 times less damage. 
-<!-- Example video -->
 
-He starts with all armor and health.  
-<!-- Example video -->
+https://user-images.githubusercontent.com/46483193/165515872-43546540-cf14-4760-8f95-efcf1324a3f5.mp4
+
+His pistol is replaced with maschine gun. 
+
+https://user-images.githubusercontent.com/46483193/165515793-dd436d0b-5b20-4178-8943-159fba257d91.mp4
 
  </details>
 
@@ -171,16 +172,37 @@ He starts with all armor and health.
  <summary><h1> Hunter </h1></summary>
 Hunter special abitlity is turning invisable using ninja. 
 
-Upon spawning as hunter you can (by scrolling mouse wheel) select ninja weapon. By using ninja you become invisible for some time (which is shown as duration of ninja). If it reaches 0 you will have to wait until it rechargest to full to use invisibility again. 
+Upon spawning as hunter you can (by scrolling mouse wheel) select ninja weapon. By using ninja you become invisible for some time (which is shown as duration of ninja). If it reaches 0 you will have to wait until it recharges to full to use invisibility again. Your teammates can see you. 
 
-When you are invisible you can turn visible again by using ninja again. 
+ 
+ 
+When you are invisible you can turn visible again by using ninja again. This is the only way to become visible without having to wait until cooldown fill up. 
 <!-- Example video -->
 
-After turning invisable you can switch to any weapon and walk and hook. But if you shoot anywheare or hook anyone you will become visible again. 
+After turning invisable you can switch to any weapon and walk and hook to walls. But if you shoot anywheare or hook anyone or will be hooked by player from other team you will become visible again and will have to wait until ninja recharges to full. 
+ 
 <!-- Example video -->
 
 Also if you get too close to anyone you will be revealed too. 
 <!-- Example video -->
+
+If you are invisable, hutner from other team can see you if he becomes invisable too. 
+<!-- Example video of changing weapon and hooking and getting revealed in the end -->
+
+There are 2 specific sounds (and they are loud) that inform player and other players:
+1. Sound of getting revealed
+ 
+<audio controls>
+  <source src="/datasrc/github/Hunter_reveal.mp3" type="audio/mpeg">
+</audio> 
+ 
+2. Sound of getting invisable
+ 
+<audio controls>
+  <source src="/datasrc/github/Hunter_hide.mp3" type="audio/mpeg">
+</audio> 
+ 
+ </details>
 
  </details>
 
