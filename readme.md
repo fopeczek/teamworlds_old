@@ -2,6 +2,10 @@ Teamwolrds
 ==========
 Teamworlds is a fork of a famous game [Teeworlds](https://github.com/teeworlds/teeworlds), that enhances gameplay and promotes team cooperation, by introduction player classes.
 
+While I was playng [Teeworlds](https://github.com/teeworlds/teeworlds) I noticed that the gaming experience is essentially equivelant to playing single player game against NPCs. And like so I had idea to force players to communicate with each other. 
+
+My main idea behind creating this fork was to make teeworlds more cooperative game. 
+
 This readme assumes that you know basics of teeworlds and some simple tricks like (rocket jumping, wall [rocket] jumping, rocket boosting, etc.). 
 
 How to play
@@ -109,7 +113,7 @@ https://user-images.githubusercontent.com/46483193/160885837-396ca786-ab69-402d-
  <summary><h1> Spider </h1></summary>
 Spider offensive and defensive class. 
 
-Spiders can place webs, that are similar to [engineer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Engineer) walls. Spider cannot use the shotgun, but instead can lay webs and anchor its chain on every surface wall. Spiders can also hook other players on infinite distances.
+Spiders can place webs, that are similar to [engineer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#-engineer-) walls. Spider cannot use the shotgun, but instead can lay webs and anchor its chain on every surface wall. Spiders can also hook other players infinitely.
 
 <h2> Spider's webs</h2>
 
@@ -186,8 +190,6 @@ https://user-images.githubusercontent.com/46483193/165515793-dd436d0b-5b20-4178-
 Hunter special abitlity is turning invisable using ninja. 
 
 Upon spawning as hunter you can (by scrolling mouse wheel) select ninja weapon. By using ninja you become invisible for some time (which is shown as duration of ninja). If it reaches 0 you will have to wait until it recharges to full to use invisibility again. Your teammates can see you. 
-
- 
  
 When you are invisible you can turn visible again by using ninja again. This is the only way to become visible without having to wait until cooldown fill up. 
 <!-- Example video -->
@@ -232,4 +234,5 @@ Armorer implementation is WIP(work in progress) by now it works as vanilla.
  
 ----------
 
-About 
+## About my future plans:
+My inital idea of modyfing teeworlds was as I said to force players to cooperate. My first attempt was to use other mod wich implemented [zombies](https://github.com/LordSk/teeworlds/tree/mod/zomb), and transform the game coopeative adventure platformer. Players would need to fight their way through the very long map while fighting numerous zombies.
