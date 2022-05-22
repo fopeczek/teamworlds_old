@@ -1,17 +1,32 @@
 Teamwolrds
 ==========
-Teamworlds is a game based on  [teeworlds](https://github.com/teeworlds/teeworlds)
+Teamworlds is a fork of a famous game [Teeworlds](https://github.com/teeworlds/teeworlds), that enhances gameplay and promotes team cooperation, by introduction player classes.
+
+While I was playng [Teeworlds](https://github.com/teeworlds/teeworlds) I noticed that the gaming experience is essentially equivelant to playing single player game against NPCs. 
+
+My main idea behind creating this fork was to make teeworlds more cooperative game. 
+
+This readme assumes that you know basics of teeworlds and some simple tricks like (rocket jumping, wall [rocket] jumping, rocket boosting, etc.). 
+
+How to play
+-----------
+Launch a standard Teeworlds client (which you can download e.g. from here:)
+
+Then go to the multiplayer lobby, and join a server with game type named TeamUp. You can join my own server, that goes by the name «Official TeamWorld server»
 
 ![Notice that server type is named TeamUp](datasrc/github/server.png "Notice that server type is named TeamUp")
-Notice that server type is named TeamUp.
 ---------
+Once you have joined my server you will be spawned in lobby room, where you pick a class that you want to play (classes are explained later).
+
+In lobby you can't kill or hook anybody.
+
 ![This is lobby](/datasrc/github/Lobby.png "This is lobby")
-Upon joining into my server you will spawn in lobby.
 ------------
-![This is lobby](/datasrc/github/Lobby&weapons.png "This is lobby")
 Every weapon represents a different class available in my server.
 
-Here are some info about each class: [ 
+![This is lobby](/datasrc/github/Lobby&weapons.png "This is lobby")
+
+Here you can find all info about each class: [ 
 [Engineer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#-engineer-) | 
 [Spider](https://github.com/fopeczek/teamworlds/edit/main/readme.md#-spider-) | 
 [Scout](https://github.com/fopeczek/teamworlds/edit/main/readme.md#-scout-) | 
@@ -30,11 +45,15 @@ How to place a wall:
 
 https://user-images.githubusercontent.com/46483193/160856467-b97a966d-c65a-4f0d-ba28-de5414473040.mp4
 
-Each player can have utmost 6 simultaneously active walls. 
+Each player can have utmost 6 simultaneously active walls. If you will try to place 7th wall you will hear empty magazine sound. 
+ 
+Also very imprtant: you can't place too short wall, if you try so, you will hear same empty magazine sound. 
 
 Every wall has certain amount of hit points, just like a player. Amount of hp is represented by floating (unpickupable) hearts. Each wall can have up to 10 health. 
 
-Newly placed wall can consume up to 5 units of laser gun ammo. Each consumed unit of ammo translates into a single hp of newly-built wall. Since the ammo capacity of laser gun equals 10 units, a player can place exactly 2 walls, each charged with 5 hp. Sfter that they will have no more laser gun ammo, and unless they pick up a refill or deconstruct the wall, they will not be able to place another one. 
+Newly placed wall can consume up to 5 units of laser gun ammo. Each consumed unit of ammo translates into a single hp of newly-built wall. Since the ammo capacity of laser gun equals 10 units, a player can place exactly 2 walls, each charged with 5 hp. 
+ 
+ If you manage to get less than 5 ammo, you can still place a wall but, as mentioned it will have less initaial hp. 
 
 Here is an example of placing a wall while having only 2 units of laser ammo:
 
@@ -45,24 +64,6 @@ Player can charge the wall up to maximum number of 10 hit points. To do that, pl
 https://user-images.githubusercontent.com/46483193/160863490-34caec9a-383b-4349-b3a2-ca219249ba85.mp4
 
 As you can see you aren't able to die just by healing walls.
-
-Player can deconstruct the wall and reclaim all the ammo and hitpoints back. To do that, player has to stand very close to one end of his wall, and shoot anywhare with the pistol. All the wall's hp above 5 will be transfered as health (preferably) or armor (if the health bar is already full). After that transfer, the remaining maximum 5 hitpoints will be transfered back as laser gun ammo. 
-
-https://user-images.githubusercontent.com/46483193/160885179-366861b5-1f1c-4fc6-850f-98b0dd6f25d9.mp4
-
-The algorithm allows to permanently loose wall's hp during deconstrcution, if there is no available place to transfer them back to player. In such situations the first shot will only aattempt to transfer the upper 5 hitpoints back as health and armor, if player has capacity to accept them, and the wall will continue to exist with the reduced hp. To remove the wall and lose part or all of its remaining hp, the player hsa to shoot the second time.
-
-There are exctly 2 cases when you would have to confirm removing a wall:
-1. To prevent loosing health or armor points, if the total available capacity of health and armor is less then wall's hp minus 5
-
-https://user-images.githubusercontent.com/46483193/160885798-7d6c77b6-e952-4c2a-bb4e-5dc06c4d9e4b.mp4
-
-
-2. To prevent loosing laser ammo, if your capacity to accept the laser ammo is less than wall's hp or 5, whichever is smaller. 
-
-https://user-images.githubusercontent.com/46483193/160885837-396ca786-ab69-402d-984d-a84134a8666f.mp4
-
-
 
 Walls block bullets and kill enemies on contact. Wall loses 1 hp when it is hit with a normal bullet, wall will lose aditional 1 hp if the bullet is explosive. 
 
@@ -86,6 +87,25 @@ Every wall after being destroyed creates explosions at its ends.
 https://user-images.githubusercontent.com/46483193/160912584-e4137de1-b9c3-47a4-81b5-15d0d267c184.mp4
 
 For each destroyed wall player (that who destroyed them) gets 1 score point. 
+Player can deconstruct the wall and reclaim all the ammo and hitpoints back. 
+
+###### Process of wall reclaiming: 
+ 
+To reclaim a wall, player has to stand very close to one end of his wall, and shoot anywhare with the pistol. Initialy first 5 wall hp will be transfered as player's laser gun ammo the wall's hp above 5 will be transfered as health (preferably) or armor (if the health bar is already full). After that transfer, the remaining maximum 5 hitpoints will be transfered back as laser gun ammo. 
+
+https://user-images.githubusercontent.com/46483193/160885179-366861b5-1f1c-4fc6-850f-98b0dd6f25d9.mp4
+
+The algorithm allows to permanently loose wall's hp during deconstrcution, if there is no available place to transfer them back to player. In such situations the first shot will only aattempt to transfer the upper 5 hitpoints back as health and armor, if player has capacity to accept them, and the wall will continue to exist with the reduced hp. To remove the wall and lose part or all of its remaining hp, the player has to shoot the second time.
+
+There are exctly 2 cases when you would have to confirm removing a wall:
+1. To prevent loosing health or armor points, if the total available capacity of health and armor is less then wall's hp minus 5
+
+https://user-images.githubusercontent.com/46483193/160885798-7d6c77b6-e952-4c2a-bb4e-5dc06c4d9e4b.mp4
+
+
+2. To prevent loosing laser ammo, if your capacity to accept the laser ammo is less than wall's hp or 5, whichever is smaller. 
+
+https://user-images.githubusercontent.com/46483193/160885837-396ca786-ab69-402d-984d-a84134a8666f.mp4
 
 </details>
 
@@ -96,7 +116,7 @@ For each destroyed wall player (that who destroyed them) gets 1 score point.
  <summary><h1> Spider </h1></summary>
 Spider offensive and defensive class. 
 
-Spiders can place webs, that are similar to [engineer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#Engineer) walls. Spider cannot use the shotgun, but instead can lay webs and anchor its chain on every surface wall. Spiders can also hook other players on infinite distances.
+Spiders can place webs, that are similar to [engineer](https://github.com/fopeczek/teamworlds/edit/main/readme.md#-engineer-) walls. Spider cannot use the shotgun, but instead can lay webs and anchor its chain on every surface wall. Spiders can also hook other players infinitely.
 
 <h2> Spider's webs</h2>
 
@@ -172,9 +192,9 @@ https://user-images.githubusercontent.com/46483193/165515793-dd436d0b-5b20-4178-
  <summary><h1> Hunter </h1></summary>
 Hunter special abitlity is turning invisable using ninja. 
 
-Upon spawning as hunter you can (by scrolling mouse wheel) select ninja weapon. By using ninja you become invisible for some time (which is shown as duration of ninja). If it reaches 0 you will have to wait until it recharges to full to use invisibility again. Your teammates can see you. 
-
+Upon spawning as hunter you can (by scrolling mouse wheel) select ninja weapon. 
  
+ By using ninja you become invisible for some time (which is shown as duration of ninja). If it reaches 0 you will have to wait until it recharges to full to use invisibility again. Your teammates can see you. 
  
 When you are invisible you can turn visible again by using ninja again. This is the only way to become visible without having to wait until cooldown fill up. 
 <!-- Example video -->
@@ -190,19 +210,14 @@ If you are invisable, hutner from other team can see you if he becomes invisable
 <!-- Example video of changing weapon and hooking and getting revealed in the end -->
 
 There are 2 specific sounds (and they are loud) that inform player and other players:
-1. Sound of getting revealed
  
-<audio controls>
-  <source src="/datasrc/github/Hunter_reveal.mp3" type="audio/mpeg">
-</audio> 
+1. Sound of getting invisable
+
+https://user-images.githubusercontent.com/46483193/166137408-a584956f-84e5-4180-befb-171d4953662f.mp4
+
+2. Sound of getting revealed
  
-2. Sound of getting invisable
- 
-<audio controls>
-  <source src="/datasrc/github/Hunter_hide.mp3" type="audio/mpeg">
-</audio> 
- 
- </details>
+https://user-images.githubusercontent.com/46483193/166137411-74b4c4fb-e138-4a8e-ba0b-bc9c1a36853d.mp4
 
  </details>
 
@@ -223,3 +238,10 @@ Armorer implementation is WIP(work in progress) by now it works as vanilla.
  </details>
  
 ----------
+
+## About my future plans:
+My inital idea of modyfing teeworlds was as I said to force players to cooperate. My first attempt was to use other mod wich implemented [zombies](https://github.com/LordSk/teeworlds/tree/mod/zomb), and transform the game coopeative adventure platformer. Players would need to fight their way through the very long map while fighting numerous zombies.
+
+# Let's keep Teamworlds alive!
+
+I want this project to be alive. If you spot any bug, have a game-balancing issue or have a feature request, please don't hesitate and write an issue! If you want to get your hands dirty and write a code, I may even help you with that.
