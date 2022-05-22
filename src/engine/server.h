@@ -47,8 +47,8 @@ public:
 	virtual int GetClientVersion(int ClientID) const = 0;
     virtual int ClientMapID(int ClientID) const = 0;
 
-    virtual Class GetClientClass(int ClientID) = 0;
-    virtual void SetClientClass(int ClientID, Class who) = 0;
+	virtual Class GetClientClass(int ClientID) = 0;
+	virtual void SetClientClass(int ClientID, Class who) = 0;
 
     virtual bool GetClientSmile(int ClientID) = 0;
     virtual void SetClientSmile(int ClientID, bool new_smile) = 0;
@@ -115,7 +115,7 @@ public:
     virtual void KillCharacter(int ClientID) = 0;
 
 	virtual void OnClientEnter(int ClientID) = 0;
-	virtual void OnClientDrop(int ClientID, const char *pReason) = 0;
+	virtual int OnClientDrop(int ClientID, const char *pReason) = 0;
 	virtual void OnClientDirectInput(int ClientID, void *pInput) = 0;
 	virtual void OnClientPredictedInput(int ClientID, void *pInput) = 0;
 
@@ -123,6 +123,9 @@ public:
 	virtual bool IsClientReady(int ClientID) const = 0;
 	virtual bool IsClientPlayer(int ClientID) const = 0;
 	virtual bool IsClientSpectator(int ClientID) const = 0;
+
+    virtual int GetClientTeam(int ClientID) = 0;
+    virtual void SetClientMapChange(int ClientID, bool team)=0;
 
 	virtual const char *GameType() const = 0;
 	virtual const char *Version() const = 0;

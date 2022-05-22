@@ -79,10 +79,18 @@ void CPickup::Tick()
                             for (int i = 0; i < 2; i++) {
                                 if (Hp[i]->m_Type == PICKUP_ARMOR) {
                                     pChr->GetPlayer()->Become(Class::Tank);
+                                    char aBuf[256];
+                                    str_format(aBuf, sizeof(aBuf), "chose class player='%d:%s' class=tank map='%d",
+                                               pChr->GetPlayer()->GetCID(), Server()->ClientName(pChr->GetPlayer()->GetCID()), GetMapID());
+                                    GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game/class", aBuf);
                                 }
                             }
                         }else {
                             pChr->GetPlayer()->Become(Class::Scout);
+                            char aBuf[256];
+                            str_format(aBuf, sizeof(aBuf), "chose class player='%d:%s' class=scout map='%d",
+                                       pChr->GetPlayer()->GetCID(), Server()->ClientName(pChr->GetPlayer()->GetCID()), GetMapID());
+                            GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game/class", aBuf);
                         }
                     } else {
                         if (pChr->GiveWeapon(WEAPON_GRENADE, g_pData->m_Weapons.m_aId[WEAPON_GRENADE].m_Maxammo)) {
@@ -101,12 +109,24 @@ void CPickup::Tick()
                             for (int i=0; i<2; i++) {
                                 if (Hp[i]->m_Type == PICKUP_HEALTH) {
                                     pChr->GetPlayer()->Become(Class::Medic);
+                                    char aBuf[256];
+                                    str_format(aBuf, sizeof(aBuf), "chose class player='%d:%s' class=medic map='%d",
+                                               pChr->GetPlayer()->GetCID(), Server()->ClientName(pChr->GetPlayer()->GetCID()), GetMapID());
+                                    GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game/class", aBuf);
                                 } else if (Hp[i]->m_Type == PICKUP_ARMOR) {
                                     pChr->GetPlayer()->Become(Class::Armorer);
+                                    char aBuf[256];
+                                    str_format(aBuf, sizeof(aBuf), "chose class player='%d:%s' class=armorer map='%d",
+                                               pChr->GetPlayer()->GetCID(), Server()->ClientName(pChr->GetPlayer()->GetCID()), GetMapID());
+                                    GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game/class", aBuf);
                                 }
                             }
                         } else {
                             pChr->GetPlayer()->Become(Class::Spider);
+                            char aBuf[256];
+                            str_format(aBuf, sizeof(aBuf), "chose class player='%d:%s' class=spider map='%d",
+                                       pChr->GetPlayer()->GetCID(), Server()->ClientName(pChr->GetPlayer()->GetCID()), GetMapID());
+                            GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game/class", aBuf);
                         }
                     } else {
                         if (pChr->GiveWeapon(WEAPON_SHOTGUN, g_pData->m_Weapons.m_aId[WEAPON_SHOTGUN].m_Maxammo)) {
@@ -120,6 +140,10 @@ void CPickup::Tick()
                 case PICKUP_LASER:
                     if (GetMapID()==Server()->LobbyMapID){
                         pChr->GetPlayer()->Become(Class::Engineer);
+                        char aBuf[256];
+                        str_format(aBuf, sizeof(aBuf), "chose class player='%d:%s' class=engineer map='%d",
+                                   pChr->GetPlayer()->GetCID(), Server()->ClientName(pChr->GetPlayer()->GetCID()), GetMapID());
+                        GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game/class", aBuf);
                     }else {
                         if (pChr->GiveWeapon(WEAPON_LASER, g_pData->m_Weapons.m_aId[WEAPON_LASER].m_Maxammo)) {
                             Picked = true;

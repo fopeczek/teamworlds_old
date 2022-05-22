@@ -34,7 +34,6 @@ class IGameController
 		TBALANCE_CHECK=-2,
 		TBALANCE_OK,
 	};
-	int m_aTeamSize[NUM_TEAMS];
 	int m_UnbalancedTick;
 
 	virtual bool CanBeMovedOnBalance(int ClientID) const;
@@ -125,6 +124,7 @@ protected:
 	void UpdateGameInfo(int ClientID);
 
 public:
+    int m_aTeamSize[NUM_TEAMS];
 
     // game
     enum EGameState

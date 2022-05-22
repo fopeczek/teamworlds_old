@@ -141,12 +141,7 @@ void CCharacter::HandleNinja()
 	if((Server()->Tick() - m_Ninja.m_ActivationTick) > (g_pData->m_Weapons.m_Ninja.m_Duration * Server()->TickSpeed() / 1000))
 	{
         if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and m_ShadowDimension) {
-            m_ShadowDimension= false;
-            m_ShadowDimensionCooldown= true;
-            //amplify sound of undisguised
-            GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-            GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-            GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+            RevealHunter();
         } else if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and !m_ShadowDimension) {
 
         }else{
@@ -421,12 +416,7 @@ void CCharacter::FireWeapon()
             if(Hits) {
                 m_ReloadTimer = Server()->TickSpeed() / 3;
                 if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and m_ShadowDimension) {
-                    m_ShadowDimension= false;
-                    m_ShadowDimensionCooldown= true;
-                    //amplify sound of undisguised
-                    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                    RevealHunter();
                 }
             }
 
@@ -446,12 +436,7 @@ void CCharacter::FireWeapon()
                 m_Tank_PistolShot ++;
             }
             if (Server()->GetClientClass(m_pPlayer->GetCID()) == Class::Hunter and m_ShadowDimension) {
-                m_ShadowDimension= false;
-                m_ShadowDimensionCooldown= true;
-                //amplify sound of undisguised
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                RevealHunter();
             }
         } break;
 
@@ -507,12 +492,7 @@ void CCharacter::FireWeapon()
                 GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE, -1, GetMapID());
             }
             if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and m_ShadowDimension) {
-                m_ShadowDimension= false;
-                m_ShadowDimensionCooldown= true;
-                //amplify sound of undisguised
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                RevealHunter();
             }
         } break;
 
@@ -536,12 +516,7 @@ void CCharacter::FireWeapon()
 
             GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE, -1, GetMapID());
             if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and m_ShadowDimension) {
-                m_ShadowDimension= false;
-                m_ShadowDimensionCooldown= true;
-                //amplify sound of undisguised
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                RevealHunter();
             }
         } break;
 
@@ -577,12 +552,7 @@ void CCharacter::FireWeapon()
                     return;
                 }
             } else if (Server()->GetClientClass(GetPlayer()->GetCID()) == Class::Hunter and m_ShadowDimension) {
-                m_ShadowDimension= false;
-                m_ShadowDimensionCooldown= true;
-                //amplify sound of undisguised
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                RevealHunter();
             } else {
                 new CLaser(GameWorld(), m_Pos, Direction, GameServer()->Tuning()->m_LaserReach, m_pPlayer->GetCID(), GetMapID());
                 GameServer()->CreateSound(m_Pos, SOUND_LASER_FIRE, -1, GetMapID());
@@ -605,12 +575,41 @@ void CCharacter::FireWeapon()
                     GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
                 } else {
                     if ((m_ShadowDimensionCooldown and m_Ninja.m_ActivationTick>=Server()->Tick()) or !m_ShadowDimensionCooldown){
-                        m_ShadowDimension = true;
-                        m_ShadowDimensionCooldown= false;
-                        m_Ninja.m_ActivationTick= clamp(m_Ninja.m_ActivationTick, 0, Server()->Tick());
-                        GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE, -1, GetMapID());
-                        GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE, -1, GetMapID());
-                        GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE, -1, GetMapID());
+                        bool too_close = false;
+                        bool hooked = false;
+                        for (int i = 0; i < MAX_PLAYERS; ++i) {
+                            if (i != GetPlayer()->GetCID()) {
+                                if (GameServer()->m_apPlayers[i]) {
+                                    if (GameServer()->m_apPlayers[i]->GetCharacter()) {
+                                        if (GameServer()->m_apPlayers[i]->GetTeam()!=m_pPlayer->GetTeam()) {
+                                            if (distance(GameServer()->m_apPlayers[i]->GetCharacter()->GetPos(), m_Pos) <=
+                                                GetProximityRadius() * 5.f) {
+                                                too_close= true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (m_Core.m_HookState==HOOK_GRABBED) {
+                            if (m_Core.m_HookedPlayer){
+                                if (Server()->ClientIngame(m_Core.m_HookedPlayer)){
+                                    if (GameServer()->GetClientTeam(m_Core.m_HookedPlayer)!=m_pPlayer->GetTeam()){
+                                        hooked= true;
+                                    }
+                                }
+                            }
+                        }
+                        if (hooked or too_close) {
+                            GameServer()->CreateSound(m_Pos, SOUND_WEAPON_NOAMMO, -1, GetMapID());
+                        } else {
+                            m_ShadowDimension = true;
+                            m_ShadowDimensionCooldown = false;
+                            m_Ninja.m_ActivationTick = clamp(m_Ninja.m_ActivationTick, 0, Server()->Tick());
+                            GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE, -1, GetMapID());
+                            GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE, -1, GetMapID());
+                            GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE, -1, GetMapID());
+                        }
                     } else {
                         GameServer()->CreateSound(m_Pos, SOUND_WEAPON_NOAMMO, -1, GetMapID());
                     }
@@ -801,6 +800,19 @@ void CCharacter::Teleport(vec2 where){
     m_Core.Tick(false, m_pPlayer->Cheats.Jetpack);
 }
 
+void CCharacter::RevealHunter(){
+    m_ShadowDimension= false;
+    if(!m_pPlayer->Cheats.Godmode) {
+        m_ShadowDimensionCooldown = true;
+    } else {
+        m_ShadowDimensionCooldown = false;
+    }
+    //amplify sound of undisguised
+    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+}
+
 void CCharacter::Tick()
 {
     if (m_pPlayer->Cheats.Lock){
@@ -842,12 +854,7 @@ void CCharacter::Tick()
         m_Core.m_Input = m_Input;
         if (m_Core.Tick(true,m_pPlayer->Cheats.Jetpack, m_ShadowDimension, m_pPlayer->Cheats.Hookmode, GetMapID())){
             if (Server()->GetClientClass(GetPlayer()->GetCID())==Class::Hunter and m_ShadowDimension){
-                m_ShadowDimension= false;
-                m_ShadowDimensionCooldown= true;
-                //amplify sound of undisguised
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                RevealHunter();
             }
         }
 
@@ -859,12 +866,7 @@ void CCharacter::Tick()
                             if (GameServer()->m_apPlayers[i]->GetTeam()!=m_pPlayer->GetTeam()) {
                                 if (distance(GameServer()->m_apPlayers[i]->GetCharacter()->GetPos(), m_Pos) <=
                                     GetProximityRadius() * 5.f) {
-                                    m_ShadowDimension = false;
-                                    m_ShadowDimensionCooldown= true;
-                                    //amplify sound of undisguised
-                                    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                                    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
-                                    GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, -1, GetMapID());
+                                    RevealHunter();
                                 }
                             }
                         }

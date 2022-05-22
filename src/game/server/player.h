@@ -21,7 +21,7 @@ class CPlayer
 	MACRO_ALLOC_POOL_ID()
 
 public:
-	CPlayer(CGameContext *pGameServer, int ClientID, bool Dummy, bool AsSpec = false);
+	CPlayer(CGameContext *pGameServer, int ClientID, bool Dummy, bool AsSpec = false, int MapChange=-3);
 	~CPlayer();
 
 	void Init(int CID);
@@ -142,6 +142,9 @@ public:
 		int m_Max;
 	} m_Latency;
 
+    int m_Team;
+
+    bool m_MapChange =false;
     CGameContext *GameServer() const { return m_pGameServer; }
 private:
 	CCharacter *m_pCharacter;
@@ -152,7 +155,6 @@ private:
 	//
 	bool m_Spawning;
 	int m_ClientID;
-	int m_Team;
 	bool m_Dummy;
 
 	// used for spectator mode

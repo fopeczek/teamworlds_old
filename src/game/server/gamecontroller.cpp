@@ -217,7 +217,11 @@ int IGameController::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKiller, int
 	if(!pKiller || Weapon == WEAPON_GAME)
 		return 0;
 	if(pKiller == pVictim->GetPlayer())
-		pVictim->GetPlayer()->m_Score--; // suicide or world
+        if (pKiller->GetCID() == pVictim->GetPlayer()->GetCID() and Weapon==WEAPON_LASER){
+
+        } else {
+            pVictim->GetPlayer()->m_Score--; // suicide or world
+        }
 	else
 	{
 		if(IsTeamplay() && pVictim->GetPlayer()->GetTeam() == pKiller->GetTeam())

@@ -61,6 +61,7 @@ public:
 	bool GiveWeapon(int Weapon, int Ammo);
 	void GiveNinja();
     void UngiveNinja();
+    void RevealHunter();
 
     void Teleport(vec2 where);
 

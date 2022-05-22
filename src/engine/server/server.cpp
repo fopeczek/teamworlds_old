@@ -1647,6 +1647,8 @@ void CServer::ChangeClientMap(int ClientID)
 
     m_aClients[ClientID].m_Score = Score;
 
+    GameServer()->SetClientMapChange(ClientID, true);
+
     GameServer()->OnInitMap(m_aClients[ClientID].m_NextMapID);
 }
 

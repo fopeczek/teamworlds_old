@@ -34,11 +34,11 @@ public:
 	int Wall_Damaged = 0;
 	bool Wall_Coll = false;
 
+	int m_OwnerTeam;
 private:
 	vec2 m_Direction;
 	int m_LifeSpan;
 	int m_Owner;
-	int m_OwnerTeam;
 	int m_Type;
 	int m_Damage;
 	int m_SoundImpact;

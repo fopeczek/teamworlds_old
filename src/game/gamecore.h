@@ -147,7 +147,7 @@ class CCharacterCore
 {
     CWorldCore *m_pWorld;
 
-    bool m_pRetval= false;
+    bool m_pReveal= false;
     Class m_myClass = Class::None;
 public:
     CCollision *m_pCollision;

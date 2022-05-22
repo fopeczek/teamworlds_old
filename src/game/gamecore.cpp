@@ -83,11 +83,11 @@ void CCharacterCore::Reset()
 bool CCharacterCore::Tick(bool UseInput, bool Jet, bool actShadow, bool hookmode, int MapID)
 {
     bool reveal = false;
-    if (m_pRetval){
+    if (m_pReveal){
         if (actShadow) {
             reveal = true;
         }
-        m_pRetval= false;
+        m_pReveal= false;
     }
 	m_TriggeredEvents = 0;
 
@@ -276,7 +276,7 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, bool actShadow, bool hookmode
 			if(pCharCore) {
                 m_HookPos = pCharCore->m_Pos;
                 if (pCharCore->m_Team!=m_Team) {
-                    pCharCore->m_pRetval = true;
+                    pCharCore->m_pReveal = true;
                     if (actShadow) {
                         reveal = true;
                     }

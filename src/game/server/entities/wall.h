@@ -57,6 +57,8 @@ private:
     static constexpr float m_SpiderWeb_max_speed = 5.f;
 
     CPlayer *pPlayer;
+    int m_Team;
+
     vec2 m_From;
     vec2 m_Dir;
     int m_EvalTick;

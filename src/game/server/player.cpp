@@ -13,7 +13,7 @@ MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS)
 
 IServer *CPlayer::Server() const { return m_pGameServer->Server(); }
 
-CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, bool Dummy, bool AsSpec)
+CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, bool Dummy, bool AsSpec, int MapChange)
 {
 	m_pGameServer = pGameServer;
 	m_RespawnTick = Server()->Tick();
@@ -21,7 +21,12 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, bool Dummy, bool AsSpe
 	m_ScoreStartTick = Server()->Tick();
 	m_pCharacter = 0;
 	m_ClientID = ClientID;
-	m_Team = AsSpec ? TEAM_SPECTATORS : GameServer()->m_pController->GetStartTeam();
+    if (MapChange==-3) {
+        m_Team = AsSpec ? TEAM_SPECTATORS : GameServer()->m_pController->GetStartTeam();
+    } else {
+        GameServer()->m_pController->m_aTeamSize[MapChange]++;
+        m_Team = MapChange;
+    }
 	m_SpecMode = SPEC_FREEVIEW;
 	m_SpectatorID = -1;
 	m_pSpecFlag = 0;
@@ -208,22 +213,6 @@ void CPlayer::Snap(int SnappingClient)
 
 void CPlayer::OnDisconnect()
 {
-    if (m_pCharacter) {
-        CWall *Walls[MAX_PLAYERS * m_Engineer_MaxActiveWalls + MAX_PLAYERS * m_Spider_MaxActiveWebs];
-        int WallsNum = m_pCharacter->GameWorld()->FindEntities(m_pCharacter->GetPos(), 1000000000.f, (CEntity **) Walls,
-                                                               MAX_PLAYERS * m_Engineer_MaxActiveWalls + MAX_PLAYERS * m_Spider_MaxActiveWebs,
-                                                               m_pCharacter->GameWorld()->ENTTYPE_LASER,
-                                                               m_pCharacter->GetMapID());
-        if (WallsNum > 0) {
-            for (int i = 0; i < WallsNum; i++) {
-                if (Walls[i]) {
-                    if (Walls[i]->m_Owner == GetCID()) {
-                        Walls[i]->Die(GetCID());
-                    }
-                }
-            }
-        }
-    }
 	KillCharacter();
 
 	if(m_Team != TEAM_SPECTATORS)
@@ -531,32 +520,54 @@ void CPlayer::TryRespawn()
 }
 
 void CPlayer::Become(Class who){
+    char aBuf[256];
     switch (who) {
         case Class::Scout:
             Server()->SetClientClass(GetCID(), Class::Scout);
             GetCharacter()->GiveWeapon(WEAPON_GRENADE, 10);
             GetCharacter()->SetWeapon(WEAPON_GRENADE);
+            str_format(aBuf, sizeof(aBuf), "chose class player='%d:%s' class=scout map='%d",
+                       m_ClientID, Server()->ClientName(m_ClientID), m_pCharacter->GetMapID());
+            GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game/class", aBuf);
             break;
 		case Class::Engineer:
 			Server()->SetClientClass(GetCID(), Class::Engineer);
 			GetCharacter()->GiveWeapon(WEAPON_LASER, 10);
 			GetCharacter()->SetWeapon(WEAPON_LASER);
+            str_format(aBuf, sizeof(aBuf), "chose class player='%d:%s' class=engineer map='%d",
+                       m_ClientID, Server()->ClientName(m_ClientID), m_pCharacter->GetMapID());
+            GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game/class", aBuf);
 			break;
         case Class::Hunter:
             Server()->SetClientClass(GetCID(), Class::Hunter);
             GetCharacter()->GiveNinja();
+            str_format(aBuf, sizeof(aBuf), "chose class player='%d:%s' class=hunter map='%d",
+                       m_ClientID, Server()->ClientName(m_ClientID), m_pCharacter->GetMapID());
+            GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game/class", aBuf);
             break;
         case Class::Spider:
             Server()->SetClientClass(GetCID(), Class::Spider);
+            str_format(aBuf, sizeof(aBuf), "chose class player='%d:%s' class=spider map='%d",
+                       m_ClientID, Server()->ClientName(m_ClientID), m_pCharacter->GetMapID());
+            GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game/class", aBuf);
             break;
         case Class::Medic:
             Server()->SetClientClass(GetCID(), Class::Medic);
+            str_format(aBuf, sizeof(aBuf), "chose class player='%d:%s' class=medic map='%d",
+                       m_ClientID, Server()->ClientName(m_ClientID), m_pCharacter->GetMapID());
+            GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game/class", aBuf);
             break;
         case Class::Armorer:
             Server()->SetClientClass(GetCID(), Class::Armorer);
+            str_format(aBuf, sizeof(aBuf), "chose class player='%d:%s' class=armorer map='%d",
+                       m_ClientID, Server()->ClientName(m_ClientID), m_pCharacter->GetMapID());
+            GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game/class", aBuf);
             break;
         case Class::Tank:
             Server()->SetClientClass(GetCID(), Class::Tank);
+            str_format(aBuf, sizeof(aBuf), "chose class player='%d:%s' class=tank map='%d",
+                       m_ClientID, Server()->ClientName(m_ClientID), m_pCharacter->GetMapID());
+            GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game/class", aBuf);
             break;
     }
 }
