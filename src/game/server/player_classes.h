@@ -12,5 +12,5 @@ enum class Class {
     Engineer, //note:Defensive TODO make that when two laser walls intersect one of them will stop on another (NO: --|--, but YES:   |--)
     Armorer,//note:Support TODO make better name, implement: can (like medic place custom pickupables same 2 options, but for weapons), maybe can create aura of battle or slt
     Necromancer//note:Offensive/Defensive|HARD to implement! TODO can summon offensive zombies and defensive ones, he is weak, after killing anyone he automatically summons free zombie private guard ! HARD TO IMPLEMENT !
-    // TODO !MAYBE! add another class
+    // TODO Bug can't change to blue
 };

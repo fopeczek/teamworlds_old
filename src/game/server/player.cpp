@@ -24,6 +24,11 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, bool Dummy, bool AsSpe
     if (MapChange==-3) {
         m_Team = AsSpec ? TEAM_SPECTATORS : GameServer()->m_pController->GetStartTeam();
     } else {
+//        if (MapChange==TEAM_BLUE){
+//            GameServer()->m_pController->m_aTeamSize[TEAM_RED]--;
+//        } else if (MapChange==TEAM_RED){
+//            GameServer()->m_pController->m_aTeamSize[TEAM_BLUE]--;
+//        }
         GameServer()->m_pController->m_aTeamSize[MapChange]++;
         m_Team = MapChange;
     }

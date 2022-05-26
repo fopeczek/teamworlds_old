@@ -99,6 +99,9 @@ void CLaser::TickPaused()
 
 void CLaser::Snap(int SnappingClient)
 {
+    if(GameServer()->Server()->ClientMapID(SnappingClient) != GetMapID())
+        return;
+
 	if(NetworkClipped(SnappingClient) && NetworkClipped(SnappingClient, m_From))
 		return;
 

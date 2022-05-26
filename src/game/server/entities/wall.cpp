@@ -50,17 +50,8 @@ bool CWall::HitCharacter() {
         if (pHit->GetPlayer()->GetTeam() == m_Team)
             return false;
 
-        if (m_Fortified) {
-            vec2 NewVel = pHit->m_Core.m_Vel;
-            NewVel.x = clamp(NewVel.x, -m_SpiderWeb_max_speed, m_SpiderWeb_max_speed);
-            NewVel.y = clamp(NewVel.y, -m_SpiderWeb_max_speed, m_SpiderWeb_max_speed);
-
-            vec2 Diff = pHit->m_Core.m_Vel - NewVel;
-            pHit->m_Core.m_Vel -= Diff * 0.1f;
-        }else {
-            pHit->m_Core.m_Vel.x = clamp(pHit->m_Core.m_Vel.x, -m_SpiderWeb_max_speed, m_SpiderWeb_max_speed);
-            pHit->m_Core.m_Vel.y = clamp(pHit->m_Core.m_Vel.y, -m_SpiderWeb_max_speed, m_SpiderWeb_max_speed);
-        }
+        pHit->m_Core.m_Vel.x = clamp(pHit->m_Core.m_Vel.x, -m_SpiderWeb_max_speed, m_SpiderWeb_max_speed);
+        pHit->m_Core.m_Vel.y = clamp(pHit->m_Core.m_Vel.y, -m_SpiderWeb_max_speed, m_SpiderWeb_max_speed);
 
         if (Server()->Tick() >= m_LastHitTick + (Server()->TickSpeed() * m_WebHitDelay)) {
 
@@ -76,6 +67,10 @@ bool CWall::HitCharacter() {
             }
 
             m_LastHitTick = Server()->Tick();
+        }
+
+        if (m_Owner!=-1){
+            //TODO create floating marker that shows direction where web was triggered
         }
     } else {
         vec2 At;
@@ -681,6 +676,7 @@ void CWall::CheckForBullets() {
                         pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo += clamp(m_Health, 0, 5);
                         pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo = clamp(
                                 pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo, 0, 10);
+                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Got= true;
                         Reset();
                     }
                 } else {
@@ -738,6 +734,7 @@ void CWall::CheckForBullets() {
                         pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo += clamp(m_Health, 0, 5);
                         pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo = clamp(
                                 pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo, 0, 10);
+                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Got= true;
                         Reset();
                     }
                 } else {
@@ -773,6 +770,7 @@ void CWall::CheckForBullets() {
                                     if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo +
                                          otherWalls[i]->m_Health) <= 10 or otherWalls[i]->m_WaitingToConfirm) {
                                         pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo += otherWalls[i]->m_Health;
+                                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Got= true;
                                         otherWalls[i]->Reset();
                                     } else {
                                         otherWalls[i]->m_WaitingToConfirm = true;
@@ -807,6 +805,7 @@ void CWall::CheckForBullets() {
                                     if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo +
                                          otherWalls[i]->m_Health) <= 10 or otherWalls[i]->m_WaitingToConfirm) {
                                         pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo += otherWalls[i]->m_Health;
+                                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Got= true;
                                         otherWalls[i]->Reset();
                                     } else {
                                         otherWalls[i]->m_WaitingToConfirm = true;
@@ -986,6 +985,9 @@ void CWall::TickPaused() {
 }
 
 void CWall::Snap(int SnappingClient) {
+    if(GameServer()->Server()->ClientMapID(SnappingClient) != GetMapID())
+        return;
+
     if (NetworkClipped(SnappingClient) && NetworkClipped(SnappingClient, m_From))
         return;
 
