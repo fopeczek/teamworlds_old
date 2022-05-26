@@ -10,9 +10,9 @@ This readme assumes that you know basics of teeworlds and some simple tricks lik
 
 How to play
 -----------
-Launch a standard Teeworlds client (which you can download e.g. from here:)
+Launch a standard [Teeworlds](https://github.com/teeworlds/teeworlds) client
 
-Then go to the multiplayer lobby, and join a server with game type named TeamUp. You can join my own server, that goes by the name «Official TeamWorld server»
+Then go to the multiplayer lobby, and join a server with game type named TeamUp. I will be running two servers: one that is for testing, but propably still working named: "! ! ! ! Silence ! by Silent", and one that is official named: "! ! Official Teamworlds server by Silent"
 
 ![Notice that server type is named TeamUp](datasrc/github/server.png "Notice that server type is named TeamUp")
 ---------
