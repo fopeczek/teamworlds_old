@@ -1248,6 +1248,53 @@ void IGameController::Com_reset_class(IConsole::IResult *pResult, void *pContext
     IGameController *pSelf = (IGameController *)pComContext->m_pContext;
 
     pSelf->Server()->SetClientClass(pComContext->m_ClientID, Class::None);
+
+    // update client infos (others before local)
+    CNetMsg_Sv_ClientInfo NewClientInfoMsg;
+    NewClientInfoMsg.m_ClientID = pComContext->m_ClientID;
+    NewClientInfoMsg.m_Local = 0;
+    NewClientInfoMsg.m_Team = pSelf->GameServer()->m_apPlayers[pComContext->m_ClientID]->m_Team;
+    NewClientInfoMsg.m_pName = pSelf->Server()->ClientName(pComContext->m_ClientID);
+    NewClientInfoMsg.m_pClan = pSelf->Server()->ClientClan(pComContext->m_ClientID);
+    NewClientInfoMsg.m_Country = pSelf->Server()->ClientCountry(pComContext->m_ClientID);
+    NewClientInfoMsg.m_ClassID = 0;
+    NewClientInfoMsg.m_Silent = false;
+
+    for(int p = 0; p < NUM_SKINPARTS; p++)
+    {
+        NewClientInfoMsg.m_apSkinPartNames[p] = pSelf->GameServer()->m_apPlayers[pComContext->m_ClientID]->m_TeeInfos.m_aaSkinPartNames[p];
+        NewClientInfoMsg.m_aUseCustomColors[p] = pSelf->GameServer()->m_apPlayers[pComContext->m_ClientID]->m_TeeInfos.m_aUseCustomColors[p];
+        NewClientInfoMsg.m_aSkinPartColors[p] = pSelf->GameServer()->m_apPlayers[pComContext->m_ClientID]->m_TeeInfos.m_aSkinPartColors[p];
+    }
+    for(int i = 0; i < MAX_CLIENTS; ++i)
+    {
+        // new info for others
+        if(pSelf->Server()->ClientIngame(i))
+            pSelf->Server()->SendPackMsg(&NewClientInfoMsg, MSGFLAG_VITAL|MSGFLAG_NORECORD, i);
+
+        if(i == pComContext->m_ClientID || !pSelf->GameServer()->m_apPlayers[i] || (!pSelf->Server()->ClientIngame(i) && !pSelf->GameServer()->m_apPlayers[i]->IsDummy()))
+            continue;
+
+        // existing infos for new player
+        CNetMsg_Sv_ClientInfo ClientInfoMsg;
+        ClientInfoMsg.m_ClientID = i;
+        ClientInfoMsg.m_Local = 0;
+        ClientInfoMsg.m_Team = pSelf->GameServer()->m_apPlayers[i]->GetTeam();
+        ClientInfoMsg.m_pName = pSelf->Server()->ClientName(i);
+        ClientInfoMsg.m_pClan = pSelf->Server()->ClientClan(i);
+        ClientInfoMsg.m_Country = pSelf->Server()->ClientCountry(i);
+        ClientInfoMsg.m_ClassID = 0;
+        ClientInfoMsg.m_Silent = false;
+        for(int p = 0; p < NUM_SKINPARTS; p++)
+        {
+            ClientInfoMsg.m_apSkinPartNames[p] = pSelf->GameServer()->m_apPlayers[i]->m_TeeInfos.m_aaSkinPartNames[p];
+            ClientInfoMsg.m_aUseCustomColors[p] = pSelf->GameServer()->m_apPlayers[i]->m_TeeInfos.m_aUseCustomColors[p];
+            ClientInfoMsg.m_aSkinPartColors[p] = pSelf->GameServer()->m_apPlayers[i]->m_TeeInfos.m_aSkinPartColors[p];
+        }
+        pSelf->Server()->SendPackMsg(&ClientInfoMsg, MSGFLAG_VITAL|MSGFLAG_NORECORD, pComContext->m_ClientID);
+    }
+    NewClientInfoMsg.m_Local = 1;
+    pSelf->Server()->SendPackMsg(&NewClientInfoMsg, MSGFLAG_VITAL|MSGFLAG_NORECORD, pComContext->m_ClientID);
 }
 
 void IGameController::Com_show_game_stat(IConsole::IResult *pResult, void *pContext)

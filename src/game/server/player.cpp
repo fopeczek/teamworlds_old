@@ -581,4 +581,70 @@ void CPlayer::Become(Class who){
             GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game/class", aBuf);
             break;
     }
+    int new_class_id=0;
+    switch(who){
+        case Class::None:
+            new_class_id=0;
+        case Class::Hunter:
+            new_class_id=1;
+        case Class::Medic:
+            new_class_id=2;
+        case Class::Scout:
+            new_class_id=3;
+        case Class::Tank:
+            new_class_id=4;
+        case Class::Spider:
+            new_class_id=5;
+        case Class::Engineer:
+            new_class_id=6;
+        case Class::Armorer:
+            new_class_id=7;
+    }
+    // update client infos (others before local)
+    CNetMsg_Sv_ClientInfo NewClientInfoMsg;
+    NewClientInfoMsg.m_ClientID = m_ClientID;
+    NewClientInfoMsg.m_Local = 0;
+    NewClientInfoMsg.m_Team = m_Team;
+    NewClientInfoMsg.m_pName = Server()->ClientName(m_ClientID);
+    NewClientInfoMsg.m_pClan = Server()->ClientClan(m_ClientID);
+    NewClientInfoMsg.m_Country = Server()->ClientCountry(m_ClientID);
+    NewClientInfoMsg.m_ClassID = new_class_id;
+    NewClientInfoMsg.m_Silent = false;
+
+    for(int p = 0; p < NUM_SKINPARTS; p++)
+    {
+        NewClientInfoMsg.m_apSkinPartNames[p] = m_TeeInfos.m_aaSkinPartNames[p];
+        NewClientInfoMsg.m_aUseCustomColors[p] = m_TeeInfos.m_aUseCustomColors[p];
+        NewClientInfoMsg.m_aSkinPartColors[p] = m_TeeInfos.m_aSkinPartColors[p];
+    }
+    for(int i = 0; i < MAX_CLIENTS; ++i)
+    {
+        // new info for others
+        if(Server()->ClientIngame(i))
+            Server()->SendPackMsg(&NewClientInfoMsg, MSGFLAG_VITAL|MSGFLAG_NORECORD, i);
+
+        if(i == m_ClientID || !GameServer()->m_apPlayers[i] || (!Server()->ClientIngame(i) && !GameServer()->m_apPlayers[i]->IsDummy()))
+            continue;
+
+        // existing infos for new player
+        CNetMsg_Sv_ClientInfo ClientInfoMsg;
+        ClientInfoMsg.m_ClientID = i;
+        ClientInfoMsg.m_Local = 0;
+        ClientInfoMsg.m_pName = Server()->ClientName(i);
+        ClientInfoMsg.m_pClan = Server()->ClientClan(i);
+        ClientInfoMsg.m_Country = Server()->ClientCountry(i);
+        ClientInfoMsg.m_ClassID = new_class_id;
+        ClientInfoMsg.m_Silent = false;
+        if (GameServer()->m_apPlayers[i]) {
+            ClientInfoMsg.m_Team = GameServer()->m_apPlayers[i]->GetTeam();
+            for (int p = 0; p < NUM_SKINPARTS; p++) {
+                ClientInfoMsg.m_apSkinPartNames[p] = GameServer()->m_apPlayers[i]->m_TeeInfos.m_aaSkinPartNames[p];
+                ClientInfoMsg.m_aUseCustomColors[p] = GameServer()->m_apPlayers[i]->m_TeeInfos.m_aUseCustomColors[p];
+                ClientInfoMsg.m_aSkinPartColors[p] = GameServer()->m_apPlayers[i]->m_TeeInfos.m_aSkinPartColors[p];
+            }
+        }
+        Server()->SendPackMsg(&ClientInfoMsg, MSGFLAG_VITAL|MSGFLAG_NORECORD, m_ClientID);
+    }
+    NewClientInfoMsg.m_Local = 1;
+    Server()->SendPackMsg(&NewClientInfoMsg, MSGFLAG_VITAL|MSGFLAG_NORECORD, m_ClientID);
 }

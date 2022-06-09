@@ -854,6 +854,26 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker)
 		str_utf8_copy_num(m_aClients[pMsg->m_ClientID].m_aName, pMsg->m_pName, sizeof(m_aClients[pMsg->m_ClientID].m_aName), MAX_NAME_LENGTH);
 		str_utf8_copy_num(m_aClients[pMsg->m_ClientID].m_aClan, pMsg->m_pClan, sizeof(m_aClients[pMsg->m_ClientID].m_aClan), MAX_CLAN_LENGTH);
 		m_aClients[pMsg->m_ClientID].m_Country = pMsg->m_Country;
+        Class new_class = Class::None;
+        switch (pMsg->m_ClassID) {
+            case 0:
+                new_class=Class::None;
+            case 1:
+                new_class=Class::Hunter;
+            case 2:
+                new_class=Class::Medic;
+            case 3:
+                new_class=Class::Scout;
+            case 4:
+                new_class=Class::Tank;
+            case 5:
+                new_class=Class::Spider;
+            case 6:
+                new_class=Class::Engineer;
+            case 7:
+                new_class=Class::Armorer;
+        }
+        m_aClients[pMsg->m_ClientID].MyClass = new_class;
 		for(int i = 0; i < NUM_SKINPARTS; i++)
 		{
 			str_utf8_copy_num(m_aClients[pMsg->m_ClientID].m_aaSkinPartNames[i], pMsg->m_apSkinPartNames[i], sizeof(m_aClients[pMsg->m_ClientID].m_aaSkinPartNames[i]), MAX_SKIN_LENGTH);
@@ -1559,7 +1579,7 @@ void CGameClient::OnPredict()
 		if(!m_Snap.m_aCharacters[i].m_Active)
 			continue;
 
-		m_aClients[i].m_Predicted.Init(&World, Collision());
+		m_aClients[i].m_Predicted.Init(&World, Collision(), m_aClients[i].m_Team, m_aClients[i].MyClass);
 		World.m_apCharacters[i] = &m_aClients[i].m_Predicted;
 		m_aClients[i].m_Predicted.Read(&m_Snap.m_aCharacters[i].m_Cur);
 	}
@@ -1817,6 +1837,7 @@ void CGameClient::CClientData::Reset(CGameClient *pGameClient, int ClientID)
 	m_ChatIgnore = false;
 	m_Friend = false;
 	m_Evolved.m_Tick = -1;
+    MyClass=Class::None;
 	for(int p = 0; p < NUM_SKINPARTS; p++)
 	{
 		m_SkinPartIDs[p] = 0;

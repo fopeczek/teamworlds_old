@@ -218,6 +218,8 @@ public:
 
 		CNetObj_Character m_Evolved;
 
+        Class MyClass;
+
 		float m_Angle;
 		bool m_Active;
 		bool m_ChatIgnore;

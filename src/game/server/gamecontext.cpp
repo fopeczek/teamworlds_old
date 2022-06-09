@@ -666,7 +666,8 @@ void CGameContext::OnClientEnter(int ClientID)
 	NewClientInfoMsg.m_Team = m_apPlayers[ClientID]->GetTeam();
 	NewClientInfoMsg.m_pName = Server()->ClientName(ClientID);
 	NewClientInfoMsg.m_pClan = Server()->ClientClan(ClientID);
-	NewClientInfoMsg.m_Country = Server()->ClientCountry(ClientID);
+    NewClientInfoMsg.m_Country = Server()->ClientCountry(ClientID);
+    NewClientInfoMsg.m_ClassID = 0;//class none
 	NewClientInfoMsg.m_Silent = false;
 
 	if(Config()->m_SvSilentSpectatorMode && m_apPlayers[ClientID]->GetTeam() == TEAM_SPECTATORS)
@@ -697,6 +698,26 @@ void CGameContext::OnClientEnter(int ClientID)
 		ClientInfoMsg.m_pName = Server()->ClientName(i);
 		ClientInfoMsg.m_pClan = Server()->ClientClan(i);
 		ClientInfoMsg.m_Country = Server()->ClientCountry(i);
+        int new_class_id=0;
+        switch(Server()->GetClientClass(i)){
+            case Class::None:
+                new_class_id=0;
+            case Class::Hunter:
+                new_class_id=1;
+            case Class::Medic:
+                new_class_id=2;
+            case Class::Scout:
+                new_class_id=3;
+            case Class::Tank:
+                new_class_id=4;
+            case Class::Spider:
+                new_class_id=5;
+            case Class::Engineer:
+                new_class_id=6;
+            case Class::Armorer:
+                new_class_id=7;
+        }
+        ClientInfoMsg.m_ClassID = new_class_id;
 		ClientInfoMsg.m_Silent = false;
 		for(int p = 0; p < NUM_SKINPARTS; p++)
 		{
