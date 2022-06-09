@@ -65,6 +65,8 @@ public:
 
     void Teleport(vec2 where);
 
+    void GodRemoveAllWalls();
+
 	void SetEmote(int Emote, int Tick);
 
 	bool IsAlive() const { return m_Alive; }

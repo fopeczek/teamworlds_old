@@ -81,6 +81,7 @@ class CGameContext : public IGameServer
     static void ConJetpack(IConsole::IResult *pResult, void *pUserData);
     static void ConHappy(IConsole::IResult *pResult, void *pUserData);
     static void ConTeleport(IConsole::IResult *pResult, void *pUserData);
+    static void ConTeleportAll(IConsole::IResult *pResult, void *pUserData);
     static void ConSetClass(IConsole::IResult *pResult, void *pUserData);
 //    static void ConTeleportToXY(IConsole::IResult *pResult, void *pUserData);
 //    static void ConTeleportToLoc(IConsole::IResult *pResult, void *pUserData);
@@ -93,6 +94,7 @@ class CGameContext : public IGameServer
     static void ConKeepCheat(IConsole::IResult *pResult, void *pUserData);
     static void ConVoteResetCheat(IConsole::IResult *pResult, void *pUserData);
     static void ConDoActivityCheck(IConsole::IResult *pResult, void *pUserData);
+    static void ConRemoveWalls(IConsole::IResult *pResult, void *pUserData);
 //    static void ConSuperLaser(IConsole::IResult *pResult, void *pUserData);
 
     static void addVote(const char *pDescription, const char *pCommand,void *pUserData);

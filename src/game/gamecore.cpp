@@ -216,7 +216,7 @@ bool CCharacterCore::Tick(bool UseInput, bool Jet, bool actShadow, bool hookmode
 		if(Hit)
 		{
 			if(Hit&CCollision::COLFLAG_NOHOOK) {
-                if (m_myClass != Class::Spider) {
+                if (m_myClass != Class::Spider and !hookmode) {
                     GoingToRetract = true;
                 } else{
                     GoingToHitGround = true;

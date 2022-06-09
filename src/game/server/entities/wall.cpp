@@ -207,7 +207,7 @@ vec2 CWall::CheckForIntersection(vec2 st_pos1, vec2 st_pos2, vec2 sec_pos1, vec2
 void CWall::HeIsHealing(CPlayer *player) {
     if (player->GetTeam() == m_Team) {
         if (player->GetCharacter()->m_Health > 1 or player->GetCharacter()->m_Armor > 0) {
-            if (!m_SpiderWeb and Created) {
+            if (!m_SpiderWeb and m_Done) {
                 if (distance(player->GetCharacter()->GetPos(), m_Pos) <=
                     player->GetCharacter()->GetProximityRadius() * 1.5f or
                     distance(player->GetCharacter()->GetPos(), m_From) <=
@@ -342,21 +342,23 @@ void CWall::StartWallEdit(vec2 Dir) {
     }
 }
 
-bool CWall::FirstTryToFortify(vec2 Dir) {
+bool CWall::FirstTryToFortify(vec2 Dir, int CID) {
     bool b = false;
-    CWall *spiderWebs[MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs];
-    int manyWebs = GameWorld()->FindEntities(pPlayer->GetCharacter()->GetPos(), m_laser_range, (CEntity **) spiderWebs,
-                                             MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs, GameWorld()->ENTTYPE_LASER,
+    CWall *spiderWebs[MAX_PLAYERS * GameServer()->m_apPlayers[CID]->m_Spider_MaxActiveWebs];
+    int manyWebs = GameWorld()->FindEntities(GameServer()->m_apPlayers[CID]->GetCharacter()->GetPos(), m_laser_range, (CEntity **) spiderWebs,
+                                             MAX_PLAYERS * GameServer()->m_apPlayers[CID]->m_Spider_MaxActiveWebs, GameWorld()->ENTTYPE_LASER,
                                              GetMapID());
     if (manyWebs > 0) {
         for (int i = 0; i < manyWebs; i++) {
             if (spiderWebs[i]) {
-                if (spiderWebs[i]->m_Done and !spiderWebs[i]->m_Fortified and
-                    pPlayer->GetCharacter()->m_aWeapons[pPlayer->GetCharacter()->m_ActiveWeapon].m_Ammo >= 1) {
-                    if (distance(spiderWebs[i]->m_From, pPlayer->GetCharacter()->GetPos()) <= m_deconstruct_range or
-                        distance(spiderWebs[i]->m_Pos, pPlayer->GetCharacter()->GetPos()) <= m_deconstruct_range) {
-                        spiderWebs[i]->SpiderWebFortify();
-                        b = true;
+                if (spiderWebs[i]->m_SpiderWeb and !spiderWebs[i]->m_Fortified and
+                    GameServer()->m_apPlayers[CID]->GetCharacter()->m_aWeapons[GameServer()->m_apPlayers[CID]->GetCharacter()->m_ActiveWeapon].m_Ammo >= 1) {
+                    if (distance(spiderWebs[i]->m_From, GameServer()->m_apPlayers[CID]->GetCharacter()->GetPos()) <= m_deconstruct_range or
+                        distance(spiderWebs[i]->m_Pos, GameServer()->m_apPlayers[CID]->GetCharacter()->GetPos()) <= m_deconstruct_range) {
+                        if (GameServer()->m_apPlayers[CID]->GetTeam() == spiderWebs[i]->m_Team) {
+                            spiderWebs[i]->SpiderWebFortify();
+                            b = true;
+                        }
                     }
                 }
             }
@@ -416,7 +418,7 @@ bool CWall::SpiderWeb(vec2 Dir) {
 }
 
 void CWall::SpiderWebFortify() {
-    if (!m_Fortified) {
+    if (!m_Fortified and m_SpiderWeb) {
         if (distance(m_Pos, m_From) >= radius * 2) {
 
             m_Health = m_MAX_FortifiedSpiderWeb_Health;
@@ -461,14 +463,20 @@ void CWall::SpiderWebFortify() {
 void CWall::HammerHit(int Dmg, CPlayer *player) {
     if (player->GetTeam() != m_Team) {
         if (distance(player->GetCharacter()->GetPos(), m_Pos) <= player->GetCharacter()->GetProximityRadius() * 2.f) {
-            GameServer()->CreateDamage(m_Pos, player->GetCID(), player->GetCharacter()->GetPos(), Dmg, 0, false, GetMapID());
-            TakeDamage(Dmg, player->GetCID());
-            GameServer()->CreateSound(m_Pos, SOUND_HAMMER_HIT, -1, GetMapID());
+            if (m_Done or m_SpiderWeb) {
+                GameServer()->CreateDamage(m_Pos, player->GetCID(), player->GetCharacter()->GetPos(), Dmg, 0, false,
+                                           GetMapID());
+                TakeDamage(Dmg, player->GetCID());
+                GameServer()->CreateSound(m_Pos, SOUND_HAMMER_HIT, -1, GetMapID());
+            }
         } else if (distance(player->GetCharacter()->GetPos(), m_From) <=
                    player->GetCharacter()->GetProximityRadius() * 2.f) {
-            GameServer()->CreateDamage(m_From, player->GetCID(), player->GetCharacter()->GetPos(), Dmg, 0, false, GetMapID());
-            TakeDamage(Dmg, player->GetCID());
-            GameServer()->CreateSound(m_Pos, SOUND_HAMMER_HIT, -1, GetMapID());
+            if (m_Done or m_SpiderWeb) {
+                GameServer()->CreateDamage(m_From, player->GetCID(), player->GetCharacter()->GetPos(), Dmg, 0, false,
+                                           GetMapID());
+                TakeDamage(Dmg, player->GetCID());
+                GameServer()->CreateSound(m_Pos, SOUND_HAMMER_HIT, -1, GetMapID());
+            }
         }
     }
 }
@@ -635,188 +643,207 @@ void CWall::CheckForBulletCollision() {
 }
 
 void CWall::CheckForBullets() {
-    if (!m_SpiderWeb) {
-        CProjectile *pPosBullet = (CProjectile *) GameWorld()->ClosestEntity(m_Pos, m_deconstruct_range,
-                                                                             GameWorld()->ENTTYPE_PROJECTILE, this,
-                                                                             GetMapID());
-        if (pPosBullet) {
-            if (pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon() == WEAPON_GUN) {
-                bool HpOk = true;
-                if (m_Health > 5) {
-                    //return hp and armor
-                    int Health = m_Health - 5; //player hp recoverable health
+    if (m_Owner!=-3 and pPlayer) {
+        if(pPlayer->GetCharacter()) {
+            if (!m_SpiderWeb) {
+                CProjectile *pPosBullet = (CProjectile *) GameWorld()->ClosestEntity(m_Pos, m_deconstruct_range,
+                                                                                     GameWorld()->ENTTYPE_PROJECTILE,
+                                                                                     this,
+                                                                                     GetMapID());
+                if (pPosBullet) {
+                    if (pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon() == WEAPON_GUN) {
+                        bool HpOk = true;
+                        if (m_Health > 5) {
+                            //return hp and armor
+                            int Health = m_Health - 5; //player hp recoverable health
 //                    int old_Health = m_Health;
-                    if ((pPlayer->GetCharacter()->m_Health + Health) <= 10) {
-                        pPlayer->GetCharacter()->m_Health += Health;
-                        m_Health -= Health;
-                    } else {
-                        int overflow = pPlayer->GetCharacter()->m_Health + Health - 10;
+                            if ((pPlayer->GetCharacter()->m_Health + Health) <= 10) {
+                                pPlayer->GetCharacter()->m_Health += Health;
+                                m_Health -= Health;
+                            } else {
+                                int overflow = pPlayer->GetCharacter()->m_Health + Health - 10;
 
-                        pPlayer->GetCharacter()->m_Health += Health - overflow;
-                        m_Health -= Health - overflow;
+                                pPlayer->GetCharacter()->m_Health += Health - overflow;
+                                m_Health -= Health - overflow;
 
-                        if ((pPlayer->GetCharacter()->m_Armor + overflow) <= 10) {
-                            pPlayer->GetCharacter()->m_Armor += overflow;
-                            m_Health -= overflow;
-                        } else {
-                            HpOk = false;
-                        }
-                    }
-                    for (int i = m_Health + 1; i <= m_MAX_Health; i++) {
-                        if (m_Health < m_MAX_Health) {
-                            if (m_Health_Interface[i - 1]) {
-                                m_Health_Interface[i - 1]->Destroy();
-                                m_Health_Interface[i - 1] = nullptr;
+                                if ((pPlayer->GetCharacter()->m_Armor + overflow) <= 10) {
+                                    pPlayer->GetCharacter()->m_Armor += overflow;
+                                    m_Health -= overflow;
+                                } else {
+                                    HpOk = false;
+                                }
                             }
-                        }
-                    }
-                }
-                if (((pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo + clamp(m_Health, 0, 5)) <= 10 or m_WaitingToConfirm)) {
-                    if (HpOk or m_WaitingToConfirm) {
-                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo += clamp(m_Health, 0, 5);
-                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo = clamp(
-                                pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo, 0, 10);
-                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Got= true;
-                        Reset();
-                    }
-                } else {
-                    m_WaitingToConfirm = true;
-                    m_ConfirmTick = Server()->Tick();
-                }
-                if (!HpOk) {
-                    m_WaitingToConfirm = true;
-                    m_ConfirmTick = Server()->Tick();
-                }
-                pPosBullet->Destroy();
-            }
-        }
-
-        CProjectile *pFromBullet = (CProjectile *) GameWorld()->ClosestEntity(m_From, m_deconstruct_range,
-                                                                              GameWorld()->ENTTYPE_PROJECTILE, this,
-                                                                              GetMapID());
-        if (pFromBullet) {
-            if (pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon() == WEAPON_GUN) {
-                bool HpOk = true;
-                if (m_Health > 5) {
-                    //return hp and armor
-                    int Health = m_Health - 5; //player hp recoverable health
-//                    int old_Health = m_Health;
-                    if ((pPlayer->GetCharacter()->m_Health + Health) <= 10) {
-                        pPlayer->GetCharacter()->m_Health += Health;
-                        m_Health -= Health;
-                    } else {
-                        int overflow = pPlayer->GetCharacter()->m_Health + Health - 10;
-
-                        pPlayer->GetCharacter()->m_Health += Health - overflow;
-                        m_Health -= Health - overflow;
-
-                        if ((pPlayer->GetCharacter()->m_Armor + overflow) <= 10) {
-                            pPlayer->GetCharacter()->m_Armor += overflow;
-                            m_Health -= overflow;
-                        } else {
-                            int overoverflow = pPlayer->GetCharacter()->m_Armor + overflow - 10;
-                            pPlayer->GetCharacter()->m_Armor += overflow - overoverflow;
-                            m_Health -= overflow - overoverflow;
-                            HpOk = false;
-                        }
-                    }
-                    for (int i = m_Health + 1; i <= m_MAX_Health; i++) {
-                        if (m_Health < m_MAX_Health) {
-                            if (m_Health_Interface[i - 1]) {
-                                m_Health_Interface[i - 1]->Destroy();
-                                m_Health_Interface[i - 1] = nullptr;
-                            }
-                        }
-                    }
-                }
-                if (((pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo + clamp(m_Health, 0, 5)) <= 10 or m_WaitingToConfirm)) {
-                    if (HpOk or m_WaitingToConfirm) {
-                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo += clamp(m_Health, 0, 5);
-                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo = clamp(
-                                pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo, 0, 10);
-                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Got= true;
-                        Reset();
-                    }
-                } else {
-                    m_WaitingToConfirm = true;
-                    m_ConfirmTick = Server()->Tick();
-                }
-                if (!HpOk) {
-                    m_WaitingToConfirm = true;
-                    m_ConfirmTick = Server()->Tick();
-                }
-                pFromBullet->Destroy();
-            }
-        }
-    } else {
-        CProjectile *pPosBullet = (CProjectile *) GameWorld()->ClosestEntity(m_Pos, m_deconstruct_range,
-                                                                             GameWorld()->ENTTYPE_PROJECTILE, this,
-                                                                             GetMapID());
-
-        CWall *otherWalls[
-                MAX_PLAYERS * pPlayer->m_Engineer_MaxActiveWalls + MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs];
-        int howMany = GameWorld()->FindEntities(m_Pos, m_laser_range, (CEntity **) otherWalls,
-                                                MAX_PLAYERS * pPlayer->m_Engineer_MaxActiveWalls +
-                                                MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs,
-                                                GameWorld()->ENTTYPE_LASER, GetMapID());
-        if (pPosBullet) {
-            if (pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon() == WEAPON_GUN) {
-                if (howMany > 0) {
-                    for (int i = 0; i < howMany; i++) {
-                        if (otherWalls[i]) {
-                            if (distance(otherWalls[i]->m_Pos, pPlayer->GetCharacter()->GetPos()) <=
-                                m_deconstruct_range) {
-                                if (pPosBullet->GetOwner() == otherWalls[i]->m_Owner) {
-                                    if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo +
-                                         otherWalls[i]->m_Health) <= 10 or otherWalls[i]->m_WaitingToConfirm) {
-                                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo += otherWalls[i]->m_Health;
-                                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Got= true;
-                                        otherWalls[i]->Reset();
-                                    } else {
-                                        otherWalls[i]->m_WaitingToConfirm = true;
-                                        otherWalls[i]->m_ConfirmTick = Server()->Tick();
+                            for (int i = m_Health + 1; i <= m_MAX_Health; i++) {
+                                if (m_Health < m_MAX_Health) {
+                                    if (m_Health_Interface[i - 1]) {
+                                        m_Health_Interface[i - 1]->Destroy();
+                                        m_Health_Interface[i - 1] = nullptr;
                                     }
                                 }
                             }
                         }
+                        if (((pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo + clamp(m_Health, 0, 5)) <= 10 or
+                             m_WaitingToConfirm)) {
+                            if (HpOk or m_WaitingToConfirm) {
+                                pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo += clamp(m_Health, 0, 5);
+                                pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo = clamp(
+                                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo, 0, 10);
+                                pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Got = true;
+                                Reset();
+                            }
+                        } else {
+                            m_WaitingToConfirm = true;
+                            m_ConfirmTick = Server()->Tick();
+                        }
+                        if (!HpOk) {
+                            m_WaitingToConfirm = true;
+                            m_ConfirmTick = Server()->Tick();
+                        }
+                        pPosBullet->Destroy();
+                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_GUN].m_Ammo++;
                     }
                 }
-                pPosBullet->Destroy();
-            }
-        }
 
-        CProjectile *pFromBullet = (CProjectile *) GameWorld()->ClosestEntity(m_From, m_deconstruct_range,
-                                                                              GameWorld()->ENTTYPE_PROJECTILE, this,
-                                                                              GetMapID());
+                CProjectile *pFromBullet = (CProjectile *) GameWorld()->ClosestEntity(m_From, m_deconstruct_range,
+                                                                                      GameWorld()->ENTTYPE_PROJECTILE,
+                                                                                      this,
+                                                                                      GetMapID());
+                if (pFromBullet) {
+                    if (pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon() == WEAPON_GUN) {
+                        bool HpOk = true;
+                        if (m_Health > 5) {
+                            //return hp and armor
+                            int Health = m_Health - 5; //player hp recoverable health
+//                    int old_Health = m_Health;
+                            if ((pPlayer->GetCharacter()->m_Health + Health) <= 10) {
+                                pPlayer->GetCharacter()->m_Health += Health;
+                                m_Health -= Health;
+                            } else {
+                                int overflow = pPlayer->GetCharacter()->m_Health + Health - 10;
 
-        otherWalls[MAX_PLAYERS * pPlayer->m_Engineer_MaxActiveWalls + MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs];
-        howMany = GameWorld()->FindEntities(m_From, m_laser_range, (CEntity **) otherWalls,
-                                            MAX_PLAYERS * pPlayer->m_Engineer_MaxActiveWalls +
-                                            MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs, GameWorld()->ENTTYPE_LASER,
-                                            GetMapID());
-        if (pFromBullet) {
-            if (pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon() == WEAPON_GUN) {
-                if (howMany > 0) {
-                    for (int i = 0; i < howMany; i++) {
-                        if (otherWalls[i]) {
-                            if (distance(otherWalls[i]->m_From, pPlayer->GetCharacter()->GetPos()) <=
-                                m_deconstruct_range) {
-                                if (pFromBullet->GetOwner() == otherWalls[i]->m_Owner) {
-                                    if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo +
-                                         otherWalls[i]->m_Health) <= 10 or otherWalls[i]->m_WaitingToConfirm) {
-                                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo += otherWalls[i]->m_Health;
-                                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Got= true;
-                                        otherWalls[i]->Reset();
-                                    } else {
-                                        otherWalls[i]->m_WaitingToConfirm = true;
-                                        otherWalls[i]->m_ConfirmTick = Server()->Tick();
+                                pPlayer->GetCharacter()->m_Health += Health - overflow;
+                                m_Health -= Health - overflow;
+
+                                if ((pPlayer->GetCharacter()->m_Armor + overflow) <= 10) {
+                                    pPlayer->GetCharacter()->m_Armor += overflow;
+                                    m_Health -= overflow;
+                                } else {
+                                    int overoverflow = pPlayer->GetCharacter()->m_Armor + overflow - 10;
+                                    pPlayer->GetCharacter()->m_Armor += overflow - overoverflow;
+                                    m_Health -= overflow - overoverflow;
+                                    HpOk = false;
+                                }
+                            }
+                            for (int i = m_Health + 1; i <= m_MAX_Health; i++) {
+                                if (m_Health < m_MAX_Health) {
+                                    if (m_Health_Interface[i - 1]) {
+                                        m_Health_Interface[i - 1]->Destroy();
+                                        m_Health_Interface[i - 1] = nullptr;
                                     }
                                 }
                             }
                         }
+                        if (((pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo + clamp(m_Health, 0, 5)) <= 10 or
+                             m_WaitingToConfirm)) {
+                            if (HpOk or m_WaitingToConfirm) {
+                                pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo += clamp(m_Health, 0, 5);
+                                pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Got = true;
+                                Reset();
+                            }
+                        } else {
+                            m_WaitingToConfirm = true;
+                            m_ConfirmTick = Server()->Tick();
+                        }
+                        if (!HpOk) {
+                            m_WaitingToConfirm = true;
+                            m_ConfirmTick = Server()->Tick();
+                        }
+                        pFromBullet->Destroy();
+                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_GUN].m_Ammo++;
                     }
                 }
-                pFromBullet->Destroy();
+                pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo = clamp(
+                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_LASER].m_Ammo, 0, 10);
+            } else {
+                CProjectile *pPosBullet = (CProjectile *) GameWorld()->ClosestEntity(m_Pos, m_deconstruct_range,
+                                                                                     GameWorld()->ENTTYPE_PROJECTILE,
+                                                                                     this,
+                                                                                     GetMapID());
+
+                CWall *otherWalls[
+                        MAX_PLAYERS * pPlayer->m_Engineer_MaxActiveWalls +
+                        MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs];
+                int howMany = GameWorld()->FindEntities(m_Pos, m_laser_range, (CEntity **) otherWalls,
+                                                        MAX_PLAYERS * pPlayer->m_Engineer_MaxActiveWalls +
+                                                        MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs,
+                                                        GameWorld()->ENTTYPE_LASER, GetMapID());
+                if (pPosBullet) {
+                    if (pPosBullet->GetOwner() == m_Owner and pPosBullet->GetWeapon() == WEAPON_GUN) {
+                        if (howMany > 0) {
+                            for (int i = 0; i < howMany; i++) {
+                                if (otherWalls[i]) {
+                                    if (distance(otherWalls[i]->m_Pos, pPlayer->GetCharacter()->GetPos()) <=
+                                        m_deconstruct_range) {
+                                        if (pPosBullet->GetOwner() == otherWalls[i]->m_Owner) {
+                                            if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo +
+                                                 otherWalls[i]->m_Health) <= 10 or otherWalls[i]->m_WaitingToConfirm) {
+                                                pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo += otherWalls[i]->m_Health;
+                                                pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Got = true;
+                                                otherWalls[i]->Reset();
+                                            } else {
+                                                otherWalls[i]->m_WaitingToConfirm = true;
+                                                otherWalls[i]->m_ConfirmTick = Server()->Tick();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        pPosBullet->Destroy();
+                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_GUN].m_Ammo++;
+                    }
+                }
+
+                CProjectile *pFromBullet = (CProjectile *) GameWorld()->ClosestEntity(m_From, m_deconstruct_range,
+                                                                                      GameWorld()->ENTTYPE_PROJECTILE,
+                                                                                      this,
+                                                                                      GetMapID());
+
+                otherWalls[MAX_PLAYERS * pPlayer->m_Engineer_MaxActiveWalls +
+                           MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs];
+                howMany = GameWorld()->FindEntities(m_From, m_laser_range, (CEntity **) otherWalls,
+                                                    MAX_PLAYERS * pPlayer->m_Engineer_MaxActiveWalls +
+                                                    MAX_PLAYERS * pPlayer->m_Spider_MaxActiveWebs,
+                                                    GameWorld()->ENTTYPE_LASER,
+                                                    GetMapID());
+                if (pFromBullet) {
+                    if (pFromBullet->GetOwner() == m_Owner and pFromBullet->GetWeapon() == WEAPON_GUN) {
+                        if (howMany > 0) {
+                            for (int i = 0; i < howMany; i++) {
+                                if (otherWalls[i]) {
+                                    if (distance(otherWalls[i]->m_From, pPlayer->GetCharacter()->GetPos()) <=
+                                        m_deconstruct_range) {
+                                        if (pFromBullet->GetOwner() == otherWalls[i]->m_Owner) {
+                                            if ((pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo +
+                                                 otherWalls[i]->m_Health) <= 10 or otherWalls[i]->m_WaitingToConfirm) {
+                                                pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo += otherWalls[i]->m_Health;
+                                                pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Got = true;
+                                                otherWalls[i]->Reset();
+                                            } else {
+                                                otherWalls[i]->m_WaitingToConfirm = true;
+                                                otherWalls[i]->m_ConfirmTick = Server()->Tick();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        pFromBullet->Destroy();
+                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_GUN].m_Ammo++;
+                    }
+                }
+                pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo = clamp(
+                        pPlayer->GetCharacter()->m_aWeapons[WEAPON_SHOTGUN].m_Ammo, 0, 10);
             }
         }
     }
@@ -835,23 +862,14 @@ void CWall::UpdateHealthInterface() {
 }
 
 void CWall::Reset() {
-    if (!m_SpiderWeb) {
-        for (int i = 0; i < m_MAX_Health; i++) {
-            if (m_Health_Interface[i]) {
-                m_Health_Interface[i]->Destroy();
-                m_Health_Interface[i] = nullptr;
-            }
-        }
-    } else {
-        if (m_Fortified) {
-            for (int i = 0; i < m_MAX_FortifiedSpiderWeb_Health; i++) {
-                if (m_Health_Interface[i]) {
-                    m_Health_Interface[i]->Destroy();
-                    m_Health_Interface[i] = nullptr;
-                }
-            }
+    //remove hp interface
+    for (int i = 0; i < m_MAX_Health; i++) {
+        if (m_Health_Interface[i]) {
+            m_Health_Interface[i]->Destroy();
+            m_Health_Interface[i] = nullptr;
         }
     }
+    //remove hud interface
     for (int i = 0; i < 3; i++) {
         if (m_Hud_Interface[i]) {
             m_Hud_Interface[i]->Destroy();
@@ -860,8 +878,10 @@ void CWall::Reset() {
     }
     if (!m_SpiderWeb) {
         pPlayer->m_Engineer_ActiveWalls--;
+        pPlayer->m_Engineer_ActiveWalls= clamp(pPlayer->m_Engineer_ActiveWalls, 0, pPlayer->m_Engineer_MaxActiveWalls);
     } else {
         pPlayer->m_Spider_ActiveWebs--;
+        pPlayer->m_Spider_ActiveWebs= clamp(pPlayer->m_Spider_ActiveWebs, 0, pPlayer->m_Spider_ActiveWebs);
     }
     GameWorld()->DestroyEntity(this);
 }

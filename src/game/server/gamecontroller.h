@@ -254,6 +254,8 @@ public:
 	int GetStartTeam();
 
 	static void Com_reset_class(IConsole::IResult *pResult, void *pContext);
+    static void Com_show_game_stat(IConsole::IResult *pResult, void *pContext);
+    static void Com_show_personal_stat(IConsole::IResult *pResult, void *pContext);
     virtual void RegisterChatCommands(CCommandManager *pManager);
 };
 

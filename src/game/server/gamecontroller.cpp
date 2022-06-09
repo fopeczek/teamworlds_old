@@ -3,6 +3,7 @@
 #include <engine/shared/config.h>
 
 #include <game/mapitems.h>
+#include <sstream>
 
 #include "entities/character.h"
 #include "entities/pickup.h"
@@ -1243,13 +1244,169 @@ int IGameController::GetStartTeam()
 
 void IGameController::Com_reset_class(IConsole::IResult *pResult, void *pContext)
 {
-	CCommandManager::SCommandContext *pComContext = (CCommandManager::SCommandContext *)pContext;
-	IGameController *pSelf = (IGameController *)pComContext->m_pContext;
+    CCommandManager::SCommandContext *pComContext = (CCommandManager::SCommandContext *)pContext;
+    IGameController *pSelf = (IGameController *)pComContext->m_pContext;
 
     pSelf->Server()->SetClientClass(pComContext->m_ClientID, Class::None);
 }
 
+void IGameController::Com_show_game_stat(IConsole::IResult *pResult, void *pContext)
+{
+    CCommandManager::SCommandContext *pComContext = (CCommandManager::SCommandContext *)pContext;
+    IGameController *pSelf = (IGameController *)pComContext->m_pContext;
+
+
+    CNetMsg_Sv_Chat chatMsg;
+    chatMsg.m_Mode = CHAT_WHISPER;
+    chatMsg.m_ClientID = pComContext->m_ClientID;
+    chatMsg.m_TargetID = pComContext->m_ClientID;
+    std::ostringstream msg (std::ostringstream::ate);
+
+    msg.str("Game god mode is: ");
+    if (pSelf->Server()->ServerCheats.Godbox){
+        msg<<"on";
+    } else {
+        msg<<"off";
+    }
+    std::string str_tmp = msg.str();
+    chatMsg.m_pMessage = str_tmp.c_str();
+    pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, pComContext->m_ClientID);
+
+    msg.str("Game full auto is: ");
+    if (pSelf->Server()->ServerCheats.Autobox){
+        msg<<"on";
+    } else {
+        msg<<"off";
+    }
+    str_tmp = msg.str();
+    chatMsg.m_pMessage = str_tmp.c_str();
+    pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, pComContext->m_ClientID);
+
+    msg.str("Game jetpack is: ");
+    if (pSelf->Server()->ServerCheats.Jetbox){
+        msg<<"on";
+    } else {
+        msg<<"off";
+    }
+    str_tmp = msg.str();
+    chatMsg.m_pMessage = str_tmp.c_str();
+    pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, pComContext->m_ClientID);
+    msg.str("Game super hook is: ");
+    if (pSelf->Server()->ServerCheats.Hookbox){
+        msg<<"on";
+    } else {
+        msg<<"off";
+    }
+    str_tmp = msg.str();
+    chatMsg.m_pMessage = str_tmp.c_str();
+    pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, pComContext->m_ClientID);
+
+    msg.str("Game super ninja is: ");
+    if (pSelf->Server()->ServerCheats.Ninjabox){
+        msg<<"on";
+    } else {
+        msg<<"off";
+    }
+    str_tmp = msg.str();
+    chatMsg.m_pMessage = str_tmp.c_str();
+    pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, pComContext->m_ClientID);
+
+    msg.str("Game AFK is: ");
+    if (pSelf->Server()->AFK){
+        msg<<"allowed";
+    } else {
+        msg<<"disallowed";
+    }
+    str_tmp = msg.str();
+    chatMsg.m_pMessage = str_tmp.c_str();
+    pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, pComContext->m_ClientID);
+}
+
+void IGameController::Com_show_personal_stat(IConsole::IResult *pResult, void *pContext)
+{
+    CCommandManager::SCommandContext *pComContext = (CCommandManager::SCommandContext *)pContext;
+    IGameController *pSelf = (IGameController *)pComContext->m_pContext;
+
+
+    CNetMsg_Sv_Chat chatMsg;
+    chatMsg.m_Mode = CHAT_WHISPER;
+    chatMsg.m_ClientID = pComContext->m_ClientID;
+    chatMsg.m_TargetID = pComContext->m_ClientID;
+    std::ostringstream msg (std::ostringstream::ate);
+
+    msg.str("Your class is: ");
+    if (pSelf->Server()->GetClientClass(pComContext->m_ClientID)==Class::Engineer){
+        msg<<"engineer";
+    } else if (pSelf->Server()->GetClientClass(pComContext->m_ClientID)==Class::Scout) {
+        msg<<"scout";
+    } else if (pSelf->Server()->GetClientClass(pComContext->m_ClientID)==Class::Spider) {
+        msg<<"spider";
+    } else if (pSelf->Server()->GetClientClass(pComContext->m_ClientID)==Class::Tank) {
+        msg<<"tank";
+    } else if (pSelf->Server()->GetClientClass(pComContext->m_ClientID)==Class::Hunter) {
+        msg<<"hunter";
+    } else if (pSelf->Server()->GetClientClass(pComContext->m_ClientID)==Class::Medic) {
+        msg<<"medic";
+    } else if (pSelf->Server()->GetClientClass(pComContext->m_ClientID)==Class::Armorer) {
+        msg<<"armorer";
+    }
+    std::string str_tmp = msg.str();
+    chatMsg.m_pMessage = str_tmp.c_str();
+    pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, pComContext->m_ClientID);
+
+    msg.str("Your god mode is: ");
+    if (pSelf->GameServer()->m_apPlayers[pComContext->m_ClientID]->Cheats.Godmode){
+        msg<<"on";
+    } else {
+        msg<<"off";
+    }
+    str_tmp = msg.str();
+    chatMsg.m_pMessage = str_tmp.c_str();
+    pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, pComContext->m_ClientID);
+
+    msg.str("Your full auto is: ");
+    if (pSelf->GameServer()->m_apPlayers[pComContext->m_ClientID]->Cheats.AutoFire){
+        msg<<"on";
+    } else {
+        msg<<"off";
+    }
+    str_tmp = msg.str();
+    chatMsg.m_pMessage = str_tmp.c_str();
+    pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, pComContext->m_ClientID);
+
+    msg.str("Your jetpack is: ");
+    if (pSelf->GameServer()->m_apPlayers[pComContext->m_ClientID]->Cheats.Jetpack){
+        msg<<"on";
+    } else {
+        msg<<"off";
+    }
+    str_tmp = msg.str();
+    chatMsg.m_pMessage = str_tmp.c_str();
+    pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, pComContext->m_ClientID);
+    msg.str("Your super hook is: ");
+    if (pSelf->GameServer()->m_apPlayers[pComContext->m_ClientID]->Cheats.Hookmode){
+        msg<<"on";
+    } else {
+        msg<<"off";
+    }
+    str_tmp = msg.str();
+    chatMsg.m_pMessage = str_tmp.c_str();
+    pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, pComContext->m_ClientID);
+
+    msg.str("Your super ninja is: ");
+    if (pSelf->GameServer()->m_apPlayers[pComContext->m_ClientID]->Cheats.Ninja){
+        msg<<"on";
+    } else {
+        msg<<"off";
+    }
+    str_tmp = msg.str();
+    chatMsg.m_pMessage = str_tmp.c_str();
+    pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, pComContext->m_ClientID);
+}
+
 void IGameController::RegisterChatCommands(CCommandManager *pManager)
 {
-	pManager->AddCommand("changeClass", "Reset your class and return to lobby to chose another", "", Com_reset_class, this);
+    pManager->AddCommand("changeClass", "Reset your class and return to lobby to chose another", "", Com_reset_class, this);
+    pManager->AddCommand("gameStatus", "Show which cheats are enabled or not in game", "", Com_show_game_stat, this);
+    pManager->AddCommand("myStatus", "Show which cheats are enabled or not only for you", "", Com_show_personal_stat, this);
 }

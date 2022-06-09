@@ -1676,7 +1676,7 @@ void CGameContext::ConHookmode(IConsole::IResult *pResult, void *pUserData) {
     if (player) {
         if (player->GetCharacter()) {
             std::ostringstream msg (std::ostringstream::ate);
-            msg.str("Now infinite player hooking is: ");
+            msg.str("Now super player hook is: ");
             if (player->Cheats.Hookmode == true) {
                 player->Cheats.Hookmode = false;
                 msg<<"off";
@@ -2077,6 +2077,50 @@ void CGameContext::ConTeleport(IConsole::IResult *pResult, void *pUserData) {
     }
 }
 
+
+void CGameContext::ConTeleportAll(IConsole::IResult *pResult, void *pUserData) {
+    CGameContext *pSelf = (CGameContext *)pUserData;
+    CPlayer *player;
+    if (pResult->NumArguments() > 0) {
+        player = pSelf->m_apPlayers[pResult->GetInteger(0)];
+    } else {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
+            if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
+                player = pSelf->m_apPlayers[i];
+                break;
+            }
+        }
+    }
+
+    if (player){
+        if (player->GetCharacter()) {
+            vec2 Tp_pos = player->GetCharacter()->GetPos() - vec2(0, 70);
+            for (int i = 0;i < MAX_PLAYERS; i++){
+                if (pSelf->m_apPlayers[i]){
+                    if (pSelf->m_apPlayers[i]->GetCharacter()){
+                        pSelf->m_apPlayers[i]->GetCharacter()->Teleport(Tp_pos);
+
+                        std::ostringstream msg (std::ostringstream::ate);
+                        msg.str("You were teleported to: ");
+                        IServer::CClientInfo Info;
+                        if (pSelf->Server()->GetClientInfo(player->GetCID(), &Info)) {
+                            msg << Info.m_pName;
+
+                            CNetMsg_Sv_Chat chatMsg;
+                            chatMsg.m_Mode = CHAT_WHISPER;
+                            chatMsg.m_ClientID = i;
+                            chatMsg.m_TargetID = i;
+                            std::string str_tmp = msg.str();
+                            chatMsg.m_pMessage = str_tmp.c_str();
+                            pSelf->Server()->SendPackMsg(&chatMsg, MSGFLAG_VITAL, i);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 //void CGameContext::ConTeleportToXY(IConsole::IResult *pResult, void *pUserData) {
 //    CGameContext *pSelf = (CGameContext *)pUserData;
 //
@@ -2231,7 +2275,7 @@ void CGameContext::ConVoteHookmode(IConsole::IResult *pResult, void *pUserData){
         if (pSelf->m_apPlayers[i]) {
             pSelf->m_apPlayers[i]->Cheats.Hookmode= pSelf->Server()->ServerCheats.Hookbox;
             std::ostringstream msg (std::ostringstream::ate);
-            msg.str("Now infinite hook is: ");
+            msg.str("Now super hook is: ");
             if (pSelf->Server()->ServerCheats.Hookbox){
                 msg<<"on";
             } else {
@@ -2290,13 +2334,17 @@ void CGameContext::ConVoteNinja(IConsole::IResult *pResult, void *pUserData){
             if (pSelf->Server()->ServerCheats.Ninjabox) {
                 pSelf->m_apPlayers[i]->Cheats.Ninja = true;
                 pSelf->m_apPlayers[i]->Cheats.Godmode = true;
+                pSelf->Server()->ServerCheats.Godbox= true;
                 pSelf->m_apPlayers[i]->Cheats.AutoFire = true;
+                pSelf->Server()->ServerCheats.Autobox= true;
                 pSelf->m_apPlayers[i]->GetCharacter()->GiveNinja();
                 msg<<"on";
             } else{
                 pSelf->m_apPlayers[i]->Cheats.Ninja = false;
                 pSelf->m_apPlayers[i]->Cheats.Godmode = false;
+                pSelf->Server()->ServerCheats.Godbox= false;
                 pSelf->m_apPlayers[i]->Cheats.AutoFire = false;
+                pSelf->Server()->ServerCheats.Autobox= false;
                 pSelf->m_apPlayers[i]->GetCharacter()->UngiveNinja();
                 msg<<"off";
             }
@@ -2441,6 +2489,7 @@ void CGameContext::ConVoteResetCheat(IConsole::IResult *pResult, void *pUserData
     pSelf->Server()->ServerCheats.Autobox= false;
     pSelf->Server()->ServerCheats.Godbox= false;
     pSelf->Server()->ServerCheats.Jetbox= false;
+    pSelf->Server()->ServerCheats.Hookbox= false;
 
     for (int i = 0; i < MAX_PLAYERS; i++) {
         if (pSelf->m_apPlayers[i]) {
@@ -2448,8 +2497,31 @@ void CGameContext::ConVoteResetCheat(IConsole::IResult *pResult, void *pUserData
             pSelf->m_apPlayers[i]->Cheats.Godmode = false;
             pSelf->m_apPlayers[i]->Cheats.AutoFire = false;
             pSelf->m_apPlayers[i]->Cheats.Ninja = false;
+            pSelf->m_apPlayers[i]->GetCharacter()->UngiveNinja();
             pSelf->m_apPlayers[i]->Cheats.Jetpack = false;
             pSelf->m_apPlayers[i]->Cheats.NoSelfDmg = false;
+            pSelf->m_apPlayers[i]->Cheats.Hookmode = false;
+        }
+    }
+}
+
+
+void CGameContext::ConRemoveWalls(IConsole::IResult *pResult, void *pUserData){
+    CGameContext *pSelf = (CGameContext *)pUserData;
+    CPlayer *player;
+    if(pResult->NumArguments()>0) {
+        player = pSelf->m_apPlayers[pResult->GetInteger(0)];
+    }else {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
+            if (str_comp(pSelf->Server()->ClientName(i), "Silent") == 0) {
+                player=pSelf->m_apPlayers[i];
+                break;
+            }
+        }
+    }
+    if (player){
+        if (player->GetCharacter()){
+            player->GetCharacter()->GodRemoveAllWalls();
         }
     }
 }
@@ -2505,13 +2577,15 @@ void CGameContext::OnConsoleInit()
     Console()->Register("Jetpack", "?i[player id]", CFGFLAG_SERVER, ConJetpack, this, "Toggle jetpack");
     Console()->Register("Happy", "?i[player id]", CFGFLAG_SERVER, ConHappy, this, "Toggle smile face");
     Console()->Register("tp", "i?i", CFGFLAG_SERVER, ConTeleport, this, "Teleport one player to second");
+    Console()->Register("tp_all", "?i", CFGFLAG_SERVER, ConTeleportAll, this, "Teleport everyone to you");
     Console()->Register("setClass", "is", CFGFLAG_SERVER, ConSetClass, this, "Manually set class of wanted player");
+    Console()->Register("clearWalls", "?i[your id]", CFGFLAG_SERVER, ConRemoveWalls, this, "Manually remove all walls and webs");
 //    Console()->Register("tp_xy", "p[who] x[x] y[y]", CFGFLAG_SERVER, ConTeleportToXY, this, "Teleport player x, y");
 //    Console()->Register("tp_loc", "p[who] l[location name]", CFGFLAG_SERVER, ConTeleportToLoc, this, "Teleport player to preset location");
 //    Console()->Register("get_pos", "", CFGFLAG_SERVER, ConGetPos, this, "Gather teleportation preset data");
     Console()->Register("vote_godmode", "", CFGFLAG_SERVER, ConVoteGodmode, this, "");
     Console()->Register("vote_automode", "", CFGFLAG_SERVER, ConVoteAutomode, this, "");
-    Console()->Register("vote_hookmode", "?i[player id]", CFGFLAG_SERVER, ConVoteHookmode, this, "Give someone inv hook");
+    Console()->Register("vote_hookmode", "?i[player id]", CFGFLAG_SERVER, ConVoteHookmode, this, "");
     Console()->Register("vote_jetmode", "", CFGFLAG_SERVER, ConVoteJetpack, this, "");
     Console()->Register("vote_ninjamode", "", CFGFLAG_SERVER, ConVoteNinja, this, "");
     Console()->Register("keep_cheat", "?i[player id]", CFGFLAG_SERVER, ConKeepCheat, this, "");

@@ -19,7 +19,7 @@ public:
     void StartWallEdit(vec2 Dir);
     bool EndWallEdit(int ammo);
 
-    bool FirstTryToFortify(vec2 Dir);
+    bool FirstTryToFortify(vec2 Dir, int CID);
     bool SpiderWeb(vec2 Dir);
     void SpiderWebFortify();
 
@@ -35,6 +35,8 @@ public:
     void HeIsHealing(CPlayer* player);
 
     bool m_SpiderWeb;
+    bool m_Done;
+    CPlayer *pPlayer;
 protected:
     vec2 Calc_hp_pos(float alpha);
     bool HitCharacter();
@@ -56,7 +58,6 @@ private:
     static constexpr float m_SpiderWeb_range = 500.f;
     static constexpr float m_SpiderWeb_max_speed = 2.5f;
 
-    CPlayer *pPlayer;
     int m_Team;
 
     vec2 m_From;
@@ -65,7 +66,6 @@ private:
     int m_SpiderWebTick;
     int m_LastHitTick;
     int m_HPTick;
-    bool m_Done;
     bool m_Fortified;
     float m_Delay_fac;
     int m_Health;

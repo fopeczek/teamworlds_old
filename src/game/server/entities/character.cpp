@@ -282,7 +282,7 @@ void CCharacter::HandleWeaponSwitch()
 
 void CCharacter::FireWeapon()
 {
-    if (m_pPlayer->Cheats.AutoFire and !m_pPlayer->Cheats.Ninja) {
+    if (m_pPlayer->Cheats.AutoFire and m_ActiveWeapon!=WEAPON_NINJA) {
         m_ReloadTimer=0;
     }
 
@@ -446,7 +446,7 @@ void CCharacter::FireWeapon()
             int ShotSpread = 2;
 
             if (Server()->GetClientClass(m_pPlayer->GetCID())==Class::Spider){
-                if (!m_Wall->FirstTryToFortify(Direction)) {
+                if (!m_Wall->FirstTryToFortify(Direction, m_pPlayer->GetCID())) {
                     if (m_pPlayer->m_Spider_ActiveWebs<m_pPlayer->m_Spider_MaxActiveWebs or m_pPlayer->Cheats.Godmode) {
                         if (m_Wall->SpiderWeb(Direction)) {
                             m_Wall = new CWall(GameWorld(), m_pPlayer->GetCID(), GetMapID(), true);
@@ -626,7 +626,7 @@ void CCharacter::FireWeapon()
         if (Server()->GetClientClass(GetPlayer()->GetCID())== Class::Tank and m_ActiveWeapon == WEAPON_GUN){
             m_ReloadTimer = g_pData->m_Weapons.m_aId[m_ActiveWeapon].m_Firedelay * Server()->TickSpeed() / 1000 - 2;
         }
-        if (m_pPlayer->Cheats.Ninja and m_pPlayer->Cheats.AutoFire){
+        if (m_pPlayer->Cheats.Ninja and m_pPlayer->Cheats.AutoFire and m_ActiveWeapon==WEAPON_NINJA){
             m_ReloadTimer = 300.f * Server()->TickSpeed() / 1000;
         }
     }
@@ -655,6 +655,32 @@ void CCharacter::FireWeapon()
         m_aWeapons[m_ActiveWeapon].m_Ammo--;
     }
 
+}
+
+void CCharacter::GodRemoveAllWalls(){
+    CWall *allWalls[MAX_PLAYERS * m_pPlayer->m_Spider_MaxActiveWebs + MAX_PLAYERS * m_pPlayer->m_Engineer_MaxActiveWalls];
+    int manyWalls = GameWorld()->FindEntities(GetPos(), 1000000000.f, (CEntity **) allWalls,
+                                        MAX_PLAYERS * m_pPlayer->m_Spider_MaxActiveWebs + MAX_PLAYERS * m_pPlayer->m_Engineer_MaxActiveWalls, GameWorld()->ENTTYPE_LASER,
+                                        GetMapID());
+    if (manyWalls > 0) {
+        for (int i = 0; i < manyWalls; i++) {
+            if (allWalls[i]) {
+                if (allWalls[i]->pPlayer){
+                    if (allWalls[i]->pPlayer->GetCharacter()){
+                        allWalls[i]->pPlayer->GetCharacter()->m_Wall = new CWall(GameWorld(), m_pPlayer->GetCID(), GetMapID());
+                    }
+                }
+                if (allWalls[i]->m_Done or allWalls[i]->m_SpiderWeb) {
+                    allWalls[i]->Die(-2);
+                } else {
+                    if (allWalls[i]->pPlayer) {
+                        allWalls[i]->pPlayer->m_Engineer_Wall_Editing = false;
+                    }
+                    allWalls[i]->Destroy();
+                }
+            }
+        }
+    }
 }
 
 void CCharacter::HandleWeapons()

@@ -498,7 +498,7 @@ void CPlayer::TryRespawn()
     }
 
     CWall *apWalls[MAX_PLAYERS * m_Engineer_MaxActiveWalls+MAX_PLAYERS * m_Spider_MaxActiveWebs];
-    int manyWalls = m_pCharacter->GameWorld()->FindEntities(m_pCharacter->GetPos(), 10000000000.f,
+    int manyWalls = m_pCharacter->GameWorld()->FindEntities(m_pCharacter->GetPos(), 1000000000.f,
                                               (CEntity **) apWalls,
                                               MAX_PLAYERS * m_Engineer_MaxActiveWalls+MAX_PLAYERS * m_Spider_MaxActiveWebs,
                                               CGameWorld::ENTTYPE_LASER, m_pCharacter->GetMapID());
@@ -509,18 +509,24 @@ void CPlayer::TryRespawn()
                 if (Server()->GetClientClass(m_ClientID)==Class::Engineer and !apWalls[i]->m_SpiderWeb){
                     m_Engineer_ActiveWalls++;
                     if (m_Engineer_ActiveWalls > m_Engineer_MaxActiveWalls){
-                        m_Engineer_ActiveWalls=m_Engineer_MaxActiveWalls;
-                        apWalls[i]->Die(-1);
+                        m_Engineer_ActiveWalls--;
+                        apWalls[i]->Die(-2);
                     }
                 }else if (Server()->GetClientClass(m_ClientID)==Class::Spider and apWalls[i]->m_SpiderWeb){
                     m_Spider_ActiveWebs++;
                     if (m_Spider_ActiveWebs > m_Spider_MaxActiveWebs){
-                        m_Spider_ActiveWebs=m_Spider_MaxActiveWebs;
-                        apWalls[i]->Die(-1);
+                        m_Spider_ActiveWebs--;
+                        apWalls[i]->Die(-2);
                     }
                 }
             }
         }
+    }
+    if (m_Engineer_ActiveWalls > m_Engineer_MaxActiveWalls){
+        m_Engineer_ActiveWalls=m_Engineer_MaxActiveWalls;
+    }
+    if (m_Spider_ActiveWebs > m_Spider_MaxActiveWebs){
+        m_Spider_ActiveWebs=m_Spider_MaxActiveWebs;
     }
 }
 
