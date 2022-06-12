@@ -362,6 +362,7 @@ Messages = [
 		NetArray(NetBool("m_aUseCustomColors"), 6),
 		NetArray(NetIntAny("m_aSkinPartColors"), 6),
 		NetBool("m_Silent"),
+		NetIntAny("m_ClassID"),
 	]),
 
 	NetMessage("Sv_GameInfo", [

@@ -855,23 +855,22 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker)
 		str_utf8_copy_num(m_aClients[pMsg->m_ClientID].m_aClan, pMsg->m_pClan, sizeof(m_aClients[pMsg->m_ClientID].m_aClan), MAX_CLAN_LENGTH);
 		m_aClients[pMsg->m_ClientID].m_Country = pMsg->m_Country;
         Class new_class = Class::None;
-        switch (pMsg->m_ClassID) {
-            case 0:
-                new_class=Class::None;
-            case 1:
-                new_class=Class::Hunter;
-            case 2:
-                new_class=Class::Medic;
-            case 3:
-                new_class=Class::Scout;
-            case 4:
-                new_class=Class::Tank;
-            case 5:
-                new_class=Class::Spider;
-            case 6:
-                new_class=Class::Engineer;
-            case 7:
-                new_class=Class::Armorer;
+        if (pMsg->m_ClassID==0) {
+            new_class = Class::None;
+        }else if (pMsg->m_ClassID==1) {
+            new_class = Class::Hunter;
+        }else if (pMsg->m_ClassID==2) {
+            new_class = Class::Medic;
+        }else if (pMsg->m_ClassID==3) {
+            new_class = Class::Scout;
+        }else if (pMsg->m_ClassID==4) {
+            new_class = Class::Tank;
+        }else if (pMsg->m_ClassID==5) {
+            new_class = Class::Spider;
+        }else if (pMsg->m_ClassID==6) {
+            new_class = Class::Engineer;
+        }else if (pMsg->m_ClassID==7) {
+            new_class = Class::Armorer;
         }
         m_aClients[pMsg->m_ClientID].MyClass = new_class;
 		for(int i = 0; i < NUM_SKINPARTS; i++)

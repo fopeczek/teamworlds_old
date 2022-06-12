@@ -585,20 +585,28 @@ void CPlayer::Become(Class who){
     switch(who){
         case Class::None:
             new_class_id=0;
+            break;
         case Class::Hunter:
             new_class_id=1;
+            break;
         case Class::Medic:
             new_class_id=2;
+            break;
         case Class::Scout:
             new_class_id=3;
+            break;
         case Class::Tank:
             new_class_id=4;
+            break;
         case Class::Spider:
             new_class_id=5;
+            break;
         case Class::Engineer:
             new_class_id=6;
+            break;
         case Class::Armorer:
             new_class_id=7;
+            break;
     }
     // update client infos (others before local)
     CNetMsg_Sv_ClientInfo NewClientInfoMsg;

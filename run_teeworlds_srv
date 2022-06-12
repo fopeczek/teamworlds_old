@@ -1,0 +1,202 @@
+#!/bin/bash
+
+default_server=192.168.1.14
+default_user=adam
+
+usage="
+Uploads TeamWorlds to the server
+
+
+Usage:
+
+$(basename $0) [-s <server ip>] --build fast|slow --copy build|install [--port <port number>] [--byobu] [--path <path_with_source>]
+
+where
+
+ -s|--server              - IP address of the TeamWorlds server. Defaults to ${default_server}.
+ --build fast|slow        - fast = Just make.
+                          - slow = Full rm -rf build, cmake .., make
+ --copy build|install     - rsync the build or the install folder to the server
+ -p|--port                - Port name of the TeamWorld server. Defaults to 8303
+ -b|--byobu               - Starts the server in Byobu
+ -B|--no-byobu            - Starts the server directly
+ --path                   - Path with the source files. Defaults to /opt/games/teeworlds
+ --force-kill             - Forces killing the old server without prompt.
+ --help                   - Prints this help message.
+
+
+Example:
+
+./$(basename $0) --fast --port 8304 --server 192.168.1.100
+./$(basename $0) --slow
+"
+
+
+if [ "$1" == "--help" ]; then
+	echo "$usage" >&2
+	exit 1
+fi
+
+
+
+server="$default_server"
+user="$default_user"
+build="slow"
+copy="build"
+port=8303
+byobu=auto
+path="/opt/games/teeworlds"
+forcekill=0
+
+
+while [[ $# > 0 ]]
+do
+key="$1"
+shift
+
+case $key in
+	-s|--server)
+	server="$1"
+	shift
+	;;
+	--build)
+	build=$1
+	shift
+	;;
+	--force-kill)
+	forcekill=1
+	;;
+	--copy)
+	copy=$1
+	;;
+	--byobu|-b)
+	if [[ $byobu != "auto" ]]; then
+		echo "Ambiguous byobu switches. Check your syntax"
+		exit 1
+	fi
+	byobu=1
+	;;
+	--no-byobu|-B)
+	if [[ $byobu != "auto" ]]; then
+		echo "Ambiguous byobu switches. Check your syntax"
+		exit 1
+	fi
+	byobu=0
+	;;
+	-p|--port)
+	port="$1"
+	shift
+	;;
+	-path)
+	path="$1"
+	shift
+	;;
+	--help)
+		echo "$usage"
+		exit 0
+	;;
+		-*)
+		echo "Error: Unknown option: $1" >&2
+		echo "$usage" >&2
+		;;
+esac
+done
+
+if [[ $byobu == "auto" ]]; then
+	byobu=1
+fi
+
+
+cd "$path" || exit 1
+
+if test -d "${path}/build"; then
+	cd build/
+else 
+	mkdir build
+	cd build
+fi
+if [[ "$build" == "slow" ]]; then
+	rm -rf *
+	cmake -DCMAKE_INSTALL_PREFIX="${path}/install" ..
+	make -j8
+elif [[ "$build" == "fast" ]]; then
+	cmake -DCMAKE_INSTALL_PREFIX="${path}/install" ..
+	make -j8
+else
+		echo "Error: Unknown build mode: $build" >&2
+		echo "$usage" >&2
+		exit 1
+fi
+if [[ "$copy" == "build" ]]; then
+	source="${path}/build"
+	tee_path="./"
+elif [[ "$copy" == "install" ]]; then
+	rm -rf "${path}/install"
+	make install
+	source="${path}/install"
+	tee_path="bin/"
+	cp --reflink data ${source}/
+else
+		echo "Error: Unknown copy mode: $copy" >&2
+		echo "$usage" >&2
+		exit 1
+fi
+cp ${path}/server.cfg ${source}/
+rsync --delete -rvPs ${path}/datasrc/maps/lobby.map ${source}/data/maps
+#cp ../lobby.map data/maps
+
+server_on=0
+
+if ping -c1 -w3 "$server" >/dev/null 2>&1
+then
+	echo "server is on... connecting"
+	
+	server_on=1
+else
+	echo "server is off... starting"
+	
+	ssh adam-minipc "lxc start teeworlds"
+	
+	sleep 10
+fi
+
+sed -i.bak "/sv_port/ s/8305/${port}/" "${source}/server.cfg"
+sed -i.bak '/sv_name/ s/.*/sv_name ! ! Official Teamworlds server by Silent/' "${source}/server.cfg"
+
+cd ..
+
+if [ -n "$(ssh ${user}@${server} -- byobu list-sessions | grep teamworlds)" ]; then
+	if [[ $forcekill == "1" ]]; then
+		echo "Server is already running, killing it..."
+		ssh ${user}@${server} killall -9 teeworlds_srv
+	else
+		read -p "Server is already running. Do you want to kill it? ([yes]/no) " yn
+
+		case $yn in 
+			yes|y|"" ) 
+				echo "Killing the server..."
+				ssh ${user}@${server} killall -9 teeworlds_srv
+				;;
+			no|n ) echo exiting...;
+				exit;;
+			* ) echo invalid response;
+				exit 1;;
+		esac
+	fi
+fi
+
+rsync -avPs  --delete "${source}/" "${user}@${server}:teeworlds/"
+
+
+if [ "$byobu" == 1 ]
+then
+	echo "starting server in byobu"
+	sleep 5
+	ssh ${user}@${server} -- byobu new-session -d -s teamworlds 'bash -c "cd teeworlds;./teeworlds_srv -f server.cfg"'
+#		ssh ${user}@${server} -- byobu new-session -d -s teamworlds "cd teeworlds;${tee_path}teeworlds_srv -f server.cfg"
+	ssh -t ${user}@${server} -- byobu attach-session -t teamworlds
+else
+	echo "starting server NOT in byobu"
+	sleep 1
+	ssh ${user}@${server} "cd teeworlds; ${tee_path}teeworlds_srv -f server.cfg;"
+fi
